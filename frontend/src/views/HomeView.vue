@@ -495,7 +495,7 @@ h2 {
   line-height: 1.5;
   margin: 10px 0;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  /* -webkit-line-clamp: 3; */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
