@@ -31,7 +31,7 @@ class UserRegistrationView(APIView):
             login(request, user)
             
             return Response({
-                'user': UserSerializer(user).data,
+                'user': UserSerializer(user, context={'request': request}).data,
                 'token': token.key,
                 'message': '注册成功'
             }, status=status.HTTP_201_CREATED)
@@ -57,7 +57,7 @@ class UserLoginView(APIView):
             csrf_token = get_token(request)
             
             return Response({
-                'user': UserSerializer(user).data,
+                'user': UserSerializer(user, context={'request': request}).data,
                 'token': token.key,
                 'csrf_token': csrf_token,
                 'message': '登录成功'
@@ -90,12 +90,12 @@ class UserProfileView(APIView):
     
     def get(self, request):
         """获取用户信息"""
-        serializer = UserSerializer(request.user)
+        serializer = UserSerializer(request.user, context={'request': request})
         return Response(serializer.data)
     
     def put(self, request):
         """更新用户信息"""
-        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        serializer = UserSerializer(request.user, data=request.data, partial=True, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -127,7 +127,7 @@ class CheckAuthView(APIView):
     """检查认证状态视图"""
     def get(self, request):
         if request.user.is_authenticated:
-            serializer = UserSerializer(request.user)
+            serializer = UserSerializer(request.user, context={'request': request})
             return Response({
                 'authenticated': True,
                 'user': serializer.data

@@ -20,9 +20,11 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  bio?: string;
+  avatar?: string;
+  avatar_url?: string;
   date_joined: string;
   last_login: string;
-  bio?: string;
 }
 
 export interface AuthResponse {

@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from rest_framework import routers
 from recommendation.views import MovieViewSet, UserViewSet, RatingViewSet, RecommendationView, TopMoviesView, SimilarMoviesView
 from recommendation.auth_views import (
@@ -31,3 +33,7 @@ urlpatterns = [
     path('api/top-movies/', TopMoviesView.as_view(), name='top_movies'),
     path('api/similar-movies/<int:movie_id>/', SimilarMoviesView.as_view(), name='similar_movies'),
 ]
+
+# 在开发环境中提供媒体文件服务
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

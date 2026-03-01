@@ -63,10 +63,24 @@ class UserLoginSerializer(serializers.Serializer):
 
 class UserSerializer(serializers.ModelSerializer):
     """用户信息序列化器"""
+    avatar_url = serializers.SerializerMethodField()
+    
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'date_joined', 'last_login')
-        read_only_fields = ('id', 'date_joined', 'last_login')
+        fields = ('id', 'username', 'email', 'first_name', 'last_name', 'bio', 'avatar', 'avatar_url', 'date_joined', 'last_login')
+        read_only_fields = ('id', 'date_joined', 'last_login', 'avatar_url')
+        extra_kwargs = {
+            'bio': {'required': False, 'allow_blank': True},
+            'avatar': {'required': False}
+        }
+    
+    def get_avatar_url(self, obj):
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
 
 class ChangePasswordSerializer(serializers.Serializer):
     """修改密码序列化器"""

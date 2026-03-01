@@ -503,7 +503,10 @@
 import { defineComponent, ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useRouter } from "vue-router";
+import axios from "axios";
 import doubanData from "../data/豆瓣电影TOP250.json";
+
+const API_BASE_URL = "http://localhost:8000/api";
 
 interface DoubanMovie {
   电影名字: string;
@@ -789,7 +792,7 @@ export default defineComponent({
       });
     };
 
-    const handleAvatarUpload = (event: Event) => {
+    const handleAvatarUpload = async (event: Event) => {
       const input = event.target as HTMLInputElement;
       if (input.files && input.files[0]) {
         const file = input.files[0];
@@ -799,21 +802,74 @@ export default defineComponent({
         }
 
         avatarFile.value = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          avatarPreview.value = e.target?.result as string;
-        };
-        reader.readAsDataURL(file);
+
+        // 创建FormData对象
+        const formData = new FormData();
+        formData.append("avatar", file);
+
+        try {
+          // 上传头像到后端
+          const response = await axios.put(
+            `${API_BASE_URL}/auth/profile/`,
+            formData,
+            {
+              headers: {
+                Authorization: `Token ${authStore.token}`,
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
+
+          // 更新用户信息
+          authStore.user = response.data;
+          localStorage.setItem("user", JSON.stringify(response.data));
+
+          // 更新预览
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            avatarPreview.value = e.target?.result as string;
+          };
+          reader.readAsDataURL(file);
+
+          alert("头像上传成功！");
+        } catch (error: any) {
+          console.error("头像上传失败:", error);
+          alert("头像上传失败，请重试");
+        }
       }
     };
 
-    const removeAvatar = () => {
-      avatarPreview.value = null;
-      avatarFile.value = null;
-      const input = document.getElementById(
-        "avatar-upload"
-      ) as HTMLInputElement;
-      if (input) input.value = "";
+    const removeAvatar = async () => {
+      if (confirm("确定要移除头像吗？")) {
+        try {
+          // 发送空值来移除头像
+          const response = await axios.put(
+            `${API_BASE_URL}/auth/profile/`,
+            { avatar: null },
+            {
+              headers: {
+                Authorization: `Token ${authStore.token}`,
+              },
+            }
+          );
+
+          // 更新用户信息
+          authStore.user = response.data;
+          localStorage.setItem("user", JSON.stringify(response.data));
+
+          avatarPreview.value = null;
+          avatarFile.value = null;
+          const input = document.getElementById(
+            "avatar-upload"
+          ) as HTMLInputElement;
+          if (input) input.value = "";
+
+          alert("头像已移除！");
+        } catch (error: any) {
+          console.error("移除头像失败:", error);
+          alert("移除头像失败，请重试");
+        }
+      }
     };
 
     const resetProfileForm = () => {
@@ -977,6 +1033,11 @@ export default defineComponent({
       // 初始化表单数据
       if (currentUser.value) {
         resetProfileForm();
+
+        // 加载头像预览
+        if (currentUser.value.avatar_url) {
+          avatarPreview.value = currentUser.value.avatar_url;
+        }
       }
 
       // 加载收藏夹
