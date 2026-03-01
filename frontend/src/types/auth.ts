@@ -22,6 +22,7 @@ export interface User {
   last_name: string;
   date_joined: string;
   last_login: string;
+  bio?: string;
 }
 
 export interface AuthResponse {

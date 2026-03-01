@@ -5,12 +5,15 @@
         <div class="nav-left">
           <router-link to="/" class="nav-logo"> 🎬 电影推荐系统 </router-link>
           <router-link to="/">首页</router-link>
+          <router-link to="/douban">豆瓣电影TOP250</router-link>
           <router-link to="/about">关于</router-link>
         </div>
 
         <div class="nav-right">
           <div v-if="authStore.isAuthenticated" class="user-info">
-            <span class="username">欢迎, {{ authStore.user?.username }}</span>
+            <router-link to="/profile" class="profile-link">
+              👤 {{ authStore.user?.username }}
+            </router-link>
             <button @click="handleLogout" class="logout-btn">退出</button>
           </div>
           <div v-else class="auth-links">

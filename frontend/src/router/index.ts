@@ -1,13 +1,21 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
+import DoubanView from "../views/DoubanView.vue";
+import ProfileView from "../views/ProfileView.vue";
 
 const routes = [
   {
     path: "/",
     name: "home",
     component: HomeView,
+  },
+  {
+    path: "/douban",
+    name: "douban",
+    component: DoubanView,
   },
   {
     path: "/login",
@@ -18,6 +26,12 @@ const routes = [
     path: "/register",
     name: "register",
     component: RegisterView,
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: ProfileView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/about",
@@ -33,6 +47,33 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes,
+});
+
+// 路由守卫
+router.beforeEach((to: any, from: any, next: any) => {
+  const authStore = useAuthStore();
+
+  // 检查路由是否需要认证
+  if (to.matched.some((record: any) => record.meta.requiresAuth)) {
+    if (!authStore.isAuthenticated) {
+      // 未登录，重定向到登录页面
+      next({
+        path: "/login",
+        query: { redirect: to.fullPath },
+      });
+    } else {
+      next();
+    }
+  } else if (to.path === "/login" || to.path === "/register") {
+    // 如果用户已经登录，访问登录/注册页面时重定向到首页
+    if (authStore.isAuthenticated) {
+      next({ path: "/" });
+    } else {
+      next();
+    }
+  } else {
+    next();
+  }
 });
 
 export default router;
