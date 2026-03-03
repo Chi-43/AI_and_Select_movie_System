@@ -5,6 +5,7 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import DoubanView from "../views/DoubanView.vue";
 import ProfileView from "../views/ProfileView.vue";
+import AIChatView from "../views/AIChatView.vue";
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     name: "profile",
     component: ProfileView,
     meta: { requiresAuth: true },
+  },
+  {
+    path: "/ai-chat",
+    name: "ai-chat",
+    component: AIChatView,
   },
   {
     path: "/about",

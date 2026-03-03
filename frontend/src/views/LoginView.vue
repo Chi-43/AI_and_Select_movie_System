@@ -97,120 +97,215 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* ====== 基础：更柔和的字体与布局 ====== */
 .login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+
+  /* 背景：渐变 + 光斑 */
+  background: radial-gradient(
+      900px 600px at 15% 20%,
+      rgba(99, 102, 241, 0.35),
+      transparent 60%
+    ),
+    radial-gradient(
+      800px 520px at 85% 10%,
+      rgba(139, 92, 246, 0.3),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 600px at 50% 95%,
+      rgba(16, 185, 129, 0.18),
+      transparent 55%
+    ),
+    linear-gradient(135deg, #0b1220 0%, #111827 55%, #0b1220 100%);
+  overflow: hidden;
 }
 
+/* 外层卡片：玻璃拟态 */
 .login-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  padding: 40px;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  padding: 34px 28px;
+  border-radius: 22px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  position: relative;
 }
 
+/* 卡片顶部细光 */
+.login-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.02)
+  );
+  mask: linear-gradient(#000, transparent 55%);
+}
+
+/* 头部 */
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 22px;
 }
 
 .login-header h1 {
   margin: 0;
-  color: #333;
-  font-size: 1.8rem;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.94);
 }
 
 .login-header p {
   margin: 10px 0 0;
-  color: #666;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.95);
 }
 
+/* 错误提示：更像 toast 卡片 */
 .error-message {
-  background: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  text-align: center;
-  border: 1px solid #fcc;
+  margin: 14px 0 18px;
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  color: rgba(254, 226, 226, 0.95);
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+
+  font-weight: 700;
+  font-size: 13px;
 }
 
+/* 表单间距 */
 .login-form {
-  margin-bottom: 30px;
+  margin-top: 8px;
 }
 
+/* 表单项 */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(226, 232, 240, 0.92);
+  letter-spacing: 0.2px;
 }
 
+/* 输入框：更现代 */
 .form-group input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
-}
+  padding: 12px 12px;
+  border-radius: 14px;
 
-.form-group input:focus {
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(17, 24, 39, 0.65);
+  color: rgba(255, 255, 255, 0.92);
+
+  font-size: 14px;
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+
+  transition: box-shadow 0.18s ease, border-color 0.18s ease,
+    transform 0.18s ease;
 }
 
+.form-group input::placeholder {
+  color: rgba(148, 163, 184, 0.75);
+}
+
+/* focus：紫蓝光圈 */
+.form-group input:focus {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 18px 50px rgba(0, 0, 0, 0.25);
+}
+
+/* 登录按钮：渐变 + 立体 */
 .login-btn {
   width: 100%;
-  padding: 14px;
-  background: #667eea;
-  color: white;
+  margin-top: 6px;
+  padding: 12px 14px;
+
+  border-radius: 14px;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 600;
+
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+
+  font-size: 14px;
+  font-weight: 900;
   cursor: pointer;
-  transition: background 0.3s;
+
+  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .login-btn:hover:not(:disabled) {
-  background: #5a67d8;
+  transform: translateY(-1px);
+  box-shadow: 0 22px 60px rgba(99, 102, 241, 0.42);
+  filter: brightness(1.02);
+}
+
+.login-btn:active:not(:disabled) {
+  transform: translateY(0px);
 }
 
 .login-btn:disabled {
-  background: #a0aec0;
   cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
 }
 
+/* footer：更简洁 */
 .login-footer {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
   text-align: center;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
 }
 
 .login-footer p {
   margin: 10px 0;
-  color: #666;
+  color: rgba(148, 163, 184, 0.95);
+  font-size: 13px;
 }
 
+/* 链接：像按钮文字 */
 .login-footer a {
-  color: #667eea;
+  color: rgba(99, 102, 241, 1);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 900;
 }
 
 .login-footer a:hover {
   text-decoration: underline;
+}
+
+/* 移动端适配 */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 28px 18px;
+    border-radius: 18px;
+  }
+
+  .login-header h1 {
+    font-size: 20px;
+  }
 }
 </style>

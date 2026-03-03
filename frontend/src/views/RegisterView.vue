@@ -182,149 +182,229 @@ export default defineComponent({
 </script>
 
 <style scoped>
+/* ====== 背景与容器（同登录页风格） ====== */
 .register-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+
+  background: radial-gradient(
+      900px 600px at 15% 20%,
+      rgba(99, 102, 241, 0.35),
+      transparent 60%
+    ),
+    radial-gradient(
+      800px 520px at 85% 10%,
+      rgba(139, 92, 246, 0.3),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 600px at 50% 95%,
+      rgba(16, 185, 129, 0.18),
+      transparent 55%
+    ),
+    linear-gradient(135deg, #0b1220 0%, #111827 55%, #0b1220 100%);
+  overflow: hidden;
 }
 
+/* 玻璃拟态卡片 */
 .register-card {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  padding: 40px;
   width: 100%;
-  max-width: 500px;
+  max-width: 540px;
+  padding: 34px 28px;
+  border-radius: 22px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+
+  position: relative;
 }
 
+/* 卡片顶部细光 */
+.register-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.14),
+    rgba(255, 255, 255, 0.02)
+  );
+  mask: linear-gradient(#000, transparent 55%);
+}
+
+/* ====== 头部 ====== */
 .register-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 22px;
 }
 
 .register-header h1 {
   margin: 0;
-  color: #333;
-  font-size: 1.8rem;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  color: rgba(255, 255, 255, 0.94);
 }
 
 .register-header p {
   margin: 10px 0 0;
-  color: #666;
+  font-size: 13px;
+  color: rgba(148, 163, 184, 0.95);
 }
 
+/* 错误提示 */
 .error-message {
-  background: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 5px;
-  margin-bottom: 20px;
-  text-align: center;
-  border: 1px solid #fcc;
+  margin: 14px 0 18px;
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  color: rgba(254, 226, 226, 0.95);
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+
+  font-weight: 700;
+  font-size: 13px;
 }
 
+/* ====== 表单布局 ====== */
 .register-form {
-  margin-bottom: 30px;
+  margin-top: 8px;
+  margin-bottom: 18px;
 }
 
+/* 两列：名字/姓氏 */
 .form-row {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
 }
 
-.form-row .form-group {
-  flex: 1;
-  margin-bottom: 0;
-}
-
+/* 通用表单项 */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  color: #555;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(226, 232, 240, 0.92);
+  letter-spacing: 0.2px;
 }
 
+/* 输入框 */
 .form-group input {
   width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  padding: 12px 12px;
+  border-radius: 14px;
+
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(17, 24, 39, 0.65);
+  color: rgba(255, 255, 255, 0.92);
+
+  font-size: 14px;
+  outline: none;
+
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.form-group input::placeholder {
+  color: rgba(148, 163, 184, 0.75);
 }
 
 .form-group input:focus {
-  outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 18px 50px rgba(0, 0, 0, 0.25);
 }
 
+/* 提示文字 */
 .form-hint {
   display: block;
-  margin-top: 5px;
-  color: #888;
-  font-size: 0.85rem;
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(148, 163, 184, 0.9);
 }
 
+/* ====== 注册按钮（统一用紫色渐变，更一致） ====== */
 .register-btn {
   width: 100%;
-  padding: 14px;
-  background: #4caf50;
-  color: white;
+  margin-top: 6px;
+  padding: 12px 14px;
+
+  border-radius: 14px;
   border: none;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 600;
+
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+
+  font-size: 14px;
+  font-weight: 900;
   cursor: pointer;
-  transition: background 0.3s;
+
+  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
 }
 
 .register-btn:hover:not(:disabled) {
-  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 22px 60px rgba(99, 102, 241, 0.42);
+  filter: brightness(1.02);
 }
 
 .register-btn:disabled {
-  background: #a0aec0;
   cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
 }
 
+/* ====== footer ====== */
 .register-footer {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.16);
   text-align: center;
-  border-top: 1px solid #eee;
-  padding-top: 20px;
 }
 
 .register-footer p {
   margin: 10px 0;
-  color: #666;
+  color: rgba(148, 163, 184, 0.95);
+  font-size: 13px;
 }
 
 .register-footer a {
-  color: #667eea;
+  color: rgba(99, 102, 241, 1);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 900;
 }
 
 .register-footer a:hover {
   text-decoration: underline;
 }
 
+/* ====== 响应式 ====== */
 @media (max-width: 600px) {
-  .form-row {
-    flex-direction: column;
-    gap: 20px;
+  .register-card {
+    padding: 28px 18px;
+    border-radius: 18px;
   }
 
-  .register-card {
-    padding: 30px 20px;
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .register-header h1 {
+    font-size: 20px;
   }
 }
 </style>
