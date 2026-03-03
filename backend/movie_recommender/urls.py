@@ -8,6 +8,7 @@ from recommendation.auth_views import (
     UserRegistrationView, UserLoginView, UserLogoutView,
     UserProfileView, ChangePasswordView, CheckAuthView, TokenLoginView
 )
+from recommendation.ai_views import AIChatView, MovieRecommendationView, MovieAnalysisView, AIConfigView
 
 # 创建路由器并注册视图集
 router = routers.DefaultRouter()
@@ -32,6 +33,12 @@ urlpatterns = [
     path('api/recommendations/', RecommendationView.as_view(), name='recommendations'),
     path('api/top-movies/', TopMoviesView.as_view(), name='top_movies'),
     path('api/similar-movies/<int:movie_id>/', SimilarMoviesView.as_view(), name='similar_movies'),
+    
+    # AI相关路由
+    path('api/ai/chat/', AIChatView.as_view(), name='ai_chat'),
+    path('api/ai/recommendations/', MovieRecommendationView.as_view(), name='ai_recommendations'),
+    path('api/ai/analysis/', MovieAnalysisView.as_view(), name='ai_analysis'),
+    path('api/ai/config/', AIConfigView.as_view(), name='ai_config'),
 ]
 
 # 在开发环境中提供媒体文件服务

@@ -1,4 +1,9 @@
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# 加载环境变量
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,7 +17,8 @@ SECRET_KEY = "django-insecure-hc!h+53&$#jx2r#5*o992k!=o7er3j=lz@tn*tc3%1%b_dm*gx
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+# 1
+CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = []
 
 
@@ -142,3 +148,6 @@ LOGIN_URL = '/api/auth/login/'
 LOGOUT_URL = '/api/auth/logout/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# DeepSeek API Configuration
+DEEPSEEK_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
