@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import os
+from django.dispatch import receiver
+from django.db.models.signals import pre_save, post_delete
 
 # Create your models here.
 
@@ -13,11 +16,46 @@ class Movie(models.Model):
     def __str__(self):
         return f"{self.title} ({self.year})"
 
-import os
-from django.db import models
-from django.contrib.auth.models import AbstractUser
-from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_delete
+
+class VideoPlatform(models.Model):
+    """视频平台模型"""
+    PLATFORM_CHOICES = [
+        ('iqiyi', '爱奇艺'),
+        ('tencent', '腾讯视频'),
+        ('youku', '优酷'),
+        ('bilibili', '哔哩哔哩'),
+        ('mango', '芒果TV'),
+        ('netflix', 'Netflix'),
+        ('disney', 'Disney+'),
+        ('amazon', 'Amazon Prime'),
+        ('other', '其他平台'),
+    ]
+    
+    VIP_CHOICES = [
+        ('free', '免费观看'),
+        ('vip', 'VIP可看'),
+        ('pay', '付费观看'),
+        ('rent', '租赁观看'),
+    ]
+    
+    movie_title = models.CharField(max_length=200, verbose_name="电影名称")
+    douban_url = models.URLField(max_length=500, verbose_name="豆瓣链接")
+    platform = models.CharField(max_length=50, choices=PLATFORM_CHOICES, verbose_name="视频平台")
+    platform_url = models.URLField(max_length=500, verbose_name="平台链接")
+    vip_status = models.CharField(max_length=20, choices=VIP_CHOICES, verbose_name="观看权限")
+    price = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, verbose_name="价格(元)")
+    quality = models.CharField(max_length=50, null=True, blank=True, verbose_name="画质")
+    available = models.BooleanField(default=True, verbose_name="是否可用")
+    last_checked = models.DateTimeField(auto_now=True, verbose_name="最后检查时间")
+    
+    class Meta:
+        verbose_name = "视频平台链接"
+        verbose_name_plural = "视频平台链接"
+        unique_together = ['movie_title', 'platform']
+    
+    def __str__(self):
+        return f"{self.movie_title} - {self.get_platform_display()} ({self.get_vip_status_display()})"
+
 
 class User(AbstractUser):
     """扩展的用户模型"""
@@ -43,12 +81,14 @@ class User(AbstractUser):
                 pass
         super().save(*args, **kwargs)
 
+
 # 信号：删除用户时删除头像文件
 @receiver(post_delete, sender=User)
 def delete_avatar_on_user_delete(sender, instance, **kwargs):
     if instance.avatar:
         if os.path.isfile(instance.avatar.path):
             os.remove(instance.avatar.path)
+
 
 # 信号：更新头像前删除旧文件
 @receiver(pre_save, sender=User)
@@ -63,6 +103,7 @@ def delete_old_avatar_on_update(sender, instance, **kwargs):
                 os.remove(old_instance.avatar.path)
     except User.DoesNotExist:
         return False
+
 
 class Rating(models.Model):
     """评分模型"""

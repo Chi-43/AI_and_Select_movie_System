@@ -243,7 +243,7 @@ class MovieRecommendationView(APIView):
         基于用户偏好生成电影推荐
         请求参数:
         - preferences: 用户偏好（类型、年份、国家等）
-        - count: 推荐数量（默认5）
+        - count: 推荐数量(默认5)
         """
         preferences = request.data.get('preferences', {})
         count = int(request.data.get('count', 5))
@@ -360,7 +360,7 @@ class AIConfigView(APIView):
         return Response(config)
     
     def post(self, request):
-        """更新AI配置（需要管理员权限）"""
+        """更新AI配置需要管理员权限"""
         if not request.user.is_staff:
             return Response(
                 {'error': '需要管理员权限'},

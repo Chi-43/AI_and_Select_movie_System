@@ -6,6 +6,7 @@ import RegisterView from "../views/RegisterView.vue";
 import DoubanView from "../views/DoubanView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import AIChatView from "../views/AIChatView.vue";
+import VideoPlatformView from "../views/VideoPlatformView.vue";
 
 const routes = [
   {
@@ -17,6 +18,11 @@ const routes = [
     path: "/douban",
     name: "douban",
     component: DoubanView,
+  },
+  {
+    path: "/video-platform",
+    name: "video-platform",
+    component: VideoPlatformView,
   },
   {
     path: "/login",

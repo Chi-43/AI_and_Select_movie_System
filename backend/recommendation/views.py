@@ -3,8 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
-from .models import Movie, User, Rating
-from .serializers import MovieSerializer, UserSerializer, RatingSerializer
+from .models import Movie, User, Rating, VideoPlatform
+from .serializers import MovieSerializer, UserSerializer, RatingSerializer, VideoPlatformSerializer
 from .collaborative_filtering import CollaborativeFiltering
 
 class MovieViewSet(viewsets.ModelViewSet):
@@ -18,6 +18,88 @@ class UserViewSet(viewsets.ModelViewSet):
 class RatingViewSet(viewsets.ModelViewSet):
     queryset = Rating.objects.all()
     serializer_class = RatingSerializer
+
+class VideoPlatformViewSet(viewsets.ModelViewSet):
+    queryset = VideoPlatform.objects.all()
+    serializer_class = VideoPlatformSerializer
+    
+    @action(detail=False, methods=['get'])
+    def by_movie_title(self, request):
+        """根据电影名称获取视频平台链接"""
+        movie_title = request.query_params.get('movie_title', '')
+        douban_url = request.query_params.get('douban_url', '')
+        
+        if not movie_title and not douban_url:
+            return Response({'error': '请提供movie_title或douban_url参数'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        queryset = VideoPlatform.objects.all()
+        
+        if movie_title:
+            queryset = queryset.filter(movie_title__icontains=movie_title)
+        
+        if douban_url:
+            queryset = queryset.filter(douban_url__icontains=douban_url)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['get'])
+    def by_platform(self, request):
+        """根据视频平台获取电影链接"""
+        platform = request.query_params.get('platform', '')
+        
+        if not platform:
+            return Response({'error': '请提供platform参数'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        queryset = VideoPlatform.objects.filter(platform=platform, available=True)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class VideoPlatformLinksView(APIView):
+    """获取电影的视频平台链接API"""
+    
+    def get(self, request):
+        movie_title = request.query_params.get('movie_title', '')
+        douban_url = request.query_params.get('douban_url', '')
+        
+        if not movie_title and not douban_url:
+            return Response({'error': '请提供movie_title或douban_url参数'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        queryset = VideoPlatform.objects.filter(available=True)
+        
+        if movie_title:
+            queryset = queryset.filter(movie_title__icontains=movie_title)
+        
+        if douban_url:
+            queryset = queryset.filter(douban_url__icontains=douban_url)
+        
+        # 按平台分组
+        platforms = {}
+        for platform in queryset:
+            platform_name = platform.get_platform_display()
+            if platform_name not in platforms:
+                platforms[platform_name] = []
+            
+            platforms[platform_name].append({
+                'id': platform.id,
+                'movie_title': platform.movie_title,
+                'platform_url': platform.platform_url,
+                'vip_status': platform.vip_status,
+                'vip_status_display': platform.get_vip_status_display(),
+                'price': float(platform.price) if platform.price else None,
+                'quality': platform.quality,
+                'last_checked': platform.last_checked
+            })
+        
+        return Response({
+            'movie_title': movie_title,
+            'douban_url': douban_url,
+            'total_platforms': len(platforms),
+            'total_links': queryset.count(),
+            'platforms': platforms
+        })
+
 
 class RecommendationView(APIView):
     """推荐API"""
@@ -55,6 +137,7 @@ class RecommendationView(APIView):
             'recommendations': serializer.data
         })
 
+
 class TopMoviesView(APIView):
     """热门电影API"""
     
@@ -71,6 +154,7 @@ class TopMoviesView(APIView):
         return Response({
             'top_movies': serializer.data
         })
+
 
 class SimilarMoviesView(APIView):
     """相似电影API"""

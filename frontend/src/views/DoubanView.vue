@@ -207,6 +207,18 @@
               >
                 {{ isFavorite(movie) ? "❤️ 已收藏" : "🤍 收藏" }}
               </button>
+              <router-link
+                :to="{
+                  name: 'video-platform',
+                  query: {
+                    movie_title: movie['电影名字'],
+                    douban_url: movie['电影链接'],
+                  },
+                }"
+                class="action-btn watch-link"
+              >
+                📺 查看观看链接
+              </router-link>
             </div>
           </div>
         </div>

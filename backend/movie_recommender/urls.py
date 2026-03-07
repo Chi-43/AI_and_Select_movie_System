@@ -3,7 +3,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import routers
-from recommendation.views import MovieViewSet, UserViewSet, RatingViewSet, RecommendationView, TopMoviesView, SimilarMoviesView
+from recommendation.views import (
+    MovieViewSet, UserViewSet, RatingViewSet, VideoPlatformViewSet,
+    RecommendationView, TopMoviesView, SimilarMoviesView, VideoPlatformLinksView
+)
 from recommendation.auth_views import (
     UserRegistrationView, UserLoginView, UserLogoutView,
     UserProfileView, ChangePasswordView, CheckAuthView, TokenLoginView
@@ -15,6 +18,7 @@ router = routers.DefaultRouter()
 router.register(r'movies', MovieViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'ratings', RatingViewSet)
+router.register(r'video-platforms', VideoPlatformViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -33,6 +37,9 @@ urlpatterns = [
     path('api/recommendations/', RecommendationView.as_view(), name='recommendations'),
     path('api/top-movies/', TopMoviesView.as_view(), name='top_movies'),
     path('api/similar-movies/<int:movie_id>/', SimilarMoviesView.as_view(), name='similar_movies'),
+    
+    # 视频平台链接相关路由
+    path('api/video-platform-links/', VideoPlatformLinksView.as_view(), name='video_platform_links'),
     
     # AI相关路由
     path('api/ai/chat/', AIChatView.as_view(), name='ai_chat'),
