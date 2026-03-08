@@ -6,7 +6,6 @@
     </div>
 
     <div class="container">
-      <!-- 搜索区域 -->
       <div class="search-section">
         <div class="search-box">
           <input
@@ -22,11 +21,10 @@
         </div>
 
         <div class="search-tips">
-          <p>💡 提示：您也可以从豆瓣电影页面点击"查看观看链接"跳转到此页面</p>
+          <p>💡 提示：支持按电影名搜索，也支持通过豆瓣链接直接跳转到本页</p>
         </div>
       </div>
 
-      <!-- 电影信息 -->
       <div v-if="currentMovie" class="movie-info-section">
         <div class="movie-card">
           <div class="movie-header">
@@ -81,20 +79,17 @@
         </div>
       </div>
 
-      <!-- 加载状态 -->
       <div v-if="loading" class="loading-section">
         <div class="loading-spinner"></div>
         <p>正在搜索观看链接...</p>
       </div>
 
-      <!-- 错误信息 -->
       <div v-else-if="error" class="error-section">
         <div class="error-icon">❌</div>
         <p class="error-message">{{ error }}</p>
         <button @click="searchPlatformLinks" class="retry-btn">重试</button>
       </div>
 
-      <!-- 平台链接结果 -->
       <div
         v-else-if="platformLinks && platformLinks.total_links > 0"
         class="results-section"
@@ -102,14 +97,10 @@
         <div class="results-header">
           <h3>🎯 找到 {{ platformLinks.total_platforms }} 个平台的观看链接</h3>
           <p class="results-summary">
-            共 {{ platformLinks.total_links }} 个链接，最后更新:
-            {{
-              formatDate(
-                platformLinks.platforms[
-                  Object.keys(platformLinks.platforms)[0]
-                ][0].last_checked
-              )
-            }}
+            共 {{ platformLinks.total_links }} 个链接
+            <span v-if="platformLinks.source"
+              >，数据来源：{{ platformLinks.source }}</span
+            >
           </p>
         </div>
 
@@ -122,10 +113,19 @@
             class="platform-card"
           >
             <div class="platform-header">
-              <h4 class="platform-title">{{ platformName }}</h4>
-              <span class="platform-count"
-                >{{ platformLinks.platforms[platformName].length }} 个链接</span
-              >
+              <div class="platform-title-wrap">
+                <img
+                  v-if="platformLinks.platforms[platformName][0]?.icon"
+                  :src="platformLinks.platforms[platformName][0].icon"
+                  :alt="platformName"
+                  class="platform-icon"
+                />
+                <h4 class="platform-title">{{ platformName }}</h4>
+              </div>
+
+              <span class="platform-count">
+                {{ platformLinks.platforms[platformName].length }} 个链接
+              </span>
             </div>
 
             <div class="platform-links">
@@ -142,30 +142,42 @@
                     target="_blank"
                     class="link-title"
                   >
-                    {{ link.movie_title }}
+                    {{
+                      link.movie_title ||
+                      platformLinks.movie_title ||
+                      searchMovieTitle
+                    }}
                   </a>
+
                   <span
                     :class="{
                       'vip-badge': link.vip_status === 'vip',
                       'free-badge': link.vip_status === 'free',
                       'pay-badge':
-                        link.vip_status === 'pay' || link.vip_status === 'rent',
+                        link.vip_status === 'pay' ||
+                        link.vip_status === 'rent' ||
+                        link.vip_status === 'unknown',
                     }"
                   >
-                    {{ link.vip_status_display }}
-                    <span v-if="link.price" class="price-tag">
-                      ¥{{ link.price }}
-                    </span>
+                    {{ link.vip_status_display || "未知" }}
+                    <span v-if="link.price" class="price-tag"
+                      >¥{{ link.price }}</span
+                    >
                   </span>
+                </div>
+
+                <div v-if="link.price_info" class="price-info">
+                  {{ link.price_info }}
                 </div>
 
                 <div class="link-details">
                   <span v-if="link.quality" class="quality-badge">
                     {{ link.quality }}
                   </span>
-                  <span class="update-time">
+                  <span v-if="link.last_checked" class="update-time">
                     更新: {{ formatDate(link.last_checked) }}
                   </span>
+                  <span v-else class="update-time">实时抓取</span>
                 </div>
               </div>
             </div>
@@ -173,25 +185,27 @@
         </div>
       </div>
 
-      <!-- 无结果 -->
       <div
         v-else-if="searched && platformLinks && platformLinks.total_links === 0"
         class="no-results-section"
       >
         <div class="no-results-icon">😕</div>
         <h3>未找到观看链接</h3>
-        <p>抱歉，没有找到该电影的视频平台观看链接。</p>
+        <p>
+          {{
+            platformLinks.message || "抱歉，没有找到该电影的视频平台观看链接。"
+          }}
+        </p>
         <div class="suggestions">
           <p>建议：</p>
           <ul>
             <li>检查电影名称是否正确</li>
-            <li>尝试搜索其他电影</li>
+            <li>尝试从热门电影中点击进入</li>
             <li>该电影可能暂时没有在线观看资源</li>
           </ul>
         </div>
       </div>
 
-      <!-- 热门电影推荐 -->
       <div class="recommendations-section">
         <h3>🔥 热门电影推荐</h3>
         <div class="recommendations-grid">
@@ -241,25 +255,36 @@ interface DoubanMovie {
 }
 
 interface PlatformLink {
-  id: number;
+  id: number | null;
   movie_title: string;
+  douban_url?: string;
+  platform?: string;
+  platform_display?: string;
   platform_url: string;
+  icon?: string;
   vip_status: string;
   vip_status_display: string;
   price: number | null;
   quality: string | null;
-  last_checked: string;
+  price_info?: string;
+  available?: boolean;
+  last_checked?: string | null;
+  source?: string;
 }
 
 interface PlatformLinksResponse {
   movie_title: string;
   douban_url: string;
+  source?: string;
   total_platforms: number;
   total_links: number;
+  message?: string;
   platforms: {
     [platformName: string]: PlatformLink[];
   };
 }
+
+const API_BASE_URL = "http://localhost:8000";
 
 export default defineComponent({
   name: "VideoPlatformView",
@@ -267,7 +292,6 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
 
-    // 数据状态
     const allMovies = ref<DoubanMovie[]>([]);
     const popularMovies = ref<DoubanMovie[]>([]);
     const currentMovie = ref<DoubanMovie | null>(null);
@@ -275,35 +299,39 @@ export default defineComponent({
     const loading = ref(false);
     const error = ref<string | null>(null);
     const searched = ref(false);
-
-    // 搜索状态
     const searchMovieTitle = ref("");
 
-    // 初始化数据
     const loadMovies = () => {
       try {
         allMovies.value = doubanData as DoubanMovie[];
 
-        // 获取热门电影（评分最高的6部）
         popularMovies.value = [...allMovies.value]
           .sort((a, b) => parseFloat(b["评分"]) - parseFloat(a["评分"]))
           .slice(0, 6);
 
-        // 检查URL参数
-        const movieTitle = route.query.movie_title as string;
-        const doubanUrl = route.query.douban_url as string;
+        const movieTitle = (route.query.movie_title as string) || "";
+        const doubanUrl = (route.query.douban_url as string) || "";
 
         if (movieTitle) {
           searchMovieTitle.value = movieTitle;
-          // 查找电影
+        }
+
+        if (movieTitle || doubanUrl) {
           const movie = allMovies.value.find(
             (m) =>
-              m["电影名字"].includes(movieTitle) || m["电影链接"] === doubanUrl
+              m["电影链接"] === doubanUrl ||
+              m["电影名字"].includes(movieTitle) ||
+              movieTitle.includes(m["电影名字"])
           );
+
           if (movie) {
             currentMovie.value = movie;
-            searchPlatformLinks();
+            if (!searchMovieTitle.value) {
+              searchMovieTitle.value = movie["电影名字"];
+            }
           }
+
+          searchPlatformLinks();
         }
       } catch (err) {
         console.error("加载电影数据失败:", err);
@@ -311,9 +339,11 @@ export default defineComponent({
       }
     };
 
-    // 搜索平台链接
     const searchPlatformLinks = async () => {
-      if (!searchMovieTitle.value.trim()) {
+      const rawTitle = searchMovieTitle.value.trim();
+      const routeDoubanUrl = (route.query.douban_url as string) || "";
+
+      if (!rawTitle && !routeDoubanUrl) {
         error.value = "请输入电影名称";
         return;
       }
@@ -321,124 +351,86 @@ export default defineComponent({
       loading.value = true;
       error.value = null;
       searched.value = true;
+      platformLinks.value = null;
 
       try {
-        // 首先在本地数据中查找电影
-        const movie = allMovies.value.find(
-          (m) =>
-            m["电影名字"].includes(searchMovieTitle.value) ||
-            m["电影名字"]
-              .toLowerCase()
-              .includes(searchMovieTitle.value.toLowerCase())
-        );
+        let movie =
+          allMovies.value.find(
+            (m) =>
+              m["电影名字"].includes(rawTitle) ||
+              m["电影名字"].toLowerCase().includes(rawTitle.toLowerCase()) ||
+              m["电影链接"] === routeDoubanUrl
+          ) || null;
 
-        if (!movie) {
-          error.value = "未找到该电影，请检查电影名称";
-          loading.value = false;
-          return;
+        if (movie) {
+          currentMovie.value = movie;
         }
 
-        currentMovie.value = movie;
+        const movieTitleForApi = movie?.["电影名字"] || rawTitle || "";
+        const doubanUrlForApi = movie?.["电影链接"] || routeDoubanUrl || "";
 
-        // 调用API获取平台链接
+        const params = new URLSearchParams();
+        if (movieTitleForApi) params.append("movie_title", movieTitleForApi);
+        if (doubanUrlForApi) params.append("douban_url", doubanUrlForApi);
+
         const response = await fetch(
-          `http://localhost:8000/api/video-platform-links/?movie_title=${encodeURIComponent(
-            movie["电影名字"]
-          )}&douban_url=${encodeURIComponent(movie["电影链接"])}`
+          `${API_BASE_URL}/api/video-platform-links/?${params.toString()}`
         );
 
         if (!response.ok) {
           throw new Error(`API请求失败: ${response.status}`);
         }
 
-        const data = await response.json();
+        const data: PlatformLinksResponse = await response.json();
         platformLinks.value = data;
 
-        // 更新URL参数
+        if (!currentMovie.value && data.movie_title) {
+          const matchedMovie = allMovies.value.find(
+            (m) =>
+              m["电影名字"].includes(data.movie_title) ||
+              data.movie_title.includes(m["电影名字"])
+          );
+          if (matchedMovie) {
+            currentMovie.value = matchedMovie;
+          }
+        }
+
         router.replace({
           query: {
-            movie_title: movie["电影名字"],
-            douban_url: movie["电影链接"],
+            movie_title:
+              currentMovie.value?.["电影名字"] || data.movie_title || rawTitle,
+            douban_url:
+              currentMovie.value?.["电影链接"] ||
+              data.douban_url ||
+              doubanUrlForApi,
           },
         });
       } catch (err) {
         console.error("搜索平台链接失败:", err);
         error.value = "搜索观看链接失败，请稍后重试";
-
-        // 模拟数据用于演示
-        platformLinks.value = {
-          movie_title: searchMovieTitle.value,
-          douban_url: currentMovie.value?.["电影链接"] || "",
-          total_platforms: 3,
-          total_links: 4,
-          platforms: {
-            爱奇艺: [
-              {
-                id: 1,
-                movie_title:
-                  currentMovie.value?.["电影名字"] || searchMovieTitle.value,
-                platform_url: "https://www.iqiyi.com/v_19rrho3x8w.html",
-                vip_status: "vip",
-                vip_status_display: "VIP可看",
-                price: null,
-                quality: "高清",
-                last_checked: new Date().toISOString(),
-              },
-            ],
-            腾讯视频: [
-              {
-                id: 2,
-                movie_title:
-                  currentMovie.value?.["电影名字"] || searchMovieTitle.value,
-                platform_url: "https://v.qq.com/x/cover/mzc00200mp8vo7h.html",
-                vip_status: "free",
-                vip_status_display: "免费观看",
-                price: null,
-                quality: "超清",
-                last_checked: new Date().toISOString(),
-              },
-            ],
-            哔哩哔哩: [
-              {
-                id: 3,
-                movie_title:
-                  currentMovie.value?.["电影名字"] || searchMovieTitle.value,
-                platform_url: "https://www.bilibili.com/bangumi/play/ss12044",
-                vip_status: "vip",
-                vip_status_display: "VIP可看",
-                price: null,
-                quality: "1080P",
-                last_checked: new Date().toISOString(),
-              },
-              {
-                id: 4,
-                movie_title:
-                  currentMovie.value?.["电影名字"] || searchMovieTitle.value,
-                platform_url: "https://www.bilibili.com/bangumi/play/ep12045",
-                vip_status: "free",
-                vip_status_display: "免费观看",
-                price: null,
-                quality: "720P",
-                last_checked: new Date().toISOString(),
-              },
-            ],
-          },
-        };
       } finally {
         loading.value = false;
       }
     };
 
-    // 选择电影
     const selectMovie = (movie: DoubanMovie) => {
       currentMovie.value = movie;
       searchMovieTitle.value = movie["电影名字"];
+
+      router.replace({
+        query: {
+          movie_title: movie["电影名字"],
+          douban_url: movie["电影链接"],
+        },
+      });
+
       searchPlatformLinks();
     };
 
-    // 格式化日期
-    const formatDate = (dateString: string) => {
+    const formatDate = (dateString?: string | null) => {
+      if (!dateString) return "未知";
       const date = new Date(dateString);
+      if (Number.isNaN(date.getTime())) return "未知";
       return date.toLocaleDateString("zh-CN", {
         year: "numeric",
         month: "2-digit",
@@ -446,24 +438,18 @@ export default defineComponent({
       });
     };
 
-    // 生命周期钩子
     onMounted(() => {
       loadMovies();
     });
 
     return {
-      // 数据
       currentMovie,
       platformLinks,
       popularMovies,
       loading,
       error,
       searched,
-
-      // 搜索状态
       searchMovieTitle,
-
-      // 方法
       searchPlatformLinks,
       selectMovie,
       formatDate,
@@ -473,13 +459,11 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* ====== 全局容器：深色渐变 + 光斑 ====== */
 .video-platform-view {
   min-height: 100vh;
   padding: 26px;
   max-width: 1400px;
   margin: 0 auto;
-
   background: radial-gradient(
       900px 600px at 15% 20%,
       rgba(99, 102, 241, 0.35),
@@ -498,7 +482,6 @@ export default defineComponent({
     linear-gradient(135deg, #0b1220 0%, #111827 55%, #0b1220 100%);
   overflow-x: hidden;
 
-  /* 统一色变量 */
   --panel: rgba(255, 255, 255, 0.08);
   --panel-2: rgba(255, 255, 255, 0.06);
   --border: rgba(255, 255, 255, 0.14);
@@ -511,13 +494,11 @@ export default defineComponent({
   color: var(--text);
 }
 
-/* ====== 顶部 Header：玻璃卡 + 渐变标题条 ====== */
 .header {
   text-align: center;
   margin-bottom: 26px;
   padding: 26px 18px;
   border-radius: 22px;
-
   background: linear-gradient(
       135deg,
       rgba(99, 102, 241, 0.75),
@@ -542,17 +523,14 @@ export default defineComponent({
   margin: 12px 0 0;
   font-size: 13px;
   color: rgba(226, 232, 240, 0.92);
-  opacity: 0.95;
 }
 
-/* ====== 主容器 ====== */
 .container {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
-/* ====== 通用“玻璃卡片” ====== */
 .search-section,
 .movie-info-section,
 .results-section,
@@ -570,28 +548,6 @@ export default defineComponent({
   position: relative;
 }
 
-/* 卡片上沿微光 */
-.search-section::before,
-.movie-info-section::before,
-.results-section::before,
-.no-results-section::before,
-.recommendations-section::before,
-.loading-section::before,
-.error-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: 22px;
-  pointer-events: none;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.14),
-    rgba(255, 255, 255, 0.02)
-  );
-  mask: linear-gradient(#000, transparent 55%);
-}
-
-/* ====== 搜索区域 ====== */
 .search-box {
   display: flex;
   gap: 10px;
@@ -607,41 +563,28 @@ export default defineComponent({
   color: rgba(255, 255, 255, 0.92);
   font-size: 14px;
   outline: none;
-  transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .search-input::placeholder {
   color: rgba(148, 163, 184, 0.75);
 }
 
-.search-input:focus {
-  border-color: rgba(99, 102, 241, 0.6);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
-}
-
-.search-btn {
+.search-btn,
+.retry-btn,
+.rec-btn {
   padding: 12px 16px;
   border: none;
   border-radius: 14px;
   cursor: pointer;
-
   background: linear-gradient(135deg, var(--primary), var(--primary2));
   color: white;
-
   font-size: 14px;
   font-weight: 900;
   box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
-}
-
-.search-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 22px 60px rgba(99, 102, 241, 0.42);
-  filter: brightness(1.02);
 }
 
 .search-tips {
-  padding: 12px 12px;
+  padding: 12px;
   border-radius: 14px;
   background: rgba(59, 130, 246, 0.12);
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -649,43 +592,22 @@ export default defineComponent({
   font-size: 13px;
 }
 
-.search-tips p {
-  margin: 0;
-}
-
-/* ====== 电影信息卡 ====== */
-.movie-card {
+.movie-card,
+.platform-card,
+.recommendation-card {
   border: 1px solid rgba(148, 163, 184, 0.16);
   background: rgba(17, 24, 39, 0.45);
   border-radius: 18px;
   padding: 16px;
 }
 
-.movie-header {
+.movie-header,
+.platform-header,
+.rec-header,
+.link-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.movie-title {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 900;
-}
-
-.movie-rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: rgba(245, 158, 11, 0.14);
-  border: 1px solid rgba(245, 158, 11, 0.22);
-  color: rgba(245, 158, 11, 0.95);
-  font-weight: 900;
-  font-size: 12px;
+  gap: 10px;
 }
 
 .movie-details {
@@ -708,25 +630,14 @@ export default defineComponent({
   min-width: 40px;
 }
 
-.detail-value {
-  color: rgba(226, 232, 240, 0.95);
-  font-weight: 700;
-}
-
 .movie-quote {
   margin-top: 12px;
   padding: 12px;
   border-radius: 14px;
   background: rgba(99, 102, 241, 0.1);
   border: 1px solid rgba(99, 102, 241, 0.18);
-  color: rgba(226, 232, 240, 0.95);
   display: flex;
   gap: 10px;
-  align-items: flex-start;
-}
-
-.quote-icon {
-  opacity: 0.95;
 }
 
 .movie-actions {
@@ -737,33 +648,21 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   padding: 10px 12px;
   border-radius: 14px;
   text-decoration: none;
   font-weight: 900;
   font-size: 13px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(17, 24, 39, 0.55);
-  color: rgba(226, 232, 240, 0.95);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.action-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
 }
 
 .douban-link {
-  border: none;
   background: linear-gradient(135deg, var(--primary), var(--primary2));
-  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
   color: #fff;
 }
 
-/* ====== Loading / Error ====== */
 .loading-section,
-.error-section {
+.error-section,
+.no-results-section {
   text-align: center;
 }
 
@@ -783,33 +682,8 @@ export default defineComponent({
   }
 }
 
-.error-icon {
-  font-size: 26px;
-  margin-bottom: 6px;
-}
-
-.error-message {
-  margin: 0 0 12px 0;
-  color: rgba(254, 226, 226, 0.95);
-}
-
-.retry-btn {
-  padding: 10px 14px;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-  font-weight: 900;
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
-  color: #fff;
-  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
-}
-
-.retry-btn:hover {
-  transform: translateY(-1px);
-}
-
-/* ====== 结果区域 ====== */
-.results-header h3 {
+.results-header h3,
+.recommendations-section h3 {
   margin: 0;
   font-size: 16px;
   font-weight: 900;
@@ -821,27 +695,34 @@ export default defineComponent({
   color: rgba(148, 163, 184, 0.95);
 }
 
-/* 平台网格 */
-.platforms-grid {
+.platforms-grid,
+.recommendations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 14px;
   margin-top: 14px;
 }
 
-.platform-card {
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(17, 24, 39, 0.45);
-  padding: 14px;
+.platforms-grid {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
 }
 
-.platform-header {
+.recommendations-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.platform-title-wrap {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
+}
+
+.platform-icon {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2px;
 }
 
 .platform-title {
@@ -850,13 +731,13 @@ export default defineComponent({
   font-weight: 900;
 }
 
-.platform-count {
+.platform-count,
+.rec-info,
+.update-time {
   font-size: 12px;
   color: rgba(148, 163, 184, 0.95);
-  font-weight: 800;
 }
 
-/* 链接项 */
 .platform-links {
   display: grid;
   gap: 10px;
@@ -869,13 +750,6 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.04);
 }
 
-.link-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: flex-start;
-}
-
 .link-title {
   color: rgba(226, 232, 240, 0.95);
   font-weight: 900;
@@ -884,14 +758,16 @@ export default defineComponent({
   line-height: 1.3;
 }
 
-.link-title:hover {
-  text-decoration: underline;
+.price-info {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(226, 232, 240, 0.88);
 }
 
-/* vip/free/pay 标签 */
 .vip-badge,
 .free-badge,
-.pay-badge {
+.pay-badge,
+.quality-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -920,11 +796,12 @@ export default defineComponent({
   color: rgba(239, 68, 68, 0.95);
 }
 
-.price-tag {
-  opacity: 0.95;
+.quality-badge {
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: rgba(99, 102, 241, 0.1);
+  color: rgba(226, 232, 240, 0.95);
 }
 
-/* 细节行 */
 .link-details {
   display: flex;
   justify-content: space-between;
@@ -932,41 +809,6 @@ export default defineComponent({
   margin-top: 8px;
   gap: 10px;
   font-size: 12px;
-  color: rgba(148, 163, 184, 0.95);
-}
-
-.quality-badge {
-  padding: 4px 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(99, 102, 241, 0.18);
-  background: rgba(99, 102, 241, 0.1);
-  color: rgba(226, 232, 240, 0.95);
-  font-weight: 900;
-}
-
-.update-time {
-  opacity: 0.9;
-}
-
-/* ====== 无结果 ====== */
-.no-results-section {
-  text-align: center;
-}
-
-.no-results-icon {
-  font-size: 28px;
-  margin-bottom: 10px;
-}
-
-.no-results-section h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.no-results-section p {
-  margin: 10px 0 0;
-  color: rgba(148, 163, 184, 0.95);
 }
 
 .suggestions {
@@ -981,50 +823,14 @@ export default defineComponent({
   background: rgba(17, 24, 39, 0.45);
 }
 
-.suggestions p {
-  margin: 0 0 8px 0;
-  font-weight: 900;
-  color: rgba(226, 232, 240, 0.95);
-}
-
 .suggestions ul {
   margin: 0;
   padding-left: 18px;
   color: rgba(148, 163, 184, 0.95);
 }
 
-/* ====== 热门推荐 ====== */
-.recommendations-section h3 {
-  margin: 0 0 14px 0;
-  font-size: 16px;
-  font-weight: 900;
-}
-
-.recommendations-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 14px;
-}
-
 .recommendation-card {
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(17, 24, 39, 0.45);
-  padding: 14px;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.recommendation-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
-}
-
-.rec-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: flex-start;
 }
 
 .rec-header h4 {
@@ -1039,19 +845,9 @@ export default defineComponent({
   color: rgba(245, 158, 11, 0.95);
 }
 
-.rec-info {
-  margin-top: 8px;
-  display: flex;
-  gap: 10px;
-  color: rgba(148, 163, 184, 0.95);
-  font-size: 12px;
-  font-weight: 800;
-}
-
 .rec-quote {
   margin-top: 10px;
   color: rgba(226, 232, 240, 0.92);
-  opacity: 0.9;
   font-size: 12px;
   line-height: 1.6;
 }
@@ -1059,21 +855,8 @@ export default defineComponent({
 .rec-btn {
   margin-top: 12px;
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 14px;
-  border: none;
-  cursor: pointer;
-  font-weight: 900;
-  color: #fff;
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
-  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
 }
 
-.rec-btn:hover {
-  transform: translateY(-1px);
-}
-
-/* ====== 响应式 ====== */
 @media (max-width: 768px) {
   .video-platform-view {
     padding: 16px;
@@ -1089,6 +872,13 @@ export default defineComponent({
 
   .movie-details {
     grid-template-columns: 1fr;
+  }
+
+  .link-header,
+  .platform-header,
+  .movie-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>
