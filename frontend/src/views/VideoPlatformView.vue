@@ -71,6 +71,7 @@
             <a
               :href="currentMovie['电影链接']"
               target="_blank"
+              rel="noopener noreferrer"
               class="action-btn douban-link"
             >
               查看豆瓣详情
@@ -140,6 +141,7 @@
                   <a
                     :href="link.platform_url"
                     target="_blank"
+                    rel="noopener noreferrer"
                     class="link-title"
                   >
                     {{
@@ -149,21 +151,35 @@
                     }}
                   </a>
 
-                  <span
-                    :class="{
-                      'vip-badge': link.vip_status === 'vip',
-                      'free-badge': link.vip_status === 'free',
-                      'pay-badge':
-                        link.vip_status === 'pay' ||
-                        link.vip_status === 'rent' ||
-                        link.vip_status === 'unknown',
-                    }"
-                  >
-                    {{ link.vip_status_display || "未知" }}
-                    <span v-if="link.price" class="price-tag"
-                      >¥{{ link.price }}</span
+                  <div class="link-actions">
+                    <a
+                      :href="link.platform_url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      :class="{
+                        'vip-badge': link.vip_status === 'vip',
+                        'free-badge': link.vip_status === 'free',
+                        'pay-badge':
+                          link.vip_status === 'pay' ||
+                          link.vip_status === 'rent' ||
+                          link.vip_status === 'unknown',
+                      }"
                     >
-                  </span>
+                      {{ link.vip_status_display || "未知" }}
+                      <span v-if="link.price" class="price-tag"
+                        >¥{{ link.price }}</span
+                      >
+                    </a>
+
+                    <a
+                      :href="link.platform_url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="watch-btn"
+                    >
+                      去观看
+                    </a>
+                  </div>
                 </div>
 
                 <div v-if="link.price_info" class="price-info">
@@ -354,7 +370,7 @@ export default defineComponent({
       platformLinks.value = null;
 
       try {
-        let movie =
+        const movie =
           allMovies.value.find(
             (m) =>
               m["电影名字"].includes(rawTitle) ||
@@ -483,13 +499,10 @@ export default defineComponent({
   overflow-x: hidden;
 
   --panel: rgba(255, 255, 255, 0.08);
-  --panel-2: rgba(255, 255, 255, 0.06);
   --border: rgba(255, 255, 255, 0.14);
   --text: rgba(255, 255, 255, 0.92);
-  --muted: rgba(148, 163, 184, 0.95);
   --primary: #6366f1;
   --primary2: #8b5cf6;
-  --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
   --shadow-soft: 0 16px 50px rgba(0, 0, 0, 0.25);
   color: var(--text);
 }
@@ -508,14 +521,12 @@ export default defineComponent({
   border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
 }
 
 .header h1 {
   margin: 0;
   font-size: 26px;
   font-weight: 900;
-  letter-spacing: 0.2px;
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -544,8 +555,6 @@ export default defineComponent({
   padding: 18px;
   box-shadow: var(--shadow-soft);
   backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  position: relative;
 }
 
 .search-box {
@@ -603,8 +612,7 @@ export default defineComponent({
 
 .movie-header,
 .platform-header,
-.rec-header,
-.link-header {
+.rec-header {
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -750,12 +758,32 @@ export default defineComponent({
   background: rgba(255, 255, 255, 0.04);
 }
 
+.link-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
 .link-title {
   color: rgba(226, 232, 240, 0.95);
   font-weight: 900;
   text-decoration: none;
   font-size: 13px;
-  line-height: 1.3;
+  line-height: 1.35;
+  flex: 1;
+}
+
+.link-title:hover {
+  text-decoration: underline;
+}
+
+.link-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .price-info {
@@ -776,6 +804,8 @@ export default defineComponent({
   font-weight: 900;
   font-size: 12px;
   white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .vip-badge {
@@ -800,6 +830,20 @@ export default defineComponent({
   border: 1px solid rgba(99, 102, 241, 0.18);
   background: rgba(99, 102, 241, 0.1);
   color: rgba(226, 232, 240, 0.95);
+}
+
+.watch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  box-shadow: 0 10px 24px rgba(99, 102, 241, 0.28);
 }
 
 .link-details {
@@ -876,9 +920,14 @@ export default defineComponent({
 
   .link-header,
   .platform-header,
-  .movie-header {
+  .movie-header,
+  .rec-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .link-actions {
+    justify-content: flex-start;
   }
 }
 </style>
