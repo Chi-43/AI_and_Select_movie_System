@@ -14,6 +14,7 @@ from .serializers import (
     VideoPlatformSerializer
 )
 from .collaborative_filtering import CollaborativeFiltering
+from .movie_detail_cache import get_movie_detail_from_cache
 from scrapers.video_url import fetch_douban_watch_links
 
 
@@ -154,7 +155,6 @@ class VideoPlatformLinksView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 1. 优先查数据库
         queryset = VideoPlatform.objects.filter(available=True)
 
         if movie_title:
@@ -195,7 +195,6 @@ class VideoPlatformLinksView(APIView):
                 'platforms': platforms
             })
 
-        # 2. 如果不允许爬虫，就直接返回空
         if not use_spider:
             return Response({
                 'movie_title': movie_title,
@@ -206,14 +205,12 @@ class VideoPlatformLinksView(APIView):
                 'platforms': {}
             })
 
-        # 3. 没有豆瓣链接，无法抓取
         if not douban_url:
             return Response(
                 {'error': '数据库中无数据，且未提供douban_url，无法抓取豆瓣页面'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 4. 实时抓取豆瓣
         try:
             spider_results = fetch_douban_watch_links(douban_url)
 
@@ -290,6 +287,55 @@ class VideoPlatformLinksView(APIView):
                 {'error': f'抓取豆瓣失败: {str(e)}'},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class MovieDetailView(APIView):
+    """获取电影详情API（轻量快速版）"""
+
+    def get(self, request):
+        movie_title = request.query_params.get('movie_title', '').strip()
+        douban_url = request.query_params.get('douban_url', '').strip()
+
+        if not douban_url:
+            return Response(
+                {'error': '请提供 douban_url 参数'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 1. 优先查本地缓存
+        cached_data = get_movie_detail_from_cache(douban_url)
+
+        if cached_data:
+            data = dict(cached_data)
+            if movie_title and not data.get("movie_title"):
+                data["movie_title"] = movie_title
+            data["source"] = "cache"
+            return Response(data)
+
+        # 2. 没有缓存时，直接返回空扩展结构
+        # 前端会继续显示 sessionStorage 里的基础信息，不会阻塞页面
+        return Response({
+            "movie_title": movie_title,
+            "english_title": "",
+            "douban_url": douban_url,
+            "poster": "",
+            "rating": "",
+            "rating_count": "",
+            "director": [],
+            "writer": [],
+            "actors": [],
+            "genres": [],
+            "countries": [],
+            "languages": [],
+            "release_dates": [],
+            "runtime": [],
+            "aka": [],
+            "imdb": "",
+            "summary": "",
+            "year": "",
+            "source": "empty",
+            "message": "暂无扩展详情缓存，当前返回基础空结构"
+        })
 
 
 class RecommendationView(APIView):

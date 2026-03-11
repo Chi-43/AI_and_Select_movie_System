@@ -154,13 +154,12 @@
             </div>
 
             <div class="movie-actions">
-              <a
-                :href="movie['电影链接']"
-                target="_blank"
-                class="action-btn douban-btn"
+              <button
+                @click="goToMovieDetail(movie)"
+                class="action-btn detail-btn"
               >
-                查看豆瓣
-              </a>
+                电影详情
+              </button>
               <button
                 @click="toggleFavorite(movie)"
                 class="action-btn favorite-btn"
@@ -200,9 +199,9 @@
               </p>
             </div>
             <div class="movie-actions">
-              <a :href="movie['电影链接']" target="_blank" class="small-btn">
+              <button @click="goToMovieDetail(movie)" class="small-btn">
                 详情
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -501,6 +500,13 @@ export default defineComponent({
       recommendations.value = [];
     };
 
+    const goToMovieDetail = (movie: DoubanMovie) => {
+      sessionStorage.setItem("current_movie_detail", JSON.stringify(movie));
+      window.location.href = `/movie-detail?movie_title=${encodeURIComponent(
+        movie["电影名字"]
+      )}&douban_url=${encodeURIComponent(movie["电影链接"])}`;
+    };
+
     // 生命周期钩子
     onMounted(() => {
       loadMovies();
@@ -525,6 +531,7 @@ export default defineComponent({
 
       // 方法
       getPersonalizedRecommendations,
+      goToMovieDetail,
       getTopRatedMovies,
       getRecentMovies,
       getRandomMovies,
@@ -1009,12 +1016,12 @@ export default defineComponent({
   transition: all 0.3s;
 }
 
-.douban-btn {
+.detail-btn {
   background: #667eea;
   color: white;
 }
 
-.douban-btn:hover {
+.detail-btn:hover {
   background: #5a67d8;
 }
 

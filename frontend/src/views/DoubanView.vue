@@ -194,13 +194,12 @@
             </div>
 
             <div class="movie-actions">
-              <a
-                :href="movie['电影链接']"
-                target="_blank"
-                class="action-btn douban-link"
+              <button
+                @click="goToMovieDetail(movie)"
+                class="action-btn detail-link"
               >
-                查看豆瓣详情
-              </a>
+                电影详情
+              </button>
               <button
                 @click="addToFavorites(movie)"
                 class="action-btn favorite-btn"
@@ -356,6 +355,14 @@ export default defineComponent({
       });
       return Array.from(countrySet).sort();
     });
+
+    const goToMovieDetail = (movie: DoubanMovie) => {
+      sessionStorage.setItem("current_movie_detail", JSON.stringify(movie));
+      window.location.href = `/movie-detail?movie_title=${encodeURIComponent(
+        movie["电影名字"]
+      )}&douban_url=${encodeURIComponent(movie["电影链接"])}`;
+    };
+
     const types = computed(() => {
       const typeSet = new Set<string>();
       allMovies.value.forEach((movie) => {
@@ -623,6 +630,7 @@ export default defineComponent({
       totalPages,
 
       // 方法
+      goToMovieDetail,
       filterMovies,
       sortMovies,
       resetFilters,
@@ -1016,12 +1024,12 @@ export default defineComponent({
   transition: all 0.3s;
 }
 
-.douban-link {
+.detail-link {
   background: #667eea;
   color: white;
 }
 
-.douban-link:hover {
+.detail-link:hover {
   background: #5a67d8;
 }
 

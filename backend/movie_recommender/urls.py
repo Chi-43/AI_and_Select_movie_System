@@ -5,7 +5,8 @@ from django.conf.urls.static import static
 from rest_framework import routers
 from recommendation.views import (
     MovieViewSet, UserViewSet, RatingViewSet, VideoPlatformViewSet,
-    RecommendationView, TopMoviesView, SimilarMoviesView, VideoPlatformLinksView
+    RecommendationView, TopMoviesView, SimilarMoviesView,
+    VideoPlatformLinksView, MovieDetailView
 )
 from recommendation.auth_views import (
     UserRegistrationView, UserLoginView, UserLogoutView,
@@ -40,7 +41,7 @@ urlpatterns = [
     
     # 视频平台链接相关路由
     path('api/video-platform-links/', VideoPlatformLinksView.as_view(), name='video_platform_links'),
-    
+    path('api/movie-detail/', MovieDetailView.as_view(), name='movie_detail'),
     # AI相关路由
     path('api/ai/chat/', AIChatView.as_view(), name='ai_chat'),
     path('api/ai/recommendations/', MovieRecommendationView.as_view(), name='ai_recommendations'),
