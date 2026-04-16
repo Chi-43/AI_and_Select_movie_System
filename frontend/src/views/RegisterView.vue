@@ -182,55 +182,33 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* ====== 背景与容器（同登录页风格） ====== */
 .register-container {
   min-height: 100vh;
   display: grid;
   place-items: center;
   padding: 28px;
-
-  background: radial-gradient(
-      900px 600px at 15% 20%,
-      rgba(99, 102, 241, 0.35),
-      transparent 60%
-    ),
-    radial-gradient(
-      800px 520px at 85% 10%,
-      rgba(139, 92, 246, 0.3),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px 600px at 50% 95%,
-      rgba(16, 185, 129, 0.18),
-      transparent 55%
-    ),
-    linear-gradient(135deg, #0b1220 0%, #111827 55%, #0b1220 100%);
+  background: var(--bg-glow);
   overflow: hidden;
 }
 
-/* 玻璃拟态卡片 */
 .register-card {
   width: 100%;
   max-width: 540px;
   padding: 34px 28px;
-  border-radius: 22px;
-
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-
+  border-radius: var(--radius-lg);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
   position: relative;
 }
 
-/* 卡片顶部细光 */
 .register-card::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 22px;
+  border-radius: var(--radius-lg);
   pointer-events: none;
   background: linear-gradient(
     180deg,
@@ -240,7 +218,6 @@ export default defineComponent({
   mask: linear-gradient(#000, transparent 55%);
 }
 
-/* ====== 头部 ====== */
 .register-header {
   text-align: center;
   margin-bottom: 22px;
@@ -251,36 +228,31 @@ export default defineComponent({
   font-size: 22px;
   font-weight: 900;
   letter-spacing: 0.2px;
-  color: rgba(255, 255, 255, 0.94);
+  color: var(--text-primary);
 }
 
 .register-header p {
   margin: 10px 0 0;
-  font-size: 13px;
-  color: rgba(148, 163, 184, 0.95);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
 }
 
-/* 错误提示 */
 .error-message {
   margin: 14px 0 18px;
-  padding: 12px 12px;
-  border-radius: 14px;
-
-  color: rgba(254, 226, 226, 0.95);
-  background: rgba(239, 68, 68, 0.18);
-  border: 1px solid rgba(239, 68, 68, 0.28);
-
+  padding: 12px;
+  border-radius: var(--radius-md);
+  color: var(--danger-text);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
   font-weight: 700;
-  font-size: 13px;
+  font-size: var(--font-sm);
 }
 
-/* ====== 表单布局 ====== */
 .register-form {
   margin-top: 8px;
   margin-bottom: 18px;
 }
 
-/* 两列：名字/姓氏 */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -288,7 +260,6 @@ export default defineComponent({
   margin-bottom: 14px;
 }
 
-/* 通用表单项 */
 .form-group {
   margin-bottom: 14px;
 }
@@ -296,69 +267,60 @@ export default defineComponent({
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  font-size: 12px;
+  font-size: var(--font-xs);
   font-weight: 800;
-  color: rgba(226, 232, 240, 0.92);
+  color: var(--text-secondary);
   letter-spacing: 0.2px;
 }
 
-/* 输入框 */
 .form-group input {
   width: 100%;
-  padding: 12px 12px;
-  border-radius: 14px;
-
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(17, 24, 39, 0.65);
-  color: rgba(255, 255, 255, 0.92);
-
-  font-size: 14px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: var(--font-base);
   outline: none;
-
-  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .form-group input::placeholder {
-  color: rgba(148, 163, 184, 0.75);
+  color: var(--input-placeholder);
 }
 
 .form-group input:focus {
-  border-color: rgba(99, 102, 241, 0.6);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 18px 50px rgba(0, 0, 0, 0.25);
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
 }
 
-/* 提示文字 */
 .form-hint {
   display: block;
   margin-top: 6px;
-  font-size: 12px;
-  color: rgba(148, 163, 184, 0.9);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
 }
 
-/* ====== 注册按钮（统一用紫色渐变，更一致） ====== */
 .register-btn {
   width: 100%;
   margin-top: 6px;
   padding: 12px 14px;
-
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: none;
-
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: white;
-
-  font-size: 14px;
+  background: var(--primary-gradient);
+  color: #fff;
+  font-size: var(--font-base);
   font-weight: 900;
   cursor: pointer;
-
-  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
-  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: var(--primary-shadow);
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast), filter var(--transition-fast);
 }
 
 .register-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 22px 60px rgba(99, 102, 241, 0.42);
-  filter: brightness(1.02);
+  filter: brightness(1.05);
 }
 
 .register-btn:disabled {
@@ -367,22 +329,21 @@ export default defineComponent({
   box-shadow: none;
 }
 
-/* ====== footer ====== */
 .register-footer {
   margin-top: 18px;
   padding-top: 16px;
-  border-top: 1px solid rgba(148, 163, 184, 0.16);
+  border-top: 1px solid var(--panel-border);
   text-align: center;
 }
 
 .register-footer p {
   margin: 10px 0;
-  color: rgba(148, 163, 184, 0.95);
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: var(--font-sm);
 }
 
 .register-footer a {
-  color: rgba(99, 102, 241, 1);
+  color: var(--primary);
   text-decoration: none;
   font-weight: 900;
 }
@@ -391,11 +352,10 @@ export default defineComponent({
   text-decoration: underline;
 }
 
-/* ====== 响应式 ====== */
 @media (max-width: 600px) {
   .register-card {
     padding: 28px 18px;
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
   }
 
   .form-row {

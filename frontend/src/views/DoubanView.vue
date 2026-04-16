@@ -650,7 +650,7 @@ export default defineComponent({
 <style scoped>
 .douban-view {
   padding: 20px;
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
 }
 
@@ -658,22 +658,24 @@ export default defineComponent({
   text-align: center;
   margin-bottom: 40px;
   padding: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 15px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  background: var(--bg-hero);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
 }
 
 .header h1 {
   margin: 0;
   font-size: 2.8rem;
   font-weight: 700;
+  color: #fff;
 }
 
 .subtitle {
   margin: 15px 0 0;
   font-size: 1.3rem;
   opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .container {
@@ -684,10 +686,13 @@ export default defineComponent({
 
 /* 筛选部分样式 */
 .filter-section {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .search-box {
@@ -699,31 +704,39 @@ export default defineComponent({
 .search-input {
   flex: 1;
   padding: 12px 20px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
   font-size: 1rem;
-  transition: border-color 0.3s;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  transition: border-color var(--transition-normal);
+  outline: none;
+}
+
+.search-input::placeholder {
+  color: var(--input-placeholder);
 }
 
 .search-input:focus {
-  outline: none;
-  border-color: #667eea;
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
 }
 
 .search-btn {
   padding: 12px 30px;
-  background: #667eea;
-  color: white;
+  background: var(--primary-gradient);
+  color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: background 0.3s;
+  transition: all var(--transition-fast);
 }
 
 .search-btn:hover {
-  background: #5a67d8;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .filter-controls {
@@ -740,7 +753,7 @@ export default defineComponent({
 
 .filter-group label {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
@@ -753,40 +766,48 @@ export default defineComponent({
 .range-inputs input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.range-inputs input:focus {
+  border-color: var(--input-focus-border);
 }
 
 .range-inputs span {
-  color: #718096;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .country-select,
 .type-select {
   padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  background: white;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .reset-btn {
   align-self: flex-end;
   padding: 10px 20px;
-  background: #e53e3e;
-  color: white;
+  background: var(--danger);
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
-  transition: background 0.3s;
+  transition: all var(--transition-fast);
 }
 
 .reset-btn:hover {
-  background: #c53030;
+  opacity: 0.85;
 }
 
 /* 统计信息样式 */
@@ -797,38 +818,43 @@ export default defineComponent({
 }
 
 .stat-card {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 25px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   text-align: center;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  transition: transform var(--transition-normal);
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
 }
 
 .stat-number {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--primary);
   margin-bottom: 8px;
 }
 
 .stat-label {
   font-size: 1rem;
-  color: #718096;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 /* 排序部分样式 */
 .sort-section {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-md);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .sort-controls {
@@ -839,31 +865,35 @@ export default defineComponent({
 
 .sort-controls label {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-secondary);
 }
 
 .sort-select {
   padding: 8px 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
   font-size: 1rem;
-  background: white;
+  background: var(--input-bg);
+  color: var(--text-primary);
   min-width: 200px;
 }
 
 /* 电影列表样式 */
 .movies-section {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .loading {
   text-align: center;
   padding: 60px;
   font-size: 1.3rem;
-  color: #667eea;
+  color: var(--primary);
 }
 
 .no-results {
@@ -873,7 +903,7 @@ export default defineComponent({
 
 .no-results p {
   font-size: 1.2rem;
-  color: #718096;
+  color: var(--text-muted);
   margin-bottom: 20px;
 }
 
@@ -885,16 +915,19 @@ export default defineComponent({
 }
 
 .movie-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 25px;
-  background: white;
-  transition: transform 0.3s, box-shadow 0.3s;
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  transition: transform var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .movie-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--panel-shadow);
 }
 
 .movie-header {
@@ -907,7 +940,7 @@ export default defineComponent({
 .movie-title {
   margin: 0;
   font-size: 1.4rem;
-  color: #2d3748;
+  color: var(--text-primary);
   line-height: 1.3;
   flex: 1;
   margin-right: 15px;
@@ -917,9 +950,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #fef3c7;
+  background: var(--rating-bg);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
 }
 
 .rating-star {
@@ -928,7 +961,7 @@ export default defineComponent({
 
 .rating-score {
   font-weight: 700;
-  color: #d97706;
+  color: var(--rating-text);
   font-size: 1.1rem;
 }
 
@@ -938,8 +971,8 @@ export default defineComponent({
   gap: 15px;
   margin-bottom: 20px;
   padding: 15px;
-  background: #f7fafc;
-  border-radius: 8px;
+  background: var(--primary-bg);
+  border-radius: var(--radius-sm);
 }
 
 .meta-item {
@@ -950,13 +983,13 @@ export default defineComponent({
 
 .meta-label {
   font-size: 0.85rem;
-  color: #718096;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .meta-value {
   font-size: 0.95rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -976,22 +1009,22 @@ export default defineComponent({
   display: inline-block;
   width: 50px;
   font-size: 0.9rem;
-  color: #718096;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .crew-value {
   font-size: 0.95rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
 .movie-quote {
   margin: 20px 0;
   padding: 15px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e6fffa 100%);
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+  background: var(--quote-bg);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--quote-border);
 }
 
 .quote-icon {
@@ -1001,7 +1034,7 @@ export default defineComponent({
 
 .quote-text {
   font-style: italic;
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -1015,33 +1048,34 @@ export default defineComponent({
   flex: 1;
   padding: 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
   text-align: center;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
 }
 
 .detail-link {
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
 }
 
 .detail-link:hover {
-  background: #5a67d8;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .favorite-btn {
-  background: #f7fafc;
-  color: #e53e3e;
-  border: 2px solid #e53e3e;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 .favorite-btn:hover {
-  background: #e53e3e;
-  color: white;
+  background: var(--danger);
+  color: #fff;
 }
 
 /* 分页样式 */
@@ -1052,48 +1086,52 @@ export default defineComponent({
   gap: 20px;
   margin-top: 30px;
   padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 1px solid var(--panel-border);
 }
 
 .page-btn {
   padding: 10px 25px;
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: background 0.3s;
+  transition: all var(--transition-fast);
 }
 
 .page-btn:disabled {
-  background: #cbd5e0;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
 .page-btn:not(:disabled):hover {
-  background: #5a67d8;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .page-info {
   font-size: 1rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 /* 推荐部分样式 */
 .recommendation-section {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .recommendation-section h2 {
   margin-top: 0;
   margin-bottom: 25px;
-  color: #2d3748;
+  color: var(--text-primary);
   font-size: 1.8rem;
 }
 
@@ -1106,19 +1144,20 @@ export default defineComponent({
 
 .recommend-btn {
   padding: 12px 25px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--primary-gradient);
+  color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .recommend-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--primary-shadow);
 }
 
 .recommendations-grid {
@@ -1128,11 +1167,13 @@ export default defineComponent({
 }
 
 .recommendation-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
   padding: 20px;
-  background: white;
-  transition: transform 0.3s;
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  transition: transform var(--transition-normal);
 }
 
 .recommendation-card:hover {
@@ -1149,16 +1190,16 @@ export default defineComponent({
 .rec-header h4 {
   margin: 0;
   font-size: 1.2rem;
-  color: #2d3748;
+  color: var(--text-primary);
   flex: 1;
   margin-right: 15px;
 }
 
 .rec-rating {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--rating-bg);
+  color: var(--rating-text);
   padding: 4px 10px;
-  border-radius: 15px;
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -1175,18 +1216,18 @@ export default defineComponent({
 .rec-genre {
   font-size: 0.85rem;
   padding: 4px 10px;
-  border-radius: 12px;
-  background: #f7fafc;
-  color: #4a5568;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  color: var(--text-secondary);
 }
 
 .rec-quote {
   margin: 0;
   font-style: italic;
-  color: #718096;
+  color: var(--text-muted);
   font-size: 0.95rem;
   line-height: 1.5;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--quote-border);
   padding-left: 10px;
 }
 

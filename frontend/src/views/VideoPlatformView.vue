@@ -478,62 +478,35 @@ export default defineComponent({
 .video-platform-view {
   min-height: 100vh;
   padding: 26px;
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  background: radial-gradient(
-      900px 600px at 15% 20%,
-      rgba(99, 102, 241, 0.35),
-      transparent 60%
-    ),
-    radial-gradient(
-      800px 520px at 85% 10%,
-      rgba(139, 92, 246, 0.3),
-      transparent 55%
-    ),
-    radial-gradient(
-      900px 600px at 50% 95%,
-      rgba(16, 185, 129, 0.18),
-      transparent 55%
-    ),
-    linear-gradient(135deg, #0b1220 0%, #111827 55%, #0b1220 100%);
   overflow-x: hidden;
-
-  --panel: rgba(255, 255, 255, 0.08);
-  --border: rgba(255, 255, 255, 0.14);
-  --text: rgba(255, 255, 255, 0.92);
-  --primary: #6366f1;
-  --primary2: #8b5cf6;
-  --shadow-soft: 0 16px 50px rgba(0, 0, 0, 0.25);
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .header {
   text-align: center;
   margin-bottom: 26px;
   padding: 26px 18px;
-  border-radius: 22px;
-  background: linear-gradient(
-      135deg,
-      rgba(99, 102, 241, 0.75),
-      rgba(139, 92, 246, 0.7)
-    ),
-    rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(14px);
+  border-radius: var(--radius-lg);
+  background: var(--bg-hero);
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .header h1 {
   margin: 0;
-  font-size: 26px;
+  font-size: var(--font-2xl);
   font-weight: 900;
-  color: rgba(255, 255, 255, 0.95);
+  color: #fff;
 }
 
 .subtitle {
   margin: 12px 0 0;
-  font-size: 13px;
-  color: rgba(226, 232, 240, 0.92);
+  font-size: var(--font-sm);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .container {
@@ -549,12 +522,13 @@ export default defineComponent({
 .recommendations-section,
 .loading-section,
 .error-section {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 22px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 18px;
-  box-shadow: var(--shadow-soft);
-  backdrop-filter: blur(14px);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .search-box {
@@ -566,16 +540,21 @@ export default defineComponent({
 .search-input {
   flex: 1;
   padding: 12px 14px;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(17, 24, 39, 0.65);
-  color: rgba(255, 255, 255, 0.92);
-  font-size: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: var(--font-base);
   outline: none;
 }
 
 .search-input::placeholder {
-  color: rgba(148, 163, 184, 0.75);
+  color: var(--input-placeholder);
+}
+
+.search-input:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
 }
 
 .search-btn,
@@ -583,30 +562,31 @@ export default defineComponent({
 .rec-btn {
   padding: 12px 16px;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
-  color: white;
-  font-size: 14px;
+  background: var(--primary-gradient);
+  color: #fff;
+  font-size: var(--font-base);
   font-weight: 900;
-  box-shadow: 0 18px 50px rgba(99, 102, 241, 0.35);
+  box-shadow: var(--primary-shadow);
+  transition: all var(--transition-fast);
 }
 
 .search-tips {
   padding: 12px;
-  border-radius: 14px;
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  color: rgba(191, 219, 254, 0.95);
-  font-size: 13px;
+  border-radius: var(--radius-md);
+  background: var(--info-bg);
+  border: 1px solid var(--info-border);
+  color: var(--info-text);
+  font-size: var(--font-sm);
 }
 
 .movie-card,
 .platform-card,
 .recommendation-card {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(17, 24, 39, 0.45);
-  border-radius: 18px;
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  border-radius: var(--radius-lg);
   padding: 16px;
 }
 
@@ -633,7 +613,7 @@ export default defineComponent({
 }
 
 .detail-label {
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-muted);
   font-weight: 800;
   min-width: 40px;
 }
@@ -641,9 +621,9 @@ export default defineComponent({
 .movie-quote {
   margin-top: 12px;
   padding: 12px;
-  border-radius: 14px;
-  background: rgba(99, 102, 241, 0.1);
-  border: 1px solid rgba(99, 102, 241, 0.18);
+  border-radius: var(--radius-md);
+  background: var(--quote-bg);
+  border: 1px solid var(--panel-border);
   display: flex;
   gap: 10px;
 }
@@ -657,14 +637,15 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   padding: 10px 12px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   text-decoration: none;
   font-weight: 900;
-  font-size: 13px;
+  font-size: var(--font-sm);
+  transition: all var(--transition-fast);
 }
 
 .douban-link {
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
+  background: var(--primary-gradient);
   color: #fff;
 }
 
@@ -677,9 +658,9 @@ export default defineComponent({
 .loading-spinner {
   width: 34px;
   height: 34px;
-  border-radius: 999px;
-  border: 3px solid rgba(148, 163, 184, 0.25);
-  border-top-color: rgba(99, 102, 241, 0.95);
+  border-radius: var(--radius-full);
+  border: 3px solid var(--panel-border);
+  border-top-color: var(--primary);
   margin: 6px auto 10px;
   animation: spin 1s linear infinite;
 }
@@ -699,8 +680,8 @@ export default defineComponent({
 
 .results-summary {
   margin: 8px 0 0;
-  font-size: 12px;
-  color: rgba(148, 163, 184, 0.95);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
 }
 
 .platforms-grid,
@@ -742,8 +723,8 @@ export default defineComponent({
 .platform-count,
 .rec-info,
 .update-time {
-  font-size: 12px;
-  color: rgba(148, 163, 184, 0.95);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
 }
 
 .platform-links {
@@ -753,9 +734,9 @@ export default defineComponent({
 
 .link-item {
   padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: var(--primary-bg);
 }
 
 .link-header {
@@ -766,10 +747,10 @@ export default defineComponent({
 }
 
 .link-title {
-  color: rgba(226, 232, 240, 0.95);
+  color: var(--text-secondary);
   font-weight: 900;
   text-decoration: none;
-  font-size: 13px;
+  font-size: var(--font-sm);
   line-height: 1.35;
   flex: 1;
 }
@@ -788,8 +769,8 @@ export default defineComponent({
 
 .price-info {
   margin-top: 8px;
-  font-size: 12px;
-  color: rgba(226, 232, 240, 0.88);
+  font-size: var(--font-xs);
+  color: var(--text-secondary);
 }
 
 .vip-badge,
@@ -862,15 +843,15 @@ export default defineComponent({
   margin-left: auto;
   margin-right: auto;
   padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(17, 24, 39, 0.45);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
 }
 
 .suggestions ul {
   margin: 0;
   padding-left: 18px;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-muted);
 }
 
 .recommendation-card {
@@ -884,15 +865,15 @@ export default defineComponent({
 }
 
 .rec-rating {
-  font-size: 12px;
+  font-size: var(--font-xs);
   font-weight: 900;
-  color: rgba(245, 158, 11, 0.95);
+  color: var(--rating-text);
 }
 
 .rec-quote {
   margin-top: 10px;
-  color: rgba(226, 232, 240, 0.92);
-  font-size: 12px;
+  color: var(--text-secondary);
+  font-size: var(--font-xs);
   line-height: 1.6;
 }
 

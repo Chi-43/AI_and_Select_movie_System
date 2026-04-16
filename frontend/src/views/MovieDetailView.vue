@@ -388,35 +388,19 @@ export default defineComponent({
 .movie-detail-view {
   min-height: 100vh;
   padding: 24px;
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
-  background: radial-gradient(
-      900px 600px at 15% 20%,
-      rgba(99, 102, 241, 0.35),
-      transparent 60%
-    ),
-    radial-gradient(
-      800px 520px at 85% 10%,
-      rgba(139, 92, 246, 0.3),
-      transparent 55%
-    ),
-    linear-gradient(135deg, #0b1220 0%, #111827 55%, #0b1220 100%);
-  color: rgba(255, 255, 255, 0.92);
-
-  --panel: rgba(255, 255, 255, 0.08);
-  --border: rgba(255, 255, 255, 0.14);
-  --primary: #6366f1;
-  --primary2: #8b5cf6;
-  --shadow: 0 16px 50px rgba(0, 0, 0, 0.28);
+  color: var(--text-primary);
 }
 
 .error-section {
   text-align: center;
   padding: 80px 20px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  backdrop-filter: blur(14px);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .error-icon {
@@ -429,11 +413,12 @@ export default defineComponent({
   grid-template-columns: 300px 1fr;
   gap: 28px;
   padding: 24px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 28px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .poster-wrap {
@@ -454,7 +439,7 @@ export default defineComponent({
   width: 280px;
   height: 400px;
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--panel-bg);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -468,7 +453,7 @@ export default defineComponent({
 }
 
 .poster-text {
-  color: rgba(226, 232, 240, 0.85);
+  color: var(--text-secondary);
 }
 
 .title-row {
@@ -486,7 +471,7 @@ export default defineComponent({
 
 .sub-title {
   margin: 10px 0 0;
-  color: rgba(226, 232, 240, 0.85);
+  color: var(--text-secondary);
 }
 
 .year-badge,
@@ -500,8 +485,8 @@ export default defineComponent({
 }
 
 .year-badge {
-  background: rgba(245, 158, 11, 0.16);
-  color: #fbbf24;
+  background: var(--rating-bg);
+  color: var(--rating-text);
 }
 
 .rating-row {
@@ -513,9 +498,9 @@ export default defineComponent({
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 16px;
-  background: rgba(245, 158, 11, 0.16);
-  color: #fcd34d;
+  border-radius: var(--radius-md);
+  background: var(--rating-bg);
+  color: var(--rating-text);
   font-weight: 900;
 }
 
@@ -524,7 +509,7 @@ export default defineComponent({
 }
 
 .rating-count {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-muted);
   font-weight: 600;
 }
 
@@ -536,8 +521,8 @@ export default defineComponent({
 }
 
 .tag {
-  background: rgba(99, 102, 241, 0.16);
-  color: rgba(255, 255, 255, 0.92);
+  background: var(--primary-bg);
+  color: var(--text-primary);
 }
 
 .meta-grid {
@@ -552,13 +537,13 @@ export default defineComponent({
   flex-direction: column;
   gap: 6px;
   padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
 }
 
 .meta-label {
-  font-size: 12px;
-  color: rgba(148, 163, 184, 0.95);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
   font-weight: 700;
 }
 
@@ -583,21 +568,22 @@ export default defineComponent({
   text-decoration: none;
   border: none;
   cursor: pointer;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   padding: 10px 16px;
   font-weight: 900;
+  transition: all var(--transition-fast);
 }
 
 .action-btn.primary,
 .primary-btn {
-  background: linear-gradient(135deg, var(--primary), var(--primary2));
-  color: white;
+  background: var(--primary-gradient);
+  color: #fff;
 }
 
 .action-btn.secondary {
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--panel-border);
 }
 
 .content-grid {
@@ -608,12 +594,13 @@ export default defineComponent({
 }
 
 .panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 24px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 20px;
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(14px);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .panel h2,
@@ -632,20 +619,20 @@ export default defineComponent({
   display: inline-flex;
   align-items: center;
   padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-xs);
   font-weight: 800;
-  background: rgba(99, 102, 241, 0.16);
-  color: rgba(255, 255, 255, 0.92);
+  background: var(--primary-bg);
+  color: var(--text-primary);
 }
 
 .summary {
   line-height: 1.9;
-  color: rgba(226, 232, 240, 0.92);
+  color: var(--text-secondary);
 }
 
 .placeholder-text {
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-muted);
 }
 
 .comment-box {
@@ -656,17 +643,23 @@ export default defineComponent({
 
 .comment-input {
   min-height: 120px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-md);
   padding: 14px;
   resize: vertical;
-  background: rgba(17, 24, 39, 0.55);
-  color: white;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  outline: none;
+}
+
+.comment-input:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
 }
 
 .comment-empty {
   margin-top: 16px;
-  color: rgba(148, 163, 184, 0.95);
+  color: var(--text-muted);
 }
 
 .side-list {
@@ -676,8 +669,8 @@ export default defineComponent({
 }
 
 .external-link {
-  background: rgba(255, 255, 255, 0.08);
-  color: white;
+  background: var(--panel-bg);
+  color: var(--text-primary);
 }
 
 @media (max-width: 900px) {

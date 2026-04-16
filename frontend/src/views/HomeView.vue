@@ -549,17 +549,17 @@ export default defineComponent({
 <style scoped>
 .home {
   padding: 0;
-  max-width: 1400px;
+  max-width: var(--max-width);
   margin: 0 auto;
 }
 
 /* 英雄横幅样式 */
 .hero-banner {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--bg-hero);
+  color: #fff;
   padding: 60px 20px;
   text-align: center;
-  border-radius: 0 0 20px 20px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   margin-bottom: 40px;
 }
 
@@ -568,12 +568,14 @@ export default defineComponent({
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 15px;
+  color: #fff;
 }
 
 .hero-subtitle {
   font-size: 1.3rem;
   opacity: 0.9;
   margin-bottom: 30px;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .hero-stats {
@@ -593,11 +595,13 @@ export default defineComponent({
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 5px;
+  color: #fff;
 }
 
 .stat-label {
   font-size: 1rem;
   opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 /* 容器样式 */
@@ -610,10 +614,13 @@ export default defineComponent({
 
 /* 欢迎区域样式 */
 .welcome-section {
-  background: white;
-  border-radius: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .user-welcome {
@@ -625,7 +632,7 @@ export default defineComponent({
 .user-avatar {
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--primary-gradient);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -642,17 +649,17 @@ export default defineComponent({
 
 .user-info h2 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 1.8rem;
 }
 
 .user-email {
-  color: #666;
+  color: var(--text-secondary);
   margin: 0 0 5px 0;
 }
 
 .user-join-date {
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -666,32 +673,32 @@ export default defineComponent({
 .secondary-btn {
   padding: 12px 25px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--primary-gradient);
+  color: #fff;
 }
 
 .primary-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--primary-shadow);
 }
 
 .secondary-btn {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  background: var(--panel-bg);
+  color: var(--primary);
+  border: 2px solid var(--primary);
 }
 
 .secondary-btn:hover {
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
 }
 
 .guest-welcome {
@@ -701,12 +708,12 @@ export default defineComponent({
 
 .guest-welcome h2 {
   margin: 0 0 15px 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 2rem;
 }
 
 .guest-welcome p {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 25px;
   font-size: 1.1rem;
 }
@@ -719,44 +726,48 @@ export default defineComponent({
 
 .auth-btn {
   padding: 12px 35px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 1.1rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
 }
 
 .login-btn {
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
 }
 
 .login-btn:hover {
-  background: #5a67d8;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .register-btn {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  background: var(--panel-bg);
+  color: var(--primary);
+  border: 2px solid var(--primary);
 }
 
 .register-btn:hover {
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
 }
 
 /* 快速推荐区域样式 */
 .quick-recommendations {
-  background: white;
-  border-radius: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .section-title {
   margin: 0 0 25px 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 1.8rem;
   display: flex;
   align-items: center;
@@ -771,29 +782,34 @@ export default defineComponent({
 
 .rec-btn {
   padding: 15px;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
-  border-radius: 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
   text-align: center;
+  color: var(--text-primary);
 }
 
 .rec-btn:hover {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
   transform: translateY(-3px);
+  box-shadow: var(--primary-shadow);
 }
 
 /* 推荐结果区域样式 */
 .recommendations-section {
-  background: white;
-  border-radius: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .section-header {
@@ -810,35 +826,36 @@ export default defineComponent({
 }
 
 .result-count {
-  color: #666;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .clear-btn {
   padding: 8px 16px;
-  background: #e53e3e;
-  color: white;
+  background: var(--danger);
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.9rem;
-  transition: background 0.3s;
+  transition: all var(--transition-fast);
 }
 
 .clear-btn:hover {
-  background: #c53030;
+  opacity: 0.85;
 }
 
 .loading-state {
   text-align: center;
   padding: 60px;
+  color: var(--text-muted);
 }
 
 .spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border: 4px solid var(--panel-border);
+  border-top: 4px solid var(--primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -865,11 +882,11 @@ export default defineComponent({
 
 .empty-state h3 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .empty-state p {
-  color: #666;
+  color: var(--text-muted);
   margin: 0;
 }
 
@@ -881,16 +898,19 @@ export default defineComponent({
 }
 
 .movie-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 25px;
-  background: white;
-  transition: transform 0.3s, box-shadow 0.3s;
+  background: var(--panel-bg);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  transition: transform var(--transition-normal),
+    box-shadow var(--transition-normal);
 }
 
 .movie-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--panel-shadow);
 }
 
 .movie-card-header {
@@ -904,9 +924,9 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #fef3c7;
+  background: var(--rating-bg);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
 }
 
 .rating-star {
@@ -915,22 +935,22 @@ export default defineComponent({
 
 .rating-value {
   font-weight: 700;
-  color: #d97706;
+  color: var(--rating-text);
   font-size: 1.1rem;
 }
 
 .movie-year {
-  background: #f0f0f0;
+  background: var(--primary-bg);
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .movie-title {
   margin: 0 0 15px 0;
   font-size: 1.4rem;
-  color: #2d3748;
+  color: var(--text-primary);
   line-height: 1.3;
 }
 
@@ -949,12 +969,12 @@ export default defineComponent({
 }
 
 .meta-label {
-  color: #718096;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .meta-value {
-  color: #4a5568;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -965,7 +985,7 @@ export default defineComponent({
 .crew-item {
   margin: 0 0 8px 0;
   font-size: 0.95rem;
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.4;
 }
 
@@ -974,15 +994,15 @@ export default defineComponent({
 }
 
 .crew-item strong {
-  color: #2d3748;
+  color: var(--text-primary);
 }
 
 .movie-quote {
   margin: 15px 0;
   padding: 12px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e6fffa 100%);
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+  background: var(--quote-bg);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--quote-border);
 }
 
 .quote-icon {
@@ -992,7 +1012,7 @@ export default defineComponent({
 
 .quote-text {
   font-style: italic;
-  color: #4a5568;
+  color: var(--text-secondary);
   line-height: 1.5;
   font-size: 0.95rem;
 }
@@ -1007,53 +1027,56 @@ export default defineComponent({
   flex: 1;
   padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
   text-align: center;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
 }
 
 .detail-btn {
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
 }
 
 .detail-btn:hover {
-  background: #5a67d8;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .favorite-btn {
-  background: #f7fafc;
-  color: #e53e3e;
-  border: 2px solid #e53e3e;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger-border);
 }
 
 .favorite-btn:hover {
-  background: #e53e3e;
-  color: white;
+  background: var(--danger);
+  color: #fff;
 }
 
 .rate-btn {
-  background: #fef3c7;
-  color: #d97706;
-  border: 2px solid #fef3c7;
+  background: var(--rating-bg);
+  color: var(--rating-text);
+  border: 1px solid transparent;
 }
 
 .rate-btn:hover {
-  background: #f59e0b;
-  color: white;
-  border-color: #f59e0b;
+  background: var(--warning);
+  color: #fff;
 }
 
 /* 热门电影排行榜样式 */
 .top-movies-section {
-  background: white;
-  border-radius: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .top-movies-list {
@@ -1067,10 +1090,10 @@ export default defineComponent({
   align-items: center;
   gap: 20px;
   padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: white;
-  transition: transform 0.3s;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  background: var(--panel-bg);
+  transition: transform var(--transition-normal);
 }
 
 .top-movie-item:hover {
@@ -1078,15 +1101,15 @@ export default defineComponent({
 }
 
 .top-movie-item.top-3 {
-  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
-  border-color: #fbbf24;
+  background: var(--rating-bg);
+  border-color: var(--warning);
 }
 
 .rank-badge {
   width: 40px;
   height: 40px;
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1097,7 +1120,7 @@ export default defineComponent({
 }
 
 .top-movie-item.top-3 .rank-badge {
-  background: #d97706;
+  background: var(--warning);
 }
 
 .movie-info {
@@ -1114,7 +1137,7 @@ export default defineComponent({
   gap: 15px;
   margin-bottom: 10px;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
 .movie-info .movie-quote {
@@ -1125,26 +1148,30 @@ export default defineComponent({
 
 .small-btn {
   padding: 8px 16px;
-  background: #667eea;
-  color: white;
+  background: var(--primary);
+  color: #fff;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   font-size: 0.9rem;
   text-decoration: none;
-  transition: background 0.3s;
+  transition: all var(--transition-fast);
 }
 
 .small-btn:hover {
-  background: #5a67d8;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 /* 分类浏览样式 */
 .categories-section {
-  background: white;
-  border-radius: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .categories-grid {
@@ -1155,18 +1182,18 @@ export default defineComponent({
 
 .category-card {
   padding: 25px;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s;
-  background: white;
+  transition: all var(--transition-normal);
+  background: var(--panel-bg);
 }
 
 .category-card:hover {
-  border-color: #667eea;
+  border-color: var(--primary);
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.1);
+  box-shadow: var(--primary-shadow);
 }
 
 .category-icon {
@@ -1176,22 +1203,25 @@ export default defineComponent({
 
 .category-card h4 {
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--text-primary);
   font-size: 1.2rem;
 }
 
 .category-count {
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0;
 }
 
 /* 统计信息样式 */
 .stats-section {
-  background: white;
-  border-radius: 15px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
   padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .stats-grid {
@@ -1205,15 +1235,15 @@ export default defineComponent({
   align-items: center;
   gap: 20px;
   padding: 25px;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  background: white;
-  transition: transform 0.3s;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  background: var(--panel-bg);
+  transition: transform var(--transition-normal);
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--panel-shadow);
 }
 
 .stat-icon {
@@ -1227,12 +1257,12 @@ export default defineComponent({
 .stat-number {
   font-size: 2.2rem;
   font-weight: 700;
-  color: #667eea;
+  color: var(--primary);
   margin-bottom: 5px;
 }
 
 .stat-label {
-  color: #666;
+  color: var(--text-muted);
   font-size: 1rem;
 }
 

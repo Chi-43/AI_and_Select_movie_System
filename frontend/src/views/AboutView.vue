@@ -275,19 +275,17 @@ export default defineComponent({
 <style scoped>
 .about {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* 英雄区域样式 */
 .hero-section {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 60px 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 0 0 20px 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: var(--bg-hero);
+  color: #fff;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--panel-shadow);
 }
 
 .hero-content {
@@ -299,12 +297,14 @@ export default defineComponent({
   font-size: 3rem;
   margin: 0 0 20px 0;
   font-weight: 700;
+  color: #fff;
 }
 
 .hero-subtitle {
   font-size: 1.5rem;
   margin: 0 0 40px 0;
   opacity: 0.9;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .hero-stats {
@@ -321,11 +321,13 @@ export default defineComponent({
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 5px;
+  color: #fff;
 }
 
 .stat-label {
   font-size: 1rem;
   opacity: 0.8;
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .hero-image {
@@ -349,23 +351,19 @@ export default defineComponent({
 .reel-item:nth-child(2) {
   animation-delay: 0.2s;
 }
-
 .reel-item:nth-child(3) {
   animation-delay: 0.4s;
 }
-
 .reel-item:nth-child(4) {
   animation-delay: 0.6s;
 }
 
-/* 容器样式 */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
 }
 
-/* 通用区域样式 */
 .intro-section,
 .tech-section,
 .guide-section,
@@ -377,19 +375,25 @@ export default defineComponent({
   text-align: center;
   font-size: 2.5rem;
   margin-bottom: 20px;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .section-description {
   text-align: center;
   font-size: 1.2rem;
-  color: #666;
+  color: var(--text-secondary);
   max-width: 800px;
   margin: 0 auto 60px;
   line-height: 1.6;
 }
 
-/* 特性网格样式 */
+.contact-description {
+  text-align: center;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -398,17 +402,19 @@ export default defineComponent({
 }
 
 .feature-card {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
   text-align: center;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: transform var(--transition-normal);
 }
 
 .feature-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
 .feature-icon {
@@ -419,16 +425,15 @@ export default defineComponent({
 .feature-title {
   font-size: 1.5rem;
   margin: 0 0 15px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .feature-description {
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
 }
 
-/* 技术栈样式 */
 .tech-stack {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -437,16 +442,19 @@ export default defineComponent({
 }
 
 .tech-category {
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .tech-category-title {
   font-size: 1.8rem;
   margin: 0 0 25px 0;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
 }
 
@@ -461,13 +469,13 @@ export default defineComponent({
   align-items: center;
   gap: 15px;
   padding: 12px 20px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  transition: background 0.3s;
+  background: var(--primary-bg);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
 }
 
 .tech-item:hover {
-  background: #e9ecef;
+  transform: translateX(5px);
 }
 
 .tech-icon {
@@ -476,10 +484,9 @@ export default defineComponent({
 
 .tech-name {
   font-size: 1.1rem;
-  color: #333;
+  color: var(--text-primary);
 }
 
-/* 使用指南样式 */
 .steps {
   display: flex;
   flex-direction: column;
@@ -492,18 +499,21 @@ export default defineComponent({
   display: flex;
   align-items: flex-start;
   gap: 25px;
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 30px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .step-number {
   flex-shrink: 0;
   width: 60px;
   height: 60px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: var(--primary-gradient);
+  color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -519,16 +529,15 @@ export default defineComponent({
 .step-title {
   font-size: 1.5rem;
   margin: 0 0 10px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .step-description {
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.6;
   margin: 0;
 }
 
-/* 联系信息样式 */
 .contact-info {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -540,10 +549,13 @@ export default defineComponent({
   display: flex;
   align-items: center;
   gap: 20px;
-  background: white;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
   padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .contact-icon {
@@ -557,21 +569,23 @@ export default defineComponent({
 .contact-title {
   font-size: 1.3rem;
   margin: 0 0 8px 0;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .contact-text {
-  color: #666;
+  color: var(--text-secondary);
   margin: 0;
   word-break: break-all;
 }
 
-/* 页脚样式 */
 .footer {
-  background: #333;
-  color: white;
+  background: var(--nav-bg);
+  border-top: 1px solid var(--panel-border);
+  color: var(--text-primary);
   padding: 40px 0;
   text-align: center;
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
 }
 
 .footer-text {
@@ -581,10 +595,9 @@ export default defineComponent({
 
 .footer-subtext {
   font-size: 1rem;
-  opacity: 0.8;
+  color: var(--text-muted);
 }
 
-/* 动画定义 */
 @keyframes rotate {
   0% {
     transform: rotate(0deg);
@@ -604,7 +617,6 @@ export default defineComponent({
   }
 }
 
-/* 响应式设计 */
 @media (max-width: 768px) {
   .hero-section {
     flex-direction: column;
@@ -615,7 +627,6 @@ export default defineComponent({
   .hero-title {
     font-size: 2.2rem;
   }
-
   .hero-subtitle {
     font-size: 1.2rem;
   }
@@ -628,11 +639,9 @@ export default defineComponent({
   .stat-number {
     font-size: 2rem;
   }
-
   .movie-reel {
     margin-top: 30px;
   }
-
   .section-title {
     font-size: 2rem;
   }
