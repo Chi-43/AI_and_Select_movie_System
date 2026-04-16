@@ -1,13 +1,12 @@
 <template>
   <div class="ai-chat-page">
-    <!-- 页面头部（不是导航栏，导航栏继续用 App.vue 的全局 nav） -->
     <section class="hero-section">
       <div class="hero-content">
         <div class="hero-badge">AI 对话</div>
         <h1 class="hero-title">🤖 AI电影助手</h1>
         <p class="hero-subtitle">
-          基于 DeepSeek
-          的智能电影对话系统，支持电影推荐、剧情分析、观影建议与影片问答
+          基于 DeepSeek 的智能电影交互系统，支持电影问答、剧情分析、
+          智能推荐与推荐理由解释
         </p>
 
         <div class="hero-stats">
@@ -40,22 +39,53 @@
       </div>
     </section>
 
-    <!-- 主体 -->
     <div class="content-layout">
-      <!-- 左侧聊天主体 -->
       <section class="chat-panel">
         <div class="panel-title-row">
-          <h2 class="panel-title">智能对话</h2>
-          <span class="panel-subtitle">输入你想了解的电影问题</span>
+          <div>
+            <h2 class="panel-title">智能对话</h2>
+            <span class="panel-subtitle"
+              >输入电影问题或直接描述你的观影需求</span
+            >
+          </div>
+
+          <div class="mode-switch">
+            <button
+              class="mode-btn"
+              :class="{ active: chatMode === 'chat' }"
+              @click="chatMode = 'chat'"
+            >
+              💬 AI问答
+            </button>
+            <button
+              class="mode-btn"
+              :class="{ active: chatMode === 'recommend' }"
+              @click="chatMode = 'recommend'"
+            >
+              🎯 智能推荐
+            </button>
+          </div>
         </div>
 
-        <!-- 消息区 -->
         <div class="messages-container" ref="messagesContainer">
           <div v-if="messages.length === 0" class="welcome-card">
             <div class="welcome-icon">🎬</div>
-            <h3 class="welcome-title">欢迎使用 AI 电影助手</h3>
+            <h3 class="welcome-title">
+              {{
+                chatMode === "chat"
+                  ? "欢迎使用 AI 电影助手"
+                  : "欢迎使用智能推荐模式"
+              }}
+            </h3>
             <p class="welcome-text">
-              你可以向我提问电影推荐、剧情解析、演员导演信息、类型片推荐等问题。
+              <template v-if="chatMode === 'chat'">
+                你可以向我提问剧情解析、演员导演信息、电影介绍、类型片推荐等问题。
+              </template>
+              <template v-else>
+                你可以直接说出你的观影需求，比如：
+                “推荐几部适合周末看的高分科幻电影”、
+                “我想看像《盗梦空间》一样烧脑的电影”。
+              </template>
             </p>
 
             <div class="welcome-features">
@@ -66,30 +96,59 @@
             </div>
 
             <div class="quick-questions">
-              <button
-                @click="quickQuestion('推荐一部适合周末看的喜剧电影')"
-                class="quick-btn"
-              >
-                周末喜剧
-              </button>
-              <button
-                @click="quickQuestion('分析一下《盗梦空间》的剧情')"
-                class="quick-btn"
-              >
-                剧情分析
-              </button>
-              <button
-                @click="quickQuestion('最近有什么热门电影推荐？')"
-                class="quick-btn"
-              >
-                热门推荐
-              </button>
-              <button
-                @click="quickQuestion('适合家庭观看的电影有哪些？')"
-                class="quick-btn"
-              >
-                家庭观影
-              </button>
+              <template v-if="chatMode === 'chat'">
+                <button
+                  @click="quickQuestion('分析一下《盗梦空间》的剧情')"
+                  class="quick-btn"
+                >
+                  剧情分析
+                </button>
+                <button
+                  @click="quickQuestion('介绍一下诺兰的电影风格')"
+                  class="quick-btn"
+                >
+                  导演风格
+                </button>
+                <button
+                  @click="quickQuestion('最近有什么热门电影推荐？')"
+                  class="quick-btn"
+                >
+                  热门推荐
+                </button>
+                <button
+                  @click="quickQuestion('适合家庭观看的电影有哪些？')"
+                  class="quick-btn"
+                >
+                  家庭观影
+                </button>
+              </template>
+
+              <template v-else>
+                <button
+                  @click="quickQuestion('推荐几部适合周末看的喜剧电影')"
+                  class="quick-btn"
+                >
+                  周末喜剧
+                </button>
+                <button
+                  @click="quickQuestion('推荐几部高分科幻电影')"
+                  class="quick-btn"
+                >
+                  高分科幻
+                </button>
+                <button
+                  @click="quickQuestion('我想看像《盗梦空间》一样烧脑的电影')"
+                  class="quick-btn"
+                >
+                  烧脑电影
+                </button>
+                <button
+                  @click="quickQuestion('推荐几部适合家庭观看的温暖电影')"
+                  class="quick-btn"
+                >
+                  家庭温暖
+                </button>
+              </template>
             </div>
           </div>
 
@@ -134,8 +193,15 @@
                       <span></span>
                       <span></span>
                     </div>
-                    <span class="loading-text">AI 正在思考...</span>
+                    <span class="loading-text">
+                      {{
+                        chatMode === "recommend"
+                          ? "AI 正在为你筛选电影..."
+                          : "AI 正在思考..."
+                      }}
+                    </span>
                   </div>
+
                   <div
                     v-else
                     class="ai-response"
@@ -149,7 +215,7 @@
                     "
                     class="movie-recommendations"
                   >
-                    <h4 class="recommendations-title">🎬 相关电影推荐</h4>
+                    <h4 class="recommendations-title">🎬 推荐电影</h4>
                     <div class="recommendations-grid">
                       <div
                         v-for="movie in message.movieRecommendations"
@@ -170,6 +236,22 @@
                         <p class="movie-description" v-if="movie.description">
                           {{ movie.description }}
                         </p>
+
+                        <p class="movie-reason" v-if="movie.reason">
+                          {{ movie.reason }}
+                        </p>
+
+                        <div class="recommendation-extra">
+                          <span
+                            v-if="movie.score !== undefined"
+                            class="extra-tag"
+                          >
+                            推荐分：{{ movie.score }}
+                          </span>
+                          <span v-if="movie.algorithm" class="extra-tag">
+                            {{ movie.algorithm }}
+                          </span>
+                        </div>
 
                         <div class="movie-actions">
                           <button
@@ -224,12 +306,17 @@
                 <span></span>
                 <span></span>
               </div>
-              <span class="typing-text">AI正在输入...</span>
+              <span class="typing-text">
+                {{
+                  chatMode === "recommend"
+                    ? "AI正在为你推荐..."
+                    : "AI正在输入..."
+                }}
+              </span>
             </div>
           </div>
         </div>
 
-        <!-- 输入区 -->
         <div class="input-panel">
           <div class="input-wrapper">
             <textarea
@@ -238,7 +325,11 @@
               @input="autoResize"
               @keydown.enter.exact.prevent="sendMessage"
               @keydown.enter.shift.exact.stop
-              placeholder="请输入你想问的电影问题..."
+              :placeholder="
+                chatMode === 'chat'
+                  ? '请输入你想问的电影问题...'
+                  : '请输入你的观影需求，例如：推荐几部适合周末看的高分科幻电影'
+              "
               rows="1"
               class="message-input"
               :disabled="isLoading"
@@ -252,17 +343,21 @@
                 >
                   {{ showComposerExtras ? "收起" : "更多" }} ⚙️
                 </button>
+
                 <button
-                  @click="insertExample('推荐一部适合周末看的喜剧电影')"
-                  class="tool-btn"
-                >
-                  🎭 喜剧
-                </button>
-                <button
+                  v-if="chatMode === 'chat'"
                   @click="insertExample('分析一下《盗梦空间》的剧情')"
                   class="tool-btn"
                 >
                   📖 分析
+                </button>
+
+                <button
+                  v-if="chatMode === 'recommend'"
+                  @click="insertExample('推荐几部高分科幻电影')"
+                  class="tool-btn"
+                >
+                  🎯 推荐
                 </button>
               </div>
 
@@ -288,40 +383,75 @@
           <transition name="fade">
             <div v-if="showComposerExtras" class="input-hints">
               <p class="hint-text">
-                💡 你可以问我电影推荐、剧情解析、演员导演信息、类型片推荐等问题
+                <template v-if="chatMode === 'chat'">
+                  💡 你可以问我剧情解析、电影介绍、导演演员信息等问题
+                </template>
+                <template v-else>
+                  💡
+                  你可以直接用自然语言描述观影需求，系统会自动解析并返回推荐结果
+                </template>
               </p>
+
               <div class="quick-questions">
-                <button
-                  @click="quickQuestion('最近有什么热门电影推荐？')"
-                  class="quick-btn"
-                >
-                  热门推荐
-                </button>
-                <button
-                  @click="quickQuestion('经典电影有哪些？')"
-                  class="quick-btn"
-                >
-                  经典电影
-                </button>
-                <button
-                  @click="quickQuestion('适合家庭观看的电影？')"
-                  class="quick-btn"
-                >
-                  家庭观影
-                </button>
-                <button
-                  @click="quickQuestion('悬疑推理电影推荐')"
-                  class="quick-btn"
-                >
-                  悬疑推理
-                </button>
+                <template v-if="chatMode === 'chat'">
+                  <button
+                    @click="quickQuestion('最近有什么热门电影推荐？')"
+                    class="quick-btn"
+                  >
+                    热门推荐
+                  </button>
+                  <button
+                    @click="quickQuestion('经典电影有哪些？')"
+                    class="quick-btn"
+                  >
+                    经典电影
+                  </button>
+                  <button
+                    @click="quickQuestion('适合家庭观看的电影？')"
+                    class="quick-btn"
+                  >
+                    家庭观影
+                  </button>
+                  <button
+                    @click="quickQuestion('悬疑推理电影推荐')"
+                    class="quick-btn"
+                  >
+                    悬疑推理
+                  </button>
+                </template>
+
+                <template v-else>
+                  <button
+                    @click="quickQuestion('推荐几部适合周末看的喜剧电影')"
+                    class="quick-btn"
+                  >
+                    周末喜剧
+                  </button>
+                  <button
+                    @click="quickQuestion('推荐几部高分欧美科幻电影')"
+                    class="quick-btn"
+                  >
+                    欧美科幻
+                  </button>
+                  <button
+                    @click="quickQuestion('我想看像《星际穿越》一样的电影')"
+                    class="quick-btn"
+                  >
+                    类似电影
+                  </button>
+                  <button
+                    @click="quickQuestion('推荐几部不太压抑的悬疑电影')"
+                    class="quick-btn"
+                  >
+                    轻悬疑
+                  </button>
+                </template>
               </div>
             </div>
           </transition>
         </div>
       </section>
 
-      <!-- 右侧边栏 -->
       <aside class="sidebar-panel" :class="{ collapsed: isSidebarCollapsed }">
         <div class="sidebar-header">
           <h3 class="sidebar-title">🎬 电影数据库</h3>
@@ -389,6 +519,13 @@
             <h4 class="sidebar-subtitle">⚙️ 对话设置</h4>
 
             <div class="setting-item">
+              <label class="setting-label">当前模式</label>
+              <div class="mode-display">
+                {{ chatMode === "chat" ? "AI问答模式" : "智能推荐模式" }}
+              </div>
+            </div>
+
+            <div class="setting-item">
               <label class="setting-label">AI模型</label>
               <select v-model="selectedModel" class="sidebar-select">
                 <option value="deepseek-chat">DeepSeek Chat</option>
@@ -415,14 +552,18 @@
             <div class="setting-item checkbox-item">
               <label class="setting-label">
                 <input v-model="enableMovieRecommendations" type="checkbox" />
-                自动推荐电影
+                自动展示电影卡片
               </label>
             </div>
 
             <div class="setting-item checkbox-item">
               <label class="setting-label">
-                <input v-model="enableStream" type="checkbox" />
-                流式输出
+                <input
+                  v-model="enableStream"
+                  type="checkbox"
+                  :disabled="chatMode === 'recommend'"
+                />
+                流式输出（仅问答模式）
               </label>
             </div>
           </div>
@@ -458,6 +599,9 @@ interface MovieRecommendation {
   country: string;
   description?: string;
   link?: string;
+  reason?: string;
+  score?: number;
+  algorithm?: string;
 }
 
 interface Movie {
@@ -488,6 +632,7 @@ export default defineComponent({
     const temperature = ref(0.7);
     const enableMovieRecommendations = ref(true);
     const enableStream = ref(true);
+    const chatMode = ref<"chat" | "recommend">("chat");
 
     const allMovies = ref<Movie[]>([]);
     const messagesContainer = ref<HTMLElement | null>(null);
@@ -498,7 +643,10 @@ export default defineComponent({
       const genres = new Set<string>();
       allMovies.value.forEach((movie) => {
         if (movie.genre) {
-          movie.genre.split(" ").forEach((g) => genres.add(g.trim()));
+          movie.genre
+            .split(/[ /、,，]+/)
+            .filter(Boolean)
+            .forEach((g) => genres.add(g.trim()));
         }
       });
       return genres.size;
@@ -549,7 +697,6 @@ export default defineComponent({
       response: string
     ): MovieRecommendation[] => {
       const recommendations: MovieRecommendation[] = [];
-
       const movieKeywords = allMovies.value.map((movie) =>
         movie.title.toLowerCase()
       );
@@ -558,7 +705,7 @@ export default defineComponent({
         if (response.toLowerCase().includes(keyword)) {
           const movie = allMovies.value[index];
           recommendations.push({
-            id: index,
+            id: movie.id,
             title: movie.title,
             rating: movie.rating,
             year: movie.year,
@@ -571,6 +718,25 @@ export default defineComponent({
       });
 
       return recommendations.slice(0, 3);
+    };
+
+    const mapBackendRecommendations = (items: any[]): MovieRecommendation[] => {
+      return (items || []).map((item) => {
+        const movie = item.movie || {};
+        return {
+          id: movie.id,
+          title: movie.title,
+          rating: String(movie.rating ?? ""),
+          year: String(movie.year ?? ""),
+          genre: movie.genre ?? "",
+          country: movie.country ?? "",
+          description: movie.description ?? "",
+          link: movie.douban_url ?? "",
+          reason: item.reason ?? "",
+          score: item.score,
+          algorithm: item.algorithm,
+        };
+      });
     };
 
     const saveChatHistory = () => {
@@ -595,6 +761,207 @@ export default defineComponent({
       } catch (error) {
         console.error("加载聊天历史失败:", error);
       }
+    };
+
+    const getCurrentUserId = (): number | null => {
+      const possibleKeys = [
+        "user_id",
+        "auth_user",
+        "user",
+        "userInfo",
+        "currentUser",
+      ];
+
+      for (const key of possibleKeys) {
+        const value = localStorage.getItem(key);
+        if (!value) continue;
+
+        if (/^\d+$/.test(value)) {
+          return Number(value);
+        }
+
+        try {
+          const parsed = JSON.parse(value);
+          if (parsed?.id) return Number(parsed.id);
+          if (parsed?.user?.id) return Number(parsed.user.id);
+        } catch {
+          //
+        }
+      }
+
+      return null;
+    };
+
+    const sendChatMessage = async (content: string, lastIndex: number) => {
+      if (enableStream.value) {
+        const response = await fetch("http://localhost:8000/api/ai/chat/", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: content,
+            model: selectedModel.value,
+            temperature: temperature.value,
+            stream: true,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error("无法读取响应流");
+
+        const decoder = new TextDecoder("utf-8");
+        let fullResponse = "";
+        let buffer = "";
+
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split(/\r?\n/);
+          buffer = lines.pop() ?? "";
+
+          for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line) continue;
+
+            let payload = line;
+            if (payload.startsWith("data:")) {
+              payload = payload.replace(/^data:\s*/, "");
+            }
+
+            if (payload === "[DONE]" || payload === "DONE") continue;
+
+            let deltaText = "";
+            try {
+              const obj = JSON.parse(payload);
+              deltaText =
+                obj.delta ??
+                obj.content ??
+                obj.text ??
+                obj.response ??
+                obj.message ??
+                "";
+
+              if (!deltaText && obj.choices?.[0]?.delta?.content) {
+                deltaText = obj.choices[0].delta.content;
+              }
+            } catch {
+              deltaText = payload;
+            }
+
+            if (!deltaText) continue;
+
+            fullResponse += deltaText;
+
+            messages.value[lastIndex] = {
+              ...messages.value[lastIndex],
+              content: fullResponse,
+              isLoading: false,
+            };
+
+            scrollToBottom();
+          }
+        }
+
+        const tail = buffer.trim();
+        if (tail) {
+          let tailText = "";
+          try {
+            const obj = JSON.parse(tail);
+            tailText =
+              obj.delta ?? obj.content ?? obj.text ?? obj.response ?? "";
+            if (!tailText && obj.choices?.[0]?.delta?.content) {
+              tailText = obj.choices[0].delta.content;
+            }
+          } catch {
+            tailText = tail.startsWith("data:")
+              ? tail.replace(/^data:\s*/, "")
+              : tail;
+          }
+
+          if (tailText && tailText !== "[DONE]" && tailText !== "DONE") {
+            fullResponse += tailText;
+          }
+        }
+
+        messages.value[lastIndex] = {
+          ...messages.value[lastIndex],
+          role: "assistant",
+          content: fullResponse,
+          timestamp: new Date(),
+          isLoading: false,
+          liked: false,
+          movieRecommendations: enableMovieRecommendations.value
+            ? extractMovieRecommendations(fullResponse)
+            : [],
+        };
+
+        saveChatHistory();
+        return;
+      }
+
+      const res = await axios.post("http://localhost:8000/api/ai/chat/", {
+        message: content,
+        model: selectedModel.value,
+        temperature: temperature.value,
+        stream: false,
+      });
+
+      const finalText = res.data?.response ?? "";
+
+      messages.value[lastIndex] = {
+        ...messages.value[lastIndex],
+        role: "assistant",
+        content: finalText,
+        timestamp: new Date(),
+        isLoading: false,
+        liked: false,
+        movieRecommendations: enableMovieRecommendations.value
+          ? extractMovieRecommendations(finalText)
+          : [],
+      };
+
+      saveChatHistory();
+    };
+
+    const sendRecommendationMessage = async (
+      content: string,
+      lastIndex: number
+    ) => {
+      const userId = getCurrentUserId();
+
+      const res = await axios.post(
+        "http://localhost:8000/api/ai/nl-recommend/",
+        {
+          query: content,
+          user_id: userId,
+          top_n: 5,
+        }
+      );
+
+      const reply =
+        res.data?.reply ??
+        "我为你筛选了几部符合条件的电影，可以先看看这些推荐。";
+
+      const recommendations = mapBackendRecommendations(
+        res.data?.recommendations || []
+      );
+
+      messages.value[lastIndex] = {
+        ...messages.value[lastIndex],
+        role: "assistant",
+        content: reply,
+        timestamp: new Date(),
+        isLoading: false,
+        liked: false,
+        movieRecommendations: recommendations,
+      };
+
+      saveChatHistory();
     };
 
     const sendMessage = async () => {
@@ -628,137 +995,21 @@ export default defineComponent({
 
       const lastIndex = messages.value.length - 1;
 
-      const finalizeAIMessage = (finalText: string) => {
-        messages.value[lastIndex] = {
-          ...messages.value[lastIndex],
-          role: "assistant",
-          content: finalText,
-          timestamp: new Date(),
-          isLoading: false,
-          liked: messages.value[lastIndex].liked ?? false,
-          movieRecommendations: enableMovieRecommendations.value
-            ? extractMovieRecommendations(finalText)
-            : [],
-        };
-      };
-
       try {
-        if (enableStream.value) {
-          const response = await fetch("http://localhost:8000/api/ai/chat/", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              message: content,
-              model: selectedModel.value,
-              temperature: temperature.value,
-              stream: true,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const reader = response.body?.getReader();
-          if (!reader) throw new Error("无法读取响应流");
-
-          const decoder = new TextDecoder("utf-8");
-          let fullResponse = "";
-          let buffer = "";
-
-          for (;;) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split(/\r?\n/);
-            buffer = lines.pop() ?? "";
-
-            for (const rawLine of lines) {
-              const line = rawLine.trim();
-              if (!line) continue;
-
-              let payload = line;
-              if (payload.startsWith("data:")) {
-                payload = payload.replace(/^data:\s*/, "");
-              }
-
-              if (payload === "[DONE]" || payload === "DONE") continue;
-
-              let deltaText = "";
-              try {
-                const obj = JSON.parse(payload);
-                deltaText =
-                  obj.delta ??
-                  obj.content ??
-                  obj.text ??
-                  obj.response ??
-                  obj.message ??
-                  "";
-
-                if (!deltaText && obj.choices?.[0]?.delta?.content) {
-                  deltaText = obj.choices[0].delta.content;
-                }
-              } catch {
-                deltaText = payload;
-              }
-
-              if (!deltaText) continue;
-
-              fullResponse += deltaText;
-
-              messages.value[lastIndex] = {
-                ...messages.value[lastIndex],
-                content: fullResponse,
-                isLoading: false,
-              };
-
-              scrollToBottom();
-            }
-          }
-
-          const tail = buffer.trim();
-          if (tail) {
-            let tailText = "";
-            try {
-              const obj = JSON.parse(tail);
-              tailText =
-                obj.delta ?? obj.content ?? obj.text ?? obj.response ?? "";
-              if (!tailText && obj.choices?.[0]?.delta?.content) {
-                tailText = obj.choices[0].delta.content;
-              }
-            } catch {
-              tailText = tail.startsWith("data:")
-                ? tail.replace(/^data:\s*/, "")
-                : tail;
-            }
-
-            if (tailText && tailText !== "[DONE]" && tailText !== "DONE") {
-              fullResponse += tailText;
-            }
-          }
-
-          finalizeAIMessage(fullResponse);
-          saveChatHistory();
-          return;
+        if (chatMode.value === "chat") {
+          await sendChatMessage(content, lastIndex);
+        } else {
+          await sendRecommendationMessage(content, lastIndex);
         }
-
-        const res = await axios.post("http://localhost:8000/api/ai/chat/", {
-          message: content,
-          model: selectedModel.value,
-          temperature: temperature.value,
-          stream: false,
-        });
-
-        const finalText = res.data?.response ?? "";
-        finalizeAIMessage(finalText);
-        saveChatHistory();
       } catch (error) {
-        console.error("AI对话失败:", error);
+        console.error("请求失败:", error);
 
         messages.value[lastIndex] = {
           role: "assistant",
-          content: "抱歉，AI助手暂时无法响应。请检查网络连接或稍后重试。",
+          content:
+            chatMode.value === "recommend"
+              ? "抱歉，智能推荐暂时不可用。请稍后重试。"
+              : "抱歉，AI助手暂时无法响应。请检查网络连接或稍后重试。",
           timestamp: new Date(),
           liked: false,
           isLoading: false,
@@ -803,6 +1054,7 @@ export default defineComponent({
     };
 
     const askAboutMovie = (movieTitle: string) => {
+      chatMode.value = "chat";
       userInput.value = `请介绍一下《${movieTitle}》这部电影`;
       sendMessage();
     };
@@ -846,7 +1098,7 @@ export default defineComponent({
 
     const init = () => {
       allMovies.value = (doubanData as any[]).map((movie, index) => ({
-        id: index,
+        id: index + 1,
         title: movie["电影名字"],
         rating: movie["评分"],
         year: movie["年份"],
@@ -879,6 +1131,7 @@ export default defineComponent({
       temperature,
       enableMovieRecommendations,
       enableStream,
+      chatMode,
       movieCount,
       genreCount,
       topMovies,
@@ -910,7 +1163,6 @@ export default defineComponent({
   gap: 24px;
 }
 
-/* 顶部介绍区，跟 About / Douban 统一 */
 .hero-section {
   background: var(--bg-hero);
   border-radius: var(--radius-lg);
@@ -1036,6 +1288,11 @@ export default defineComponent({
 
 .panel-title-row {
   margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .panel-title {
@@ -1047,6 +1304,30 @@ export default defineComponent({
 .panel-subtitle {
   color: var(--text-secondary);
   font-size: 0.95rem;
+}
+
+.mode-switch {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.mode-btn {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 700;
+  transition: all var(--transition-fast);
+}
+
+.mode-btn.active {
+  background: var(--primary-gradient);
+  color: #fff;
+  border-color: transparent;
 }
 
 .messages-container {
@@ -1251,7 +1532,33 @@ export default defineComponent({
   color: var(--text-secondary);
   font-size: 0.92rem;
   line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.movie-reason {
+  margin-bottom: 12px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  line-height: 1.65;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-bg);
+  border: 1px dashed var(--panel-border);
+}
+
+.recommendation-extra {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
   margin-bottom: 14px;
+}
+
+.extra-tag {
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  background: var(--nav-hover-bg);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
 }
 
 .movie-actions {
@@ -1638,6 +1945,15 @@ export default defineComponent({
   padding: 10px 12px;
 }
 
+.mode-display {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 .temperature-slider {
   width: 100%;
 }
@@ -1719,6 +2035,11 @@ export default defineComponent({
 
   .recommendations-grid {
     grid-template-columns: 1fr;
+  }
+
+  .panel-title-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
 </style>

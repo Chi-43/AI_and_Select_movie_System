@@ -1,292 +1,344 @@
 <template>
   <div class="douban-view">
-    <div class="header">
-      <h1>🎬 豆瓣电影TOP250推荐系统</h1>
-      <p class="subtitle">基于豆瓣电影TOP250数据的智能推荐</p>
-    </div>
+    <!-- Hero -->
+    <section class="hero-section">
+      <div class="hero-content">
+        <div class="hero-badge">电影发现</div>
+        <h1 class="hero-title">🎬 豆瓣电影 TOP250</h1>
+        <p class="hero-subtitle">
+          浏览高分电影、按条件筛选、查看详情、收藏影片，并基于当前电影库获取智能推荐。
+        </p>
 
-    <div class="container">
-      <!-- 搜索和筛选部分 -->
-      <div class="filter-section">
-        <div class="search-box">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜索电影名称、导演、主演..."
-            class="search-input"
-            @input="filterMovies"
-          />
-          <button @click="filterMovies" class="search-btn">搜索</button>
-        </div>
-
-        <div class="filter-controls">
-          <div class="filter-group">
-            <label>年份范围:</label>
-            <div class="range-inputs">
-              <input
-                v-model="yearRange[0]"
-                type="number"
-                placeholder="起始年份"
-                min="1900"
-                max="2026"
-                @change="filterMovies"
-              />
-              <span>至</span>
-              <input
-                v-model="yearRange[1]"
-                type="number"
-                placeholder="结束年份"
-                min="1900"
-                max="2026"
-                @change="filterMovies"
-              />
-            </div>
-          </div>
-
-          <div class="filter-group">
-            <label>评分范围:</label>
-            <div class="range-inputs">
-              <input
-                v-model="ratingRange[0]"
-                type="number"
-                placeholder="最低评分"
-                min="0"
-                max="10"
-                step="0.1"
-                @change="filterMovies"
-              />
-              <span>至</span>
-              <input
-                v-model="ratingRange[1]"
-                type="number"
-                placeholder="最高评分"
-                min="0"
-                max="10"
-                step="0.1"
-                @change="filterMovies"
-              />
-            </div>
-          </div>
-
-          <div class="filter-group">
-            <label>国家/地区:</label>
-            <select
-              v-model="selectedCountry"
-              @change="filterMovies"
-              class="country-select"
-            >
-              <option value="">全部</option>
-              <option
-                v-for="country in countries"
-                :key="country"
-                :value="country"
-              >
-                {{ country }}
-              </option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>类型:</label>
-            <select
-              v-model="selectedType"
-              @change="filterMovies"
-              class="type-select"
-            >
-              <option value="">全部</option>
-              <option v-for="type in types" :key="type" :value="type">
-                {{ type }}
-              </option>
-            </select>
-          </div>
-
-          <button @click="resetFilters" class="reset-btn">重置筛选</button>
+        <div class="hero-tags">
+          <span class="hero-tag">高分电影</span>
+          <span class="hero-tag">多维筛选</span>
+          <span class="hero-tag">智能推荐</span>
+          <span class="hero-tag">收藏管理</span>
         </div>
       </div>
 
-      <!-- 统计信息 -->
-      <div class="stats-section">
-        <div class="stat-card">
+      <div class="hero-stats">
+        <div class="hero-stat-card">
           <div class="stat-number">{{ totalMovies }}</div>
           <div class="stat-label">总电影数</div>
         </div>
-        <div class="stat-card">
-          <div class="stat-number">{{ filteredMovies.length }}</div>
-          <div class="stat-label">筛选结果</div>
-        </div>
-        <div class="stat-card">
+        <div class="hero-stat-card">
           <div class="stat-number">{{ averageRating.toFixed(1) }}</div>
           <div class="stat-label">平均评分</div>
         </div>
-        <div class="stat-card">
+        <div class="hero-stat-card">
           <div class="stat-number">{{ yearRangeText }}</div>
           <div class="stat-label">年份跨度</div>
         </div>
       </div>
+    </section>
 
-      <!-- 排序控制 -->
-      <div class="sort-section">
-        <div class="sort-controls">
-          <label>排序方式:</label>
-          <select v-model="sortBy" @change="sortMovies" class="sort-select">
-            <option value="rating">评分从高到低</option>
-            <option value="rating_asc">评分从低到高</option>
-            <option value="year">年份从新到旧</option>
-            <option value="year_asc">年份从旧到新</option>
-            <option value="name">电影名称A-Z</option>
-            <option value="name_desc">电影名称Z-A</option>
+    <!-- 搜索筛选 -->
+    <section class="panel-card filter-panel">
+      <div class="panel-header">
+        <h2>🔍 搜索与筛选</h2>
+        <p>
+          根据电影名称、导演、主演、年份、评分、国家和类型快速定位目标电影。
+        </p>
+      </div>
+
+      <div class="search-box">
+        <input
+          v-model="searchQuery"
+          type="text"
+          placeholder="搜索电影名称、导演、主演..."
+          class="search-input"
+          @input="filterMovies"
+        />
+        <button @click="filterMovies" class="search-btn">搜索</button>
+      </div>
+
+      <div class="filter-controls">
+        <div class="filter-group">
+          <label>年份范围</label>
+          <div class="range-inputs">
+            <input
+              v-model="yearRange[0]"
+              type="number"
+              placeholder="起始年份"
+              min="1900"
+              max="2026"
+              @change="filterMovies"
+            />
+            <span>至</span>
+            <input
+              v-model="yearRange[1]"
+              type="number"
+              placeholder="结束年份"
+              min="1900"
+              max="2026"
+              @change="filterMovies"
+            />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>评分范围</label>
+          <div class="range-inputs">
+            <input
+              v-model="ratingRange[0]"
+              type="number"
+              placeholder="最低评分"
+              min="0"
+              max="10"
+              step="0.1"
+              @change="filterMovies"
+            />
+            <span>至</span>
+            <input
+              v-model="ratingRange[1]"
+              type="number"
+              placeholder="最高评分"
+              min="0"
+              max="10"
+              step="0.1"
+              @change="filterMovies"
+            />
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>国家/地区</label>
+          <select
+            v-model="selectedCountry"
+            @change="filterMovies"
+            class="country-select"
+          >
+            <option value="">全部</option>
+            <option
+              v-for="country in countries"
+              :key="country"
+              :value="country"
+            >
+              {{ country }}
+            </option>
           </select>
         </div>
-      </div>
 
-      <!-- 电影列表 -->
-      <div class="movies-section">
-        <div v-if="loading" class="loading">加载电影数据中...</div>
-
-        <div v-else-if="filteredMovies.length === 0" class="no-results">
-          <p>没有找到符合条件的电影</p>
-          <button @click="resetFilters" class="reset-btn">重置筛选条件</button>
+        <div class="filter-group">
+          <label>类型</label>
+          <select
+            v-model="selectedType"
+            @change="filterMovies"
+            class="type-select"
+          >
+            <option value="">全部</option>
+            <option v-for="type in types" :key="type" :value="type">
+              {{ type }}
+            </option>
+          </select>
         </div>
 
-        <div v-else class="movies-grid">
-          <div
-            v-for="movie in filteredMovies"
-            :key="movie['电影链接']"
-            class="movie-card"
-          >
-            <div class="movie-header">
+        <div class="filter-actions">
+          <button @click="resetFilters" class="reset-btn">重置筛选</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 数据统计 -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ totalMovies }}</div>
+        <div class="stat-label dark">总电影数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ filteredMovies.length }}</div>
+        <div class="stat-label dark">当前结果</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ averageRating.toFixed(1) }}</div>
+        <div class="stat-label dark">平均评分</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ favorites.size }}</div>
+        <div class="stat-label dark">收藏数量</div>
+      </div>
+    </section>
+
+    <!-- 排序 -->
+    <section class="panel-card sort-panel">
+      <div class="sort-controls">
+        <label>排序方式</label>
+        <select v-model="sortBy" @change="sortMovies" class="sort-select">
+          <option value="rating">评分从高到低</option>
+          <option value="rating_asc">评分从低到高</option>
+          <option value="year">年份从新到旧</option>
+          <option value="year_asc">年份从旧到新</option>
+          <option value="name">电影名称 A-Z</option>
+          <option value="name_desc">电影名称 Z-A</option>
+        </select>
+      </div>
+    </section>
+
+    <!-- 电影列表 -->
+    <section class="panel-card movies-section">
+      <div class="panel-header">
+        <h2>🎞️ 电影列表</h2>
+        <p>当前按筛选条件与排序方式显示的电影结果。</p>
+      </div>
+
+      <div v-if="loading" class="loading-state">
+        <div class="spinner"></div>
+        <p>加载电影数据中...</p>
+      </div>
+
+      <div v-else-if="filteredMovies.length === 0" class="empty-state">
+        <div class="empty-icon">🎬</div>
+        <h3>没有找到符合条件的电影</h3>
+        <p>你可以调整筛选条件或重置筛选重新查看。</p>
+        <button @click="resetFilters" class="reset-btn">重置筛选条件</button>
+      </div>
+
+      <div v-else class="movies-grid">
+        <div
+          v-for="movie in filteredMovies"
+          :key="movie['电影链接']"
+          class="movie-card"
+        >
+          <div class="movie-header">
+            <div class="movie-title-wrap">
               <h3 class="movie-title">{{ movie["电影名字"] }}</h3>
-              <div class="movie-rating">
-                <span class="rating-star">⭐</span>
-                <span class="rating-score">{{ movie["评分"] }}</span>
+              <div class="movie-tags">
+                <span class="meta-chip">{{ movie["年份"] }}</span>
+                <span class="meta-chip">{{ movie["国家"] }}</span>
               </div>
             </div>
 
-            <div class="movie-meta">
-              <div class="meta-item">
-                <span class="meta-label">年份:</span>
-                <span class="meta-value">{{ movie["年份"] }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">国家:</span>
-                <span class="meta-value">{{ movie["国家"] }}</span>
-              </div>
-              <div class="meta-item">
-                <span class="meta-label">类型:</span>
-                <span class="meta-value">{{ movie["类型"] }}</span>
-              </div>
-            </div>
-
-            <div class="movie-crew">
-              <div class="crew-item">
-                <span class="crew-label">导演:</span>
-                <span class="crew-value">{{ movie["导演"] || "未知" }}</span>
-              </div>
-              <div class="crew-item">
-                <span class="crew-label">主演:</span>
-                <span class="crew-value">{{ movie["主演"] || "未知" }}</span>
-              </div>
-            </div>
-
-            <div class="movie-quote" v-if="movie['一句话评价']">
-              <span class="quote-icon">💬</span>
-              <span class="quote-text">{{ movie["一句话评价"] }}</span>
-            </div>
-
-            <div class="movie-actions">
-              <button
-                @click="goToMovieDetail(movie)"
-                class="action-btn detail-link"
-              >
-                电影详情
-              </button>
-              <button
-                @click="addToFavorites(movie)"
-                class="action-btn favorite-btn"
-              >
-                {{ isFavorite(movie) ? "❤️ 已收藏" : "🤍 收藏" }}
-              </button>
-              <router-link
-                :to="{
-                  name: 'video-platform',
-                  query: {
-                    movie_title: movie['电影名字'],
-                    douban_url: movie['电影链接'],
-                  },
-                }"
-                class="action-btn watch-link"
-              >
-                📺 查看观看链接
-              </router-link>
+            <div class="movie-rating">
+              <span class="rating-star">⭐</span>
+              <span class="rating-score">{{ movie["评分"] }}</span>
             </div>
           </div>
-        </div>
 
-        <!-- 分页控制 -->
-        <div v-if="filteredMovies.length > 0" class="pagination">
-          <button
-            @click="prevPage"
-            :disabled="currentPage === 1"
-            class="page-btn"
-          >
-            上一页
-          </button>
-          <span class="page-info">
-            第 {{ currentPage }} 页 / 共 {{ totalPages }} 页 ({{
-              filteredMovies.length
-            }}
-            部电影)
-          </span>
-          <button
-            @click="nextPage"
-            :disabled="currentPage === totalPages"
-            class="page-btn"
-          >
-            下一页
-          </button>
+          <div class="movie-meta">
+            <div class="meta-row">
+              <span class="meta-label">类型</span>
+              <span class="meta-value">{{ movie["类型"] }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">导演</span>
+              <span class="meta-value">{{ movie["导演"] || "未知" }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">主演</span>
+              <span class="meta-value">{{ movie["主演"] || "未知" }}</span>
+            </div>
+          </div>
+
+          <div class="movie-quote" v-if="movie['一句话评价']">
+            <span class="quote-icon">💬</span>
+            <span class="quote-text">{{ movie["一句话评价"] }}</span>
+          </div>
+
+          <div class="movie-actions">
+            <button
+              @click="goToMovieDetail(movie)"
+              class="action-btn detail-link"
+            >
+              电影详情
+            </button>
+
+            <button
+              @click="addToFavorites(movie)"
+              class="action-btn favorite-btn"
+            >
+              {{ isFavorite(movie) ? "❤️ 已收藏" : "🤍 收藏" }}
+            </button>
+
+            <router-link
+              :to="{
+                name: 'video-platform',
+                query: {
+                  movie_title: movie['电影名字'],
+                  douban_url: movie['电影链接'],
+                },
+              }"
+              class="action-btn watch-link"
+            >
+              📺 观看链接
+            </router-link>
+          </div>
         </div>
       </div>
 
-      <!-- 推荐算法部分 -->
-      <div class="recommendation-section">
+      <div v-if="filteredMovies.length > 0" class="pagination">
+        <button
+          @click="prevPage"
+          :disabled="currentPage === 1"
+          class="page-btn"
+        >
+          上一页
+        </button>
+
+        <span class="page-info">
+          第 {{ currentPage }} 页 / 共 {{ totalPages }} 页（{{
+            filteredMovies.length
+          }}
+          部）
+        </span>
+
+        <button
+          @click="nextPage"
+          :disabled="currentPage === totalPages"
+          class="page-btn"
+        >
+          下一页
+        </button>
+      </div>
+    </section>
+
+    <!-- 智能推荐 -->
+    <section class="panel-card recommendation-section">
+      <div class="panel-header">
         <h2>🎯 智能推荐</h2>
-        <div class="recommendation-controls">
-          <button @click="getRandomRecommendations" class="recommend-btn">
-            🎲 随机推荐
-          </button>
-          <button @click="getHighRatingRecommendations" class="recommend-btn">
-            ⭐ 高分推荐
-          </button>
-          <button @click="getRecentRecommendations" class="recommend-btn">
-            🆕 近期推荐
-          </button>
-          <button @click="getByGenreRecommendations" class="recommend-btn">
-            🎭 类型推荐
-          </button>
-        </div>
+        <p>基于当前电影库快速生成不同风格的推荐结果。</p>
+      </div>
 
-        <div v-if="recommendations.length > 0" class="recommendations-grid">
-          <div
-            v-for="movie in recommendations"
-            :key="movie['电影链接']"
-            class="recommendation-card"
-          >
-            <div class="rec-header">
-              <h4>{{ movie["电影名字"] }}</h4>
-              <span class="rec-rating">⭐ {{ movie["评分"] }}</span>
-            </div>
-            <div class="rec-info">
-              <span class="rec-year">{{ movie["年份"] }}</span>
-              <span class="rec-country">{{ movie["国家"] }}</span>
-              <span class="rec-genre">{{ movie["类型"] }}</span>
-            </div>
-            <p class="rec-quote" v-if="movie['一句话评价']">
-              {{ movie["一句话评价"] }}
-            </p>
+      <div class="recommendation-controls">
+        <button @click="getRandomRecommendations" class="recommend-btn">
+          🎲 随机推荐
+        </button>
+        <button @click="getHighRatingRecommendations" class="recommend-btn">
+          ⭐ 高分推荐
+        </button>
+        <button @click="getRecentRecommendations" class="recommend-btn">
+          🆕 近期推荐
+        </button>
+        <button @click="getByGenreRecommendations" class="recommend-btn">
+          🎭 类型推荐
+        </button>
+      </div>
+
+      <div v-if="recommendations.length > 0" class="recommendations-grid">
+        <div
+          v-for="movie in recommendations"
+          :key="movie['电影链接']"
+          class="recommendation-card"
+        >
+          <div class="rec-header">
+            <h4>{{ movie["电影名字"] }}</h4>
+            <span class="rec-rating">⭐ {{ movie["评分"] }}</span>
           </div>
+          <div class="rec-info">
+            <span class="rec-chip">{{ movie["年份"] }}</span>
+            <span class="rec-chip">{{ movie["国家"] }}</span>
+            <span class="rec-chip">{{ movie["类型"] }}</span>
+          </div>
+          <p class="rec-quote" v-if="movie['一句话评价']">
+            {{ movie["一句话评价"] }}
+          </p>
         </div>
       </div>
-    </div>
+
+      <div v-else class="recommend-placeholder">
+        <p>点击上方按钮生成推荐结果</p>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -649,67 +701,118 @@ export default defineComponent({
 
 <style scoped>
 .douban-view {
-  padding: 20px;
-  max-width: var(--max-width);
-  margin: 0 auto;
-}
-
-.header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 30px;
-  background: var(--bg-hero);
-  color: #fff;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--panel-shadow);
-}
-
-.header h1 {
-  margin: 0;
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #fff;
-}
-
-.subtitle {
-  margin: 15px 0 0;
-  font-size: 1.3rem;
-  opacity: 0.9;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.container {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 24px;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 24px;
 }
 
-/* 筛选部分样式 */
-.filter-section {
+.hero-section {
+  background: var(--bg-hero);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  padding: 36px;
+  color: #fff;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  align-items: start;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  margin: 0 0 12px;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.hero-subtitle {
+  margin: 0 0 20px;
+  line-height: 1.8;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 760px;
+}
+
+.hero-tags {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hero-tag {
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 0.88rem;
+}
+
+.hero-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hero-stat-card {
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+}
+
+.panel-card {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  padding: 25px;
   border-radius: var(--radius-lg);
   box-shadow: var(--panel-shadow);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
+  padding: 24px;
+}
+
+.panel-header {
+  margin-bottom: 18px;
+}
+
+.panel-header h2 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+}
+
+.panel-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
 .search-box {
   display: flex;
   gap: 10px;
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .search-input {
   flex: 1;
-  padding: 12px 20px;
+  padding: 12px 16px;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-md);
   font-size: 1rem;
   background: var(--input-bg);
   color: var(--text-primary);
-  transition: border-color var(--transition-normal);
   outline: none;
 }
 
@@ -722,27 +825,39 @@ export default defineComponent({
   box-shadow: var(--input-focus-shadow);
 }
 
-.search-btn {
-  padding: 12px 30px;
-  background: var(--primary-gradient);
-  color: #fff;
+.search-btn,
+.recommend-btn,
+.page-btn,
+.reset-btn {
   border: none;
-  border-radius: var(--radius-md);
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   transition: all var(--transition-fast);
 }
 
-.search-btn:hover {
-  opacity: 0.9;
+.search-btn,
+.recommend-btn,
+.page-btn {
+  background: var(--primary-gradient);
+  color: #fff;
+}
+
+.search-btn {
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+}
+
+.search-btn:hover,
+.recommend-btn:hover,
+.page-btn:not(:disabled):hover {
   transform: translateY(-1px);
 }
 
 .filter-controls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  align-items: end;
 }
 
 .filter-group {
@@ -752,9 +867,9 @@ export default defineComponent({
 }
 
 .filter-group label {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
-  font-size: 0.95rem;
+  font-size: 0.92rem;
 }
 
 .range-inputs {
@@ -763,9 +878,12 @@ export default defineComponent({
   gap: 10px;
 }
 
-.range-inputs input {
-  flex: 1;
-  padding: 8px 12px;
+.range-inputs input,
+.country-select,
+.type-select,
+.sort-select {
+  width: 100%;
+  padding: 10px 12px;
   border: 1px solid var(--input-border);
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
@@ -774,159 +892,120 @@ export default defineComponent({
   outline: none;
 }
 
-.range-inputs input:focus {
+.range-inputs input:focus,
+.country-select:focus,
+.type-select:focus,
+.sort-select:focus {
   border-color: var(--input-focus-border);
 }
 
 .range-inputs span {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
-.country-select,
-.type-select {
-  padding: 8px 12px;
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.95rem;
-  background: var(--input-bg);
-  color: var(--text-primary);
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .reset-btn {
-  align-self: flex-end;
-  padding: 10px 20px;
-  background: var(--danger);
+  padding: 10px 18px;
+  background: #ef4444;
   color: #fff;
-  border: none;
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
-  transition: all var(--transition-fast);
 }
 
-.reset-btn:hover {
-  opacity: 0.85;
-}
-
-/* 统计信息样式 */
-.stats-section {
+.stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
 }
 
 .stat-card {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
-  padding: 25px;
+  padding: 22px;
   border-radius: var(--radius-md);
   text-align: center;
   box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-  transition: transform var(--transition-normal);
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
 }
 
 .stat-number {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 2rem;
+  font-weight: 800;
   color: var(--primary);
   margin-bottom: 8px;
+  word-break: break-word;
 }
 
 .stat-label {
-  font-size: 1rem;
-  color: var(--text-muted);
-  font-weight: 500;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* 排序部分样式 */
-.sort-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  padding: 20px;
-  border-radius: var(--radius-md);
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
+.stat-label.dark {
+  color: var(--text-secondary);
 }
 
 .sort-controls {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .sort-controls label {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
 }
 
-.sort-select {
-  padding: 8px 15px;
-  border: 1px solid var(--input-border);
-  border-radius: var(--radius-sm);
-  font-size: 1rem;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  min-width: 200px;
-}
-
-/* 电影列表样式 */
-.movies-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  padding: 25px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.loading {
+.loading-state,
+.empty-state {
   text-align: center;
-  padding: 60px;
-  font-size: 1.3rem;
-  color: var(--primary);
+  padding: 48px 24px;
 }
 
-.no-results {
-  text-align: center;
-  padding: 60px;
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 14px;
 }
 
-.no-results p {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  margin-bottom: 20px;
+.spinner {
+  width: 46px;
+  height: 46px;
+  border: 4px solid rgba(102, 126, 234, 0.14);
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 18px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .movies-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
 .movie-card {
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
-  padding: 25px;
+  padding: 20px;
   background: var(--panel-bg);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-  transition: transform var(--transition-normal),
-    box-shadow var(--transition-normal);
+  transition: all var(--transition-fast);
 }
 
 .movie-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-4px);
   box-shadow: var(--panel-shadow);
 }
 
@@ -934,16 +1013,33 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.movie-title-wrap {
+  flex: 1;
 }
 
 .movie-title {
-  margin: 0;
-  font-size: 1.4rem;
+  margin: 0 0 10px;
+  font-size: 1.2rem;
   color: var(--text-primary);
-  line-height: 1.3;
-  flex: 1;
-  margin-right: 15px;
+  line-height: 1.4;
+}
+
+.movie-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  background: var(--nav-hover-bg);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
 }
 
 .movie-rating {
@@ -955,116 +1051,78 @@ export default defineComponent({
   border-radius: var(--radius-full);
 }
 
-.rating-star {
-  font-size: 1.1rem;
-}
-
 .rating-score {
   font-weight: 700;
   color: var(--rating-text);
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .movie-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
-  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 14px;
   background: var(--primary-bg);
   border-radius: var(--radius-sm);
 }
 
-.meta-item {
+.meta-row {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .meta-label {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .meta-value {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.movie-crew {
-  margin-bottom: 20px;
-}
-
-.crew-item {
-  margin-bottom: 12px;
-}
-
-.crew-item:last-child {
-  margin-bottom: 0;
-}
-
-.crew-label {
-  display: inline-block;
-  width: 50px;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.crew-value {
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .movie-quote {
-  margin: 20px 0;
-  padding: 15px;
+  margin: 14px 0;
+  padding: 14px;
   background: var(--quote-bg);
   border-radius: var(--radius-sm);
   border-left: 4px solid var(--quote-border);
 }
 
-.quote-icon {
-  margin-right: 10px;
-  font-size: 1.2rem;
-}
-
 .quote-text {
-  font-style: italic;
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
+  font-size: 0.92rem;
 }
 
 .movie-actions {
   display: flex;
   gap: 10px;
-  margin-top: 20px;
+  flex-wrap: wrap;
+  margin-top: 16px;
 }
 
 .action-btn {
   flex: 1;
-  padding: 12px;
+  min-width: 100px;
+  padding: 11px 12px;
   border: none;
   border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: 0.92rem;
+  font-weight: 700;
   text-align: center;
   text-decoration: none;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
 }
 
 .detail-link {
-  background: var(--primary);
+  background: var(--primary-gradient);
   color: #fff;
-}
-
-.detail-link:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 .favorite-btn {
@@ -1078,121 +1136,79 @@ export default defineComponent({
   color: #fff;
 }
 
-/* 分页样式 */
+.watch-link {
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
+}
+
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
-  margin-top: 30px;
+  gap: 18px;
+  margin-top: 10px;
   padding-top: 20px;
   border-top: 1px solid var(--panel-border);
 }
 
 .page-btn {
-  padding: 10px 25px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
+  padding: 10px 20px;
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: all var(--transition-fast);
 }
 
 .page-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.45;
   cursor: not-allowed;
-}
-
-.page-btn:not(:disabled):hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  transform: none;
 }
 
 .page-info {
-  font-size: 1rem;
   color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* 推荐部分样式 */
-.recommendation-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  padding: 25px;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.recommendation-section h2 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: var(--text-primary);
-  font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .recommendation-controls {
   display: flex;
-  gap: 15px;
-  margin-bottom: 30px;
+  gap: 12px;
   flex-wrap: wrap;
+  margin-bottom: 22px;
 }
 
 .recommend-btn {
-  padding: 12px 25px;
-  background: var(--primary-gradient);
-  color: #fff;
-  border: none;
+  padding: 11px 18px;
   border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: transform var(--transition-normal),
-    box-shadow var(--transition-normal);
-}
-
-.recommend-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--primary-shadow);
 }
 
 .recommendations-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
 }
 
 .recommendation-card {
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-md);
-  padding: 20px;
-  background: var(--panel-bg);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-  transition: transform var(--transition-normal);
+  padding: 18px;
+  background: var(--primary-bg);
+  transition: all var(--transition-fast);
 }
 
 .recommendation-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
 }
 
 .rec-header {
   display: flex;
   justify-content: space-between;
+  gap: 10px;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .rec-header h4 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   color: var(--text-primary);
-  flex: 1;
-  margin-right: 15px;
 }
 
 .rec-rating {
@@ -1200,92 +1216,80 @@ export default defineComponent({
   color: var(--rating-text);
   padding: 4px 10px;
   border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .rec-info {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 12px;
 }
 
-.rec-year,
-.rec-country,
-.rec-genre {
-  font-size: 0.85rem;
-  padding: 4px 10px;
-  border-radius: var(--radius-md);
-  background: var(--primary-bg);
+.rec-chip {
+  font-size: 0.82rem;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  background: var(--nav-hover-bg);
   color: var(--text-secondary);
 }
 
 .rec-quote {
   margin: 0;
-  font-style: italic;
+  line-height: 1.6;
   color: var(--text-muted);
-  font-size: 0.95rem;
-  line-height: 1.5;
-  border-left: 3px solid var(--quote-border);
-  padding-left: 10px;
+  font-size: 0.92rem;
 }
 
-/* 响应式设计 */
+.recommend-placeholder {
+  text-align: center;
+  padding: 30px 12px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 1100px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 768px) {
-  .header h1 {
+  .douban-view {
+    padding: 16px;
+  }
+
+  .hero-section,
+  .panel-card {
+    padding: 20px;
+  }
+
+  .hero-title {
     font-size: 2rem;
   }
 
-  .subtitle {
-    font-size: 1.1rem;
-  }
-
-  .movies-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-controls {
-    grid-template-columns: 1fr;
-  }
-
-  .movie-meta {
-    grid-template-columns: 1fr;
-  }
-
-  .recommendation-controls {
+  .search-box,
+  .sort-controls,
+  .pagination,
+  .movie-actions {
     flex-direction: column;
+    align-items: stretch;
   }
 
-  .recommend-btn {
-    width: 100%;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 15px;
+  .filter-controls,
+  .stats-grid,
+  .movies-grid,
+  .recommendations-grid {
+    grid-template-columns: 1fr;
   }
 
   .page-info {
-    order: -1;
-  }
-}
-
-@media (max-width: 480px) {
-  .header {
-    padding: 20px;
-  }
-
-  .header h1 {
-    font-size: 1.6rem;
-  }
-
-  .movie-card {
-    padding: 20px;
-  }
-
-  .movie-actions {
-    flex-direction: column;
+    text-align: center;
   }
 }
 </style>

@@ -1,683 +1,623 @@
 <template>
-  <div class="home">
-    <!-- 顶部横幅 -->
-    <div class="hero-banner">
+  <div class="about-view">
+    <section class="hero-section">
       <div class="hero-content">
-        <h1>🎬 智能电影推荐系统</h1>
-        <p class="hero-subtitle">基于豆瓣电影TOP250数据的个性化推荐</p>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-number">250</span>
-            <span class="stat-label">部精选电影</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">9.0+</span>
-            <span class="stat-label">平均评分</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">1994-2026</span>
-            <span class="stat-label">年份跨度</span>
-          </div>
+        <div class="hero-badge">系统介绍</div>
+        <h1 class="hero-title">🎬 智能电影推荐系统</h1>
+        <p class="hero-subtitle">
+          基于大模型与协同过滤技术构建，融合冷启动兴趣选择、用户画像分析、
+          自然语言推荐检索与推荐理由生成，为用户提供更智能、更可解释的电影推荐体验。
+        </p>
+
+        <div class="hero-tags">
+          <span class="hero-tag">协同过滤</span>
+          <span class="hero-tag">大模型增强</span>
+          <span class="hero-tag">用户画像</span>
+          <span class="hero-tag">自然语言推荐</span>
+        </div>
+
+        <div class="hero-actions">
+          <router-link to="/ai-chat" class="primary-btn">
+            立即体验 AI 推荐
+          </router-link>
+          <router-link to="/douban" class="secondary-btn">
+            浏览电影库
+          </router-link>
         </div>
       </div>
-    </div>
 
-    <div class="container">
-      <!-- 用户欢迎区域 -->
-      <div class="welcome-section">
-        <div v-if="currentUser" class="user-welcome">
-          <div class="user-avatar">
-            <span class="avatar-icon">👤</span>
-          </div>
-          <div class="user-info">
-            <h2>欢迎回来, {{ currentUser.username }}!</h2>
-            <p class="user-email">{{ currentUser.email || "未设置邮箱" }}</p>
-            <p class="user-join-date">
-              注册时间:
-              {{
-                new Date(currentUser.date_joined).toLocaleDateString("zh-CN")
-              }}
+      <div class="hero-side">
+        <div class="hero-stat-card">
+          <div class="stat-number">6+</div>
+          <div class="stat-label">核心功能模块</div>
+        </div>
+        <div class="hero-stat-card">
+          <div class="stat-number">AI</div>
+          <div class="stat-label">大模型推荐解释</div>
+        </div>
+        <div class="hero-stat-card">
+          <div class="stat-number">CF</div>
+          <div class="stat-label">协同过滤推荐引擎</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <h2>📌 项目简介</h2>
+        <p>这是一个面向个性化电影推荐场景的智能系统。</p>
+      </div>
+
+      <div class="intro-grid">
+        <div class="intro-card">
+          <h3>项目目标</h3>
+          <p>
+            通过结合传统推荐算法与大模型能力，解决电影推荐中“冷启动、解释性不足、
+            自然语言交互弱”等问题，提升推荐体验与系统智能化程度。
+          </p>
+        </div>
+
+        <div class="intro-card">
+          <h3>核心思路</h3>
+          <p>
+            使用协同过滤生成推荐候选结果，利用用户画像补充用户兴趣，再通过大模型完成
+            推荐理由生成与自然语言推荐检索，实现“可推荐、可解释、可交互”的推荐系统。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <h2>🚀 核心功能</h2>
+        <p>系统当前已经实现的主要模块。</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3>协同过滤推荐</h3>
+          <p>
+            基于用户评分行为进行个性化推荐，支持基于用户的协同过滤推荐结果生成。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🧠</div>
+          <h3>用户画像分析</h3>
+          <p>
+            根据用户冷启动兴趣与评分行为构建画像，用于个性化推荐和推荐解释增强。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🌱</div>
+          <h3>冷启动兴趣选择</h3>
+          <p>用户首次进入系统时可以主动设置类型、国家、年份和关键词偏好。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💬</div>
+          <h3>AI 对话问答</h3>
+          <p>
+            用户可以通过 AI 对话页面进行电影问答、剧情分析、导演风格了解等交互。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📝</div>
+          <h3>推荐理由生成</h3>
+          <p>
+            利用大模型对推荐结果生成自然语言解释，让推荐结果更具可读性和可信度。
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔍</div>
+          <h3>自然语言推荐检索</h3>
+          <p>
+            支持用户直接输入观影需求，如“推荐几部高分科幻电影”，系统自动解析并推荐。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <h2>🔄 系统流程</h2>
+        <p>从用户输入到推荐结果展示的主要流程。</p>
+      </div>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-index">01</div>
+          <div class="step-content">
+            <h3>用户输入兴趣或行为数据</h3>
+            <p>
+              用户注册后可选择兴趣偏好，并在后续通过评分、收藏和 AI
+              交互留下行为数据。
             </p>
           </div>
-          <div class="user-actions">
-            <button @click="getPersonalizedRecommendations" class="primary-btn">
-              🎯 获取个性化推荐
-            </button>
-            <button @click="viewFavorites" class="secondary-btn">
-              ❤️ 查看收藏
-            </button>
-          </div>
         </div>
-        <div v-else class="guest-welcome">
-          <h2>👋 欢迎来到电影推荐系统</h2>
-          <p>登录后可以获取个性化电影推荐、收藏喜欢的电影</p>
-          <div class="auth-actions">
-            <router-link to="/login" class="auth-btn login-btn"
-              >登录</router-link
-            >
-            <router-link to="/register" class="auth-btn register-btn"
-              >注册</router-link
-            >
-          </div>
-        </div>
-      </div>
 
-      <!-- 快速推荐区域 -->
-      <div class="quick-recommendations">
-        <h2 class="section-title">🚀 快速推荐</h2>
-        <div class="recommendation-buttons">
-          <button @click="getTopRatedMovies" class="rec-btn">
-            ⭐ 高分电影
-          </button>
-          <button @click="getRecentMovies" class="rec-btn">🆕 近期热门</button>
-          <button @click="getRandomMovies" class="rec-btn">🎲 随机推荐</button>
-          <button @click="getByGenre('剧情')" class="rec-btn">
-            🎭 剧情电影
-          </button>
-          <button @click="getByGenre('喜剧')" class="rec-btn">
-            😄 喜剧电影
-          </button>
-          <button @click="getByGenre('科幻')" class="rec-btn">
-            🚀 科幻电影
-          </button>
-        </div>
-      </div>
-
-      <!-- 推荐结果展示 -->
-      <div class="recommendations-section">
-        <div class="section-header">
-          <h2 class="section-title">🎬 推荐电影</h2>
-          <div class="section-controls">
-            <span class="result-count"
-              >{{ recommendations.length }} 部电影</span
-            >
-            <button
-              @click="clearRecommendations"
-              class="clear-btn"
-              v-if="recommendations.length > 0"
-            >
-              清空
-            </button>
+        <div class="flow-step">
+          <div class="step-index">02</div>
+          <div class="step-content">
+            <h3>构建用户画像</h3>
+            <p>
+              系统融合冷启动偏好与评分行为，提取用户偏好的类型、国家、年份和关键词信息。
+            </p>
           </div>
         </div>
 
-        <div v-if="loading" class="loading-state">
-          <div class="spinner"></div>
-          <p>正在加载推荐...</p>
+        <div class="flow-step">
+          <div class="step-index">03</div>
+          <div class="step-content">
+            <h3>推荐引擎生成候选结果</h3>
+            <p>
+              协同过滤算法根据用户评分记录和相似用户行为生成个性化候选电影。
+            </p>
+          </div>
         </div>
 
-        <div v-else-if="recommendations.length === 0" class="empty-state">
-          <div class="empty-icon">🎬</div>
-          <h3>暂无推荐</h3>
-          <p>点击上面的按钮获取电影推荐</p>
+        <div class="flow-step">
+          <div class="step-index">04</div>
+          <div class="step-content">
+            <h3>大模型增强推荐解释</h3>
+            <p>
+              系统将候选结果、用户画像和推荐上下文交给大模型，生成自然语言推荐理由。
+            </p>
+          </div>
         </div>
 
-        <div v-else class="movies-grid">
-          <div
-            v-for="movie in recommendations"
-            :key="movie['电影链接']"
-            class="movie-card"
-          >
-            <div class="movie-card-header">
-              <div class="movie-rating">
-                <span class="rating-star">⭐</span>
-                <span class="rating-value">{{ movie["评分"] }}</span>
-              </div>
-              <div class="movie-year">{{ movie["年份"] }}</div>
-            </div>
-
-            <h3 class="movie-title">{{ movie["电影名字"] }}</h3>
-
-            <div class="movie-meta">
-              <span class="meta-item">
-                <span class="meta-label">国家:</span>
-                <span class="meta-value">{{ movie["国家"] }}</span>
-              </span>
-              <span class="meta-item">
-                <span class="meta-label">类型:</span>
-                <span class="meta-value">{{ movie["类型"] }}</span>
-              </span>
-            </div>
-
-            <div class="movie-crew">
-              <p class="crew-item">
-                <strong>导演:</strong> {{ movie["导演"] || "未知" }}
-              </p>
-              <p class="crew-item">
-                <strong>主演:</strong> {{ movie["主演"] || "未知" }}
-              </p>
-            </div>
-
-            <div class="movie-quote" v-if="movie['一句话评价']">
-              <span class="quote-icon">💬</span>
-              <span class="quote-text">{{ movie["一句话评价"] }}</span>
-            </div>
-
-            <div class="movie-actions">
-              <button
-                @click="goToMovieDetail(movie)"
-                class="action-btn detail-btn"
-              >
-                电影详情
-              </button>
-              <button
-                @click="toggleFavorite(movie)"
-                class="action-btn favorite-btn"
-              >
-                {{ isFavorite(movie) ? "❤️ 已收藏" : "🤍 收藏" }}
-              </button>
-              <button @click="rateMovie(movie)" class="action-btn rate-btn">
-                ⭐ 评分
-              </button>
-            </div>
+        <div class="flow-step">
+          <div class="step-index">05</div>
+          <div class="step-content">
+            <h3>前端展示推荐结果</h3>
+            <p>
+              最终将电影信息、推荐分数、推荐算法和推荐理由展示给用户，完成推荐闭环。
+            </p>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- 热门电影排行榜 -->
-      <div class="top-movies-section">
-        <h2 class="section-title">🏆 豆瓣电影TOP10</h2>
-        <div class="top-movies-list">
-          <div
-            v-for="(movie, index) in topMovies"
-            :key="movie['电影链接']"
-            class="top-movie-item"
-            :class="{ 'top-3': index < 3 }"
-          >
-            <div class="rank-badge">
-              <span class="rank-number">{{ index + 1 }}</span>
-            </div>
-            <div class="movie-info">
-              <h4 class="movie-title">{{ movie["电影名字"] }}</h4>
-              <div class="movie-details">
-                <span class="rating">⭐ {{ movie["评分"] }}</span>
-                <span class="year">{{ movie["年份"] }}</span>
-                <span class="country">{{ movie["国家"] }}</span>
-              </div>
-              <p class="movie-quote" v-if="movie['一句话评价']">
-                {{ movie["一句话评价"] }}
-              </p>
-            </div>
-            <div class="movie-actions">
-              <button @click="goToMovieDetail(movie)" class="small-btn">
-                详情
-              </button>
-            </div>
+    <section class="section-card">
+      <div class="section-header">
+        <h2>🧰 技术栈</h2>
+        <p>本项目使用的前后端与算法相关技术。</p>
+      </div>
+
+      <div class="stack-grid">
+        <div class="stack-card">
+          <h3>前端技术</h3>
+          <div class="chip-group">
+            <span class="tech-chip">Vue 3</span>
+            <span class="tech-chip">TypeScript</span>
+            <span class="tech-chip">Vue Router</span>
+            <span class="tech-chip">Pinia</span>
+            <span class="tech-chip">Axios</span>
+          </div>
+        </div>
+
+        <div class="stack-card">
+          <h3>后端技术</h3>
+          <div class="chip-group">
+            <span class="tech-chip">Django</span>
+            <span class="tech-chip">Django REST Framework</span>
+            <span class="tech-chip">SQLite</span>
+            <span class="tech-chip">Token Authentication</span>
+          </div>
+        </div>
+
+        <div class="stack-card">
+          <h3>智能推荐技术</h3>
+          <div class="chip-group">
+            <span class="tech-chip">Collaborative Filtering</span>
+            <span class="tech-chip">User Profile</span>
+            <span class="tech-chip">Cold Start</span>
+            <span class="tech-chip">Explainable Recommendation</span>
+          </div>
+        </div>
+
+        <div class="stack-card">
+          <h3>大模型能力</h3>
+          <div class="chip-group">
+            <span class="tech-chip">DeepSeek API</span>
+            <span class="tech-chip">AI Chat</span>
+            <span class="tech-chip">NL Recommendation</span>
+            <span class="tech-chip">Reason Generation</span>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- 电影分类浏览 -->
-      <div class="categories-section">
-        <h2 class="section-title">📂 按类型浏览</h2>
-        <div class="categories-grid">
-          <div
-            v-for="category in movieCategories"
-            :key="category.name"
-            class="category-card"
-            @click="getByGenre(category.name)"
-          >
-            <div class="category-icon">{{ category.icon }}</div>
-            <h4>{{ category.name }}</h4>
-            <p class="category-count">{{ category.count }} 部电影</p>
-          </div>
-        </div>
+    <section class="section-card">
+      <div class="section-header">
+        <h2>📚 数据与算法说明</h2>
+        <p>系统展示数据与算法实验数据采用双数据源设计。</p>
       </div>
 
-      <!-- 统计信息 -->
-      <div class="stats-section">
-        <h2 class="section-title">📊 数据统计</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">🎬</div>
-            <div class="stat-content">
-              <div class="stat-number">{{ totalMovies }}</div>
-              <div class="stat-label">总电影数</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-content">
-              <div class="stat-number">{{ averageRating.toFixed(1) }}</div>
-              <div class="stat-label">平均评分</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🌍</div>
-            <div class="stat-content">
-              <div class="stat-number">{{ countries.length }}</div>
-              <div class="stat-label">国家/地区</div>
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🎭</div>
-            <div class="stat-content">
-              <div class="stat-number">{{ genres.length }}</div>
-              <div class="stat-label">电影类型</div>
-            </div>
-          </div>
+      <div class="data-grid">
+        <div class="data-card">
+          <h3>展示数据</h3>
+          <p>
+            前端电影展示主要基于豆瓣电影数据，用于电影信息展示、详情查看与推荐结果呈现。
+          </p>
+        </div>
+
+        <div class="data-card">
+          <h3>实验数据</h3>
+          <p>
+            推荐算法训练与实验评估使用 MovieLens
+            数据集，用于验证协同过滤推荐算法的实现效果。
+          </p>
+        </div>
+
+        <div class="data-card">
+          <h3>推荐逻辑</h3>
+          <p>
+            系统在线推荐以用户评分记录、冷启动偏好和用户画像为基础，结合协同过滤与规则筛选生成结果。
+          </p>
+        </div>
+
+        <div class="data-card">
+          <h3>大模型融合方式</h3>
+          <p>
+            大模型主要用于推荐理由生成、AI
+            电影问答、自然语言推荐检索和推荐回复增强。
+          </p>
         </div>
       </div>
-    </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header">
+        <h2>✨ 项目亮点</h2>
+        <p>本系统相较于传统电影推荐页面的增强点。</p>
+      </div>
+
+      <div class="highlight-list">
+        <div class="highlight-item">
+          <span class="highlight-dot"></span>
+          <span>融合协同过滤与大模型能力，实现推荐与解释一体化。</span>
+        </div>
+        <div class="highlight-item">
+          <span class="highlight-dot"></span>
+          <span>支持冷启动兴趣选择，提升新用户初始推荐质量。</span>
+        </div>
+        <div class="highlight-item">
+          <span class="highlight-dot"></span>
+          <span>构建用户画像，用于增强推荐结果的个性化与可解释性。</span>
+        </div>
+        <div class="highlight-item">
+          <span class="highlight-dot"></span>
+          <span>支持自然语言推荐检索，让用户可以直接用口语描述需求。</span>
+        </div>
+        <div class="highlight-item">
+          <span class="highlight-dot"></span>
+          <span>AI 对话页面支持电影问答与智能推荐双模式交互。</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section panel-card">
+      <div class="cta-content">
+        <h2>开始体验系统</h2>
+        <p>
+          你可以直接进入 AI 对话页体验自然语言推荐，或进入电影库浏览高分电影。
+        </p>
+      </div>
+      <div class="cta-actions">
+        <router-link to="/ai-chat" class="primary-btn">
+          前往 AI 对话
+        </router-link>
+        <router-link to="/douban" class="secondary-btn">
+          前往电影库
+        </router-link>
+      </div>
+    </section>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted } from "vue";
-import { useAuthStore } from "@/stores/auth";
-import doubanData from "../data/豆瓣电影TOP250.json";
-
-interface DoubanMovie {
-  电影名字: string;
-  电影链接: string;
-  评分: string;
-  评分人数: string;
-  导演: string;
-  主演: string;
-  年份: string;
-  国家: string;
-  类型: string;
-  一句话评价: string;
-}
-
-interface MovieCategory {
-  name: string;
-  icon: string;
-  count: number;
-}
+import { defineComponent } from "vue";
 
 export default defineComponent({
-  name: "HomeView",
-  setup() {
-    const authStore = useAuthStore();
-    const allMovies = ref<DoubanMovie[]>([]);
-    const recommendations = ref<DoubanMovie[]>([]);
-    const loading = ref(false);
-    const favorites = ref<Set<string>>(new Set());
-
-    // 计算当前用户
-    const currentUser = computed(() => authStore.user);
-
-    // 计算属性
-    const totalMovies = computed(() => allMovies.value.length);
-    const averageRating = computed(() => {
-      if (allMovies.value.length === 0) return 0;
-      const sum = allMovies.value.reduce((acc, movie) => {
-        return acc + parseFloat(movie["评分"] || "0");
-      }, 0);
-      return sum / allMovies.value.length;
-    });
-    const countries = computed(() => {
-      const countrySet = new Set<string>();
-      allMovies.value.forEach((movie) => {
-        if (movie["国家"]) {
-          const countries = movie["国家"].split(" ");
-          countries.forEach((c) => countrySet.add(c.trim()));
-        }
-      });
-      return Array.from(countrySet).sort();
-    });
-    const genres = computed(() => {
-      const genreSet = new Set<string>();
-      allMovies.value.forEach((movie) => {
-        if (movie["类型"]) {
-          const genres = movie["类型"].split(" ");
-          genres.forEach((g) => genreSet.add(g.trim()));
-        }
-      });
-      return Array.from(genreSet).sort();
-    });
-    const topMovies = computed(() => {
-      return [...allMovies.value]
-        .sort((a, b) => parseFloat(b["评分"]) - parseFloat(a["评分"]))
-        .slice(0, 10);
-    });
-    const movieCategories = computed<MovieCategory[]>(() => {
-      const categories: MovieCategory[] = [
-        { name: "剧情", icon: "🎭", count: 0 },
-        { name: "喜剧", icon: "😄", count: 0 },
-        { name: "爱情", icon: "❤️", count: 0 },
-        { name: "科幻", icon: "🚀", count: 0 },
-        { name: "动作", icon: "💥", count: 0 },
-        { name: "悬疑", icon: "🔍", count: 0 },
-        { name: "动画", icon: "🐭", count: 0 },
-        { name: "犯罪", icon: "🚔", count: 0 },
-      ];
-
-      categories.forEach((category) => {
-        category.count = allMovies.value.filter((movie) =>
-          movie["类型"].includes(category.name)
-        ).length;
-      });
-
-      return categories.filter((cat) => cat.count > 0);
-    });
-
-    // 初始化数据
-    const loadMovies = () => {
-      loading.value = true;
-      try {
-        allMovies.value = doubanData as DoubanMovie[];
-        loadFavorites();
-      } catch (error) {
-        console.error("加载电影数据失败:", error);
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    // 加载收藏夹
-    const loadFavorites = () => {
-      const saved = localStorage.getItem("movie_favorites");
-      if (saved) {
-        favorites.value = new Set(JSON.parse(saved));
-      }
-    };
-
-    // 收藏功能
-    const isFavorite = (movie: DoubanMovie) => {
-      return favorites.value.has(movie["电影链接"]);
-    };
-
-    const toggleFavorite = (movie: DoubanMovie) => {
-      if (favorites.value.has(movie["电影链接"])) {
-        favorites.value.delete(movie["电影链接"]);
-      } else {
-        favorites.value.add(movie["电影链接"]);
-      }
-      localStorage.setItem(
-        "movie_favorites",
-        JSON.stringify(Array.from(favorites.value))
-      );
-    };
-
-    // 查看收藏
-    const viewFavorites = () => {
-      const favoriteMovies = allMovies.value.filter((movie) =>
-        favorites.value.has(movie["电影链接"])
-      );
-      recommendations.value = favoriteMovies;
-    };
-
-    // 评分电影
-    const rateMovie = (movie: DoubanMovie) => {
-      if (!currentUser.value) {
-        alert("请先登录");
-        return;
-      }
-
-      const rating = prompt(`请为《${movie["电影名字"]}》评分（1-10分）:`);
-      if (rating && parseFloat(rating) >= 1 && parseFloat(rating) <= 10) {
-        alert(`评分成功！您给《${movie["电影名字"]}》评分: ${rating}分`);
-        // 这里可以添加API调用保存评分
-      }
-    };
-
-    // 推荐算法
-    const getPersonalizedRecommendations = () => {
-      if (!currentUser.value) {
-        alert("请先登录");
-        return;
-      }
-
-      loading.value = true;
-      setTimeout(() => {
-        // 基于用户收藏的推荐逻辑
-        const favoriteGenres = new Set<string>();
-        allMovies.value.forEach((movie) => {
-          if (favorites.value.has(movie["电影链接"]) && movie["类型"]) {
-            const genres = movie["类型"].split(" ");
-            genres.forEach((g) => favoriteGenres.add(g.trim()));
-          }
-        });
-
-        let personalized = [...allMovies.value];
-
-        if (favoriteGenres.size > 0) {
-          personalized = personalized.filter((movie) => {
-            const movieGenres = movie["类型"].split(" ");
-            return movieGenres.some((g) => favoriteGenres.has(g.trim()));
-          });
-        }
-
-        // 按评分排序并取前12部
-        personalized.sort(
-          (a, b) => parseFloat(b["评分"]) - parseFloat(a["评分"])
-        );
-        recommendations.value = personalized.slice(0, 12);
-        loading.value = false;
-      }, 1000);
-    };
-
-    const getTopRatedMovies = () => {
-      loading.value = true;
-      setTimeout(() => {
-        const topRated = [...allMovies.value]
-          .filter((movie) => parseFloat(movie["评分"]) >= 9.0)
-          .sort((a, b) => parseFloat(b["评分"]) - parseFloat(a["评分"]));
-        recommendations.value = topRated.slice(0, 12);
-        loading.value = false;
-      }, 800);
-    };
-
-    const getRecentMovies = () => {
-      loading.value = true;
-      setTimeout(() => {
-        const recent = [...allMovies.value]
-          .filter((movie) => {
-            const year = parseInt(movie["年份"]) || 0;
-            return year >= 2010;
-          })
-          .sort(
-            (a, b) => (parseInt(b["年份"]) || 0) - (parseInt(a["年份"]) || 0)
-          );
-        recommendations.value = recent.slice(0, 12);
-        loading.value = false;
-      }, 800);
-    };
-
-    const getRandomMovies = () => {
-      loading.value = true;
-      setTimeout(() => {
-        const shuffled = [...allMovies.value].sort(() => 0.5 - Math.random());
-        recommendations.value = shuffled.slice(0, 12);
-        loading.value = false;
-      }, 800);
-    };
-
-    const getByGenre = (genre: string) => {
-      loading.value = true;
-      setTimeout(() => {
-        const byGenre = allMovies.value
-          .filter((movie) => movie["类型"].includes(genre))
-          .sort((a, b) => parseFloat(b["评分"]) - parseFloat(a["评分"]));
-        recommendations.value = byGenre.slice(0, 12);
-        loading.value = false;
-      }, 800);
-    };
-
-    const clearRecommendations = () => {
-      recommendations.value = [];
-    };
-
-    const goToMovieDetail = (movie: DoubanMovie) => {
-      sessionStorage.setItem("current_movie_detail", JSON.stringify(movie));
-      window.location.href = `/movie-detail?movie_title=${encodeURIComponent(
-        movie["电影名字"]
-      )}&douban_url=${encodeURIComponent(movie["电影链接"])}`;
-    };
-
-    // 生命周期钩子
-    onMounted(() => {
-      loadMovies();
-    });
-
-    // 返回所有需要暴露给模板的属性和方法
-    return {
-      // 数据
-      allMovies,
-      recommendations,
-      loading,
-      favorites,
-
-      // 计算属性
-      currentUser,
-      totalMovies,
-      averageRating,
-      countries,
-      genres,
-      topMovies,
-      movieCategories,
-
-      // 方法
-      getPersonalizedRecommendations,
-      goToMovieDetail,
-      getTopRatedMovies,
-      getRecentMovies,
-      getRandomMovies,
-      getByGenre,
-      viewFavorites,
-      toggleFavorite,
-      isFavorite,
-      rateMovie,
-      clearRecommendations,
-    };
-  },
+  name: "AboutView",
 });
 </script>
 
 <style scoped>
-.home {
-  padding: 0;
-  max-width: var(--max-width);
-  margin: 0 auto;
+.about-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-/* 英雄横幅样式 */
-.hero-banner {
+.hero-section {
   background: var(--bg-hero);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  padding: 40px;
   color: #fff;
-  padding: 60px 20px;
-  text-align: center;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  margin-bottom: 40px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 28px;
+  align-items: start;
 }
 
-.hero-content h1 {
-  margin: 0;
-  font-size: 3rem;
+.hero-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  margin: 0 0 14px;
+  font-size: 2.5rem;
   font-weight: 800;
-  margin-bottom: 15px;
   color: #fff;
 }
 
 .hero-subtitle {
-  font-size: 1.3rem;
-  opacity: 0.9;
-  margin-bottom: 30px;
-  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 20px;
+  max-width: 820px;
+  line-height: 1.8;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.hero-stats {
+.hero-tags {
   display: flex;
-  justify-content: center;
-  gap: 40px;
-  margin-top: 30px;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.stat-number {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 5px;
+.hero-tag {
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.14);
   color: #fff;
+  font-size: 0.88rem;
 }
 
-.stat-label {
-  font-size: 1rem;
-  opacity: 0.8;
-  color: rgba(255, 255, 255, 0.8);
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-/* 容器样式 */
-.container {
-  padding: 0 20px;
+.hero-side {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 14px;
 }
 
-/* 欢迎区域样式 */
-.welcome-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--panel-shadow);
+.hero-stat-card {
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
 }
 
-.user-welcome {
-  display: flex;
-  align-items: center;
-  gap: 25px;
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
 }
 
-.user-avatar {
-  width: 80px;
-  height: 80px;
-  background: var(--primary-gradient);
+.stat-label {
+  margin-top: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.92rem;
+}
+
+.section-card,
+.cta-section {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+  padding: 28px;
+}
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 1.6rem;
+}
+
+.section-header p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.intro-grid,
+.feature-grid,
+.stack-grid,
+.data-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.intro-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.feature-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stack-grid,
+.data-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.intro-card,
+.feature-card,
+.stack-card,
+.data-card {
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+}
+
+.intro-card h3,
+.feature-card h3,
+.stack-card h3,
+.data-card h3 {
+  margin: 0 0 10px;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+.intro-card p,
+.feature-card p,
+.stack-card p,
+.data-card p {
+  margin: 0;
+  line-height: 1.75;
+  color: var(--text-secondary);
+}
+
+.feature-icon {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+}
+
+.flow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.flow-step {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
+}
+
+.step-index {
+  min-width: 56px;
+  height: 56px;
   border-radius: 50%;
+  background: var(--primary-gradient);
+  color: #fff;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1rem;
 }
 
-.avatar-icon {
-  font-size: 2.5rem;
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-info h2 {
-  margin: 0 0 10px 0;
+.step-content h3 {
+  margin: 0 0 8px;
   color: var(--text-primary);
-  font-size: 1.8rem;
+  font-size: 1.08rem;
 }
 
-.user-email {
-  color: var(--text-secondary);
-  margin: 0 0 5px 0;
-}
-
-.user-join-date {
-  color: var(--text-muted);
-  font-size: 0.9rem;
+.step-content p {
   margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
-.user-actions {
+.chip-group {
   display: flex;
-  gap: 15px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tech-chip {
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.highlight-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.highlight-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.highlight-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 8px;
+  background: linear-gradient(135deg, #667eea, #8b5cf6);
+  flex-shrink: 0;
+}
+
+.cta-section {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+}
+
+.cta-content h2 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.cta-content p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.cta-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .primary-btn,
 .secondary-btn {
-  padding: 12px 25px;
   border: none;
   border-radius: var(--radius-sm);
-  font-size: 1rem;
-  font-weight: 600;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .primary-btn {
@@ -685,681 +625,52 @@ export default defineComponent({
   color: #fff;
 }
 
-.primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--primary-shadow);
-}
-
 .secondary-btn {
-  background: var(--panel-bg);
-  color: var(--primary);
-  border: 2px solid var(--primary);
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
 }
 
+.primary-btn:hover,
 .secondary-btn:hover {
-  background: var(--primary);
-  color: #fff;
-}
-
-.guest-welcome {
-  text-align: center;
-  padding: 20px;
-}
-
-.guest-welcome h2 {
-  margin: 0 0 15px 0;
-  color: var(--text-primary);
-  font-size: 2rem;
-}
-
-.guest-welcome p {
-  color: var(--text-secondary);
-  margin-bottom: 25px;
-  font-size: 1.1rem;
-}
-
-.auth-actions {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-
-.auth-btn {
-  padding: 12px 35px;
-  border-radius: var(--radius-sm);
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all var(--transition-normal);
-}
-
-.login-btn {
-  background: var(--primary);
-  color: #fff;
-}
-
-.login-btn:hover {
-  opacity: 0.9;
   transform: translateY(-1px);
 }
 
-.register-btn {
-  background: var(--panel-bg);
-  color: var(--primary);
-  border: 2px solid var(--primary);
-}
-
-.register-btn:hover {
-  background: var(--primary);
-  color: #fff;
-}
-
-/* 快速推荐区域样式 */
-.quick-recommendations {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.section-title {
-  margin: 0 0 25px 0;
-  color: var(--text-primary);
-  font-size: 1.8rem;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.recommendation-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-}
-
-.rec-btn {
-  padding: 15px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  text-align: center;
-  color: var(--text-primary);
-}
-
-.rec-btn:hover {
-  background: var(--primary);
-  color: #fff;
-  border-color: var(--primary);
-  transform: translateY(-3px);
-  box-shadow: var(--primary-shadow);
-}
-
-/* 推荐结果区域样式 */
-.recommendations-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 25px;
-}
-
-.section-controls {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.result-count {
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.clear-btn {
-  padding: 8px 16px;
-  background: var(--danger);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: all var(--transition-fast);
-}
-
-.clear-btn:hover {
-  opacity: 0.85;
-}
-
-.loading-state {
-  text-align: center;
-  padding: 60px;
-  color: var(--text-muted);
-}
-
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid var(--panel-border);
-  border-top: 4px solid var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+@media (max-width: 1100px) {
+  .hero-section {
+    grid-template-columns: 1fr;
   }
-  100% {
-    transform: rotate(360deg);
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 60px;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-
-.empty-state h3 {
-  margin: 0 0 10px 0;
-  color: var(--text-primary);
-}
-
-.empty-state p {
-  color: var(--text-muted);
-  margin: 0;
-}
-
-/* 电影网格样式 */
-.movies-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 25px;
-}
-
-.movie-card {
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 25px;
-  background: var(--panel-bg);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-  transition: transform var(--transition-normal),
-    box-shadow var(--transition-normal);
-}
-
-.movie-card:hover {
-  transform: translateY(-8px);
-  box-shadow: var(--panel-shadow);
-}
-
-.movie-card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.movie-rating {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--rating-bg);
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-}
-
-.rating-star {
-  font-size: 1.1rem;
-}
-
-.rating-value {
-  font-weight: 700;
-  color: var(--rating-text);
-  font-size: 1.1rem;
-}
-
-.movie-year {
-  background: var(--primary-bg);
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.movie-title {
-  margin: 0 0 15px 0;
-  font-size: 1.4rem;
-  color: var(--text-primary);
-  line-height: 1.3;
-}
-
-.movie-meta {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.9rem;
-}
-
-.meta-label {
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-.meta-value {
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.movie-crew {
-  margin-bottom: 15px;
-}
-
-.crew-item {
-  margin: 0 0 8px 0;
-  font-size: 0.95rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.crew-item:last-child {
-  margin-bottom: 0;
-}
-
-.crew-item strong {
-  color: var(--text-primary);
-}
-
-.movie-quote {
-  margin: 15px 0;
-  padding: 12px;
-  background: var(--quote-bg);
-  border-radius: var(--radius-sm);
-  border-left: 4px solid var(--quote-border);
-}
-
-.quote-icon {
-  margin-right: 8px;
-  font-size: 1.1rem;
-}
-
-.quote-text {
-  font-style: italic;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  font-size: 0.95rem;
-}
-
-.movie-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-align: center;
-  text-decoration: none;
-  transition: all var(--transition-normal);
-}
-
-.detail-btn {
-  background: var(--primary);
-  color: #fff;
-}
-
-.detail-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.favorite-btn {
-  background: var(--danger-bg);
-  color: var(--danger);
-  border: 1px solid var(--danger-border);
-}
-
-.favorite-btn:hover {
-  background: var(--danger);
-  color: #fff;
-}
-
-.rate-btn {
-  background: var(--rating-bg);
-  color: var(--rating-text);
-  border: 1px solid transparent;
-}
-
-.rate-btn:hover {
-  background: var(--warning);
-  color: #fff;
-}
-
-/* 热门电影排行榜样式 */
-.top-movies-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.top-movies-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.top-movie-item {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 20px;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-md);
-  background: var(--panel-bg);
-  transition: transform var(--transition-normal);
-}
-
-.top-movie-item:hover {
-  transform: translateX(5px);
-}
-
-.top-movie-item.top-3 {
-  background: var(--rating-bg);
-  border-color: var(--warning);
-}
-
-.rank-badge {
-  width: 40px;
-  height: 40px;
-  background: var(--primary);
-  color: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-}
-
-.top-movie-item.top-3 .rank-badge {
-  background: var(--warning);
-}
-
-.movie-info {
-  flex: 1;
-}
-
-.movie-info .movie-title {
-  margin: 0 0 10px 0;
-  font-size: 1.2rem;
-}
-
-.movie-details {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 10px;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.movie-info .movie-quote {
-  margin: 10px 0 0 0;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-}
-
-.small-btn {
-  padding: 8px 16px;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: all var(--transition-fast);
-}
-
-.small-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-/* 分类浏览样式 */
-.categories-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-}
-
-.category-card {
-  padding: 25px;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-md);
-  text-align: center;
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  background: var(--panel-bg);
-}
-
-.category-card:hover {
-  border-color: var(--primary);
-  transform: translateY(-5px);
-  box-shadow: var(--primary-shadow);
-}
-
-.category-icon {
-  font-size: 2.5rem;
-  margin-bottom: 15px;
-}
-
-.category-card h4 {
-  margin: 0 0 10px 0;
-  color: var(--text-primary);
-  font-size: 1.2rem;
-}
-
-.category-count {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  margin: 0;
-}
-
-/* 统计信息样式 */
-.stats-section {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 30px;
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 25px;
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-md);
-  background: var(--panel-bg);
-  transition: transform var(--transition-normal);
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--panel-shadow);
-}
-
-.stat-icon {
-  font-size: 2.5rem;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-number {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--primary);
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  color: var(--text-muted);
-  font-size: 1rem;
-}
-
-/* 响应式设计 */
 @media (max-width: 768px) {
-  .hero-content h1 {
-    font-size: 2.2rem;
+  .hero-section,
+  .section-card,
+  .cta-section {
+    padding: 20px;
   }
 
-  .hero-stats {
-    flex-direction: column;
-    gap: 20px;
+  .hero-title {
+    font-size: 2rem;
   }
 
-  .user-welcome {
-    flex-direction: column;
-    text-align: center;
-    gap: 20px;
-  }
-
-  .user-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .primary-btn,
-  .secondary-btn {
-    width: 100%;
-  }
-
-  .auth-actions {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .auth-btn {
-    width: 100%;
-    text-align: center;
-  }
-
-  .recommendation-buttons {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .movies-grid {
+  .intro-grid,
+  .feature-grid,
+  .stack-grid,
+  .data-grid {
     grid-template-columns: 1fr;
   }
 
-  .categories-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .top-movie-item {
-    flex-direction: column;
-    text-align: center;
-    gap: 15px;
-  }
-
-  .movie-details {
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-content h1 {
-    font-size: 1.8rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
-
-  .recommendation-buttons {
-    grid-template-columns: 1fr;
-  }
-
-  .categories-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .section-header {
+  .cta-section {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
   }
 
-  .section-controls {
+  .hero-actions,
+  .cta-actions {
     width: 100%;
-    justify-content: space-between;
   }
 }
 </style>

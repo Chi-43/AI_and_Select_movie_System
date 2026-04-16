@@ -1,14 +1,50 @@
 <template>
   <div class="profile-view">
-    <div class="profile-header">
-      <h1>👤 个人信息管理</h1>
-      <p class="subtitle">管理您的账户信息、密码和收藏夹</p>
-    </div>
+    <section class="hero-section">
+      <div class="hero-content">
+        <div class="hero-badge">个人中心</div>
+        <h1 class="hero-title">👤 用户管理与画像中心</h1>
+        <p class="hero-subtitle">
+          管理账户资料、安全设置、兴趣偏好、用户画像与收藏内容，让推荐结果更贴合你的观影习惯。
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-number">{{ favorites.length }}</div>
+            <div class="stat-label">收藏电影</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">
+              {{ profileData.favorite_genres.length }}
+            </div>
+            <div class="stat-label">偏好类型</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-number">
+              {{ profileData.onboarding_completed ? "已完成" : "未完成" }}
+            </div>
+            <div class="stat-label">冷启动偏好</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-actions">
+        <button
+          class="header-btn"
+          @click="reloadAllData"
+          :disabled="profileLoading || preferenceLoading"
+        >
+          {{
+            profileLoading || preferenceLoading ? "刷新中..." : "🔄 刷新数据"
+          }}
+        </button>
+      </div>
+    </section>
 
     <div class="profile-container">
-      <!-- 左侧导航 -->
-      <div class="profile-sidebar">
-        <div class="user-card">
+      <!-- 左侧 -->
+      <aside class="profile-sidebar">
+        <div class="panel-card user-card">
           <div class="avatar-section">
             <div class="avatar-preview" :style="avatarStyle">
               <span v-if="!avatarPreview" class="avatar-placeholder">
@@ -21,8 +57,9 @@
                 class="avatar-image"
               />
             </div>
+
             <div class="avatar-actions">
-              <label for="avatar-upload" class="avatar-upload-btn">
+              <label for="avatar-upload" class="small-primary-btn">
                 📷 更换头像
               </label>
               <input
@@ -35,41 +72,114 @@
               <button
                 v-if="avatarPreview"
                 @click="removeAvatar"
-                class="avatar-remove-btn"
+                class="small-danger-btn"
               >
-                ❌ 移除
+                ❌ 移除头像
               </button>
             </div>
           </div>
+
           <div class="user-info-summary">
             <h3>{{ currentUser?.username || "用户" }}</h3>
             <p class="user-email">{{ currentUser?.email || "未设置邮箱" }}</p>
             <p class="user-join-date" v-if="currentUser?.date_joined">
-              注册时间: {{ formatDate(currentUser.date_joined) }}
+              注册时间：{{ formatDate(currentUser.date_joined) }}
             </p>
+          </div>
+
+          <div class="summary-tags">
+            <span class="summary-chip" v-if="profileData.onboarding_completed">
+              已完成兴趣初始化
+            </span>
+            <span class="summary-chip" v-else>未设置兴趣偏好</span>
+            <span class="summary-chip">
+              收藏 {{ favorites.length }} 部电影
+            </span>
           </div>
         </div>
 
-        <nav class="profile-nav">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            @click="activeTab = tab.id"
-            :class="['nav-item', { active: activeTab === tab.id }]"
-          >
-            <span class="nav-icon">{{ tab.icon }}</span>
-            <span class="nav-text">{{ tab.name }}</span>
-          </button>
-        </nav>
-      </div>
+        <div class="panel-card profile-quick-card">
+          <h3 class="card-title">🎯 画像速览</h3>
+          <div class="quick-block">
+            <div class="quick-label">偏好类型</div>
+            <div class="chip-group">
+              <span
+                v-for="item in profileData.favorite_genres.slice(0, 4)"
+                :key="item"
+                class="info-chip"
+              >
+                {{ item }}
+              </span>
+              <span
+                v-if="profileData.favorite_genres.length === 0"
+                class="empty-chip"
+              >
+                暂无
+              </span>
+            </div>
+          </div>
 
-      <!-- 右侧内容区域 -->
-      <div class="profile-content">
-        <!-- 基本信息标签页 -->
+          <div class="quick-block">
+            <div class="quick-label">偏好国家/地区</div>
+            <div class="chip-group">
+              <span
+                v-for="item in profileData.favorite_countries.slice(0, 4)"
+                :key="item"
+                class="info-chip"
+              >
+                {{ item }}
+              </span>
+              <span
+                v-if="profileData.favorite_countries.length === 0"
+                class="empty-chip"
+              >
+                暂无
+              </span>
+            </div>
+          </div>
+
+          <div class="quick-block">
+            <div class="quick-label">关键词</div>
+            <div class="chip-group">
+              <span
+                v-for="item in profileData.favorite_keywords.slice(0, 4)"
+                :key="item"
+                class="info-chip muted"
+              >
+                {{ item }}
+              </span>
+              <span
+                v-if="profileData.favorite_keywords.length === 0"
+                class="empty-chip"
+              >
+                暂无
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card nav-card">
+          <nav class="profile-nav">
+            <button
+              v-for="tab in tabs"
+              :key="tab.id"
+              @click="activeTab = tab.id"
+              :class="['nav-item', { active: activeTab === tab.id }]"
+            >
+              <span class="nav-icon">{{ tab.icon }}</span>
+              <span class="nav-text">{{ tab.name }}</span>
+            </button>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- 右侧 -->
+      <section class="profile-content panel-card">
+        <!-- 基本信息 -->
         <div v-if="activeTab === 'basic'" class="tab-content">
           <div class="tab-header">
             <h2>📝 基本信息</h2>
-            <p class="tab-description">更新您的个人信息</p>
+            <p class="tab-description">更新你的账户资料与个人简介</p>
           </div>
 
           <form @submit.prevent="updateProfile" class="profile-form">
@@ -129,10 +239,10 @@
                 maxlength="500"
               ></textarea>
               <div class="textarea-footer">
-                <span class="char-count"
-                  >{{ profileForm.bio?.length || 0 }}/500</span
-                >
-                <p class="form-hint">最多500个字符</p>
+                <span class="char-count">
+                  {{ profileForm.bio?.length || 0 }}/500
+                </span>
+                <p class="form-hint">最多 500 个字符</p>
               </div>
             </div>
 
@@ -141,7 +251,6 @@
                 type="button"
                 @click="resetProfileForm"
                 class="secondary-btn"
-                :disabled="isProfileFormChanged"
               >
                 重置
               </button>
@@ -156,7 +265,7 @@
           </form>
         </div>
 
-        <!-- 修改密码标签页 -->
+        <!-- 修改密码 -->
         <div v-else-if="activeTab === 'password'" class="tab-content">
           <div class="tab-header">
             <h2>🔒 修改密码</h2>
@@ -184,7 +293,7 @@
                 placeholder="请输入新密码"
                 required
               />
-              <p class="form-hint">密码至少8位，包含字母和数字</p>
+              <p class="form-hint">密码至少 8 位，建议包含大小写字母和数字</p>
             </div>
 
             <div class="form-group">
@@ -220,7 +329,7 @@
             </div>
 
             <div class="password-strength" v-if="passwordForm.new_password">
-              <div class="strength-label">密码强度:</div>
+              <div class="strength-label">密码强度</div>
               <div class="strength-meter">
                 <div
                   class="strength-bar"
@@ -250,25 +359,276 @@
           </form>
         </div>
 
-        <!-- 收藏夹标签页 -->
+        <!-- 兴趣偏好 -->
+        <div v-else-if="activeTab === 'preferences'" class="tab-content">
+          <div class="tab-header">
+            <h2>🎯 兴趣偏好</h2>
+            <p class="tab-description">
+              这些偏好会影响你的冷启动推荐结果，也会参与个性化推荐解释。
+            </p>
+          </div>
+
+          <div class="two-column-layout">
+            <div class="sub-card">
+              <h3 class="section-title">喜欢的电影类型</h3>
+              <div class="chip-selector">
+                <button
+                  v-for="genre in genreOptions"
+                  :key="genre"
+                  @click="
+                    togglePreferenceItem(preferenceForm.favorite_genres, genre)
+                  "
+                  :class="[
+                    'selector-chip',
+                    { active: preferenceForm.favorite_genres.includes(genre) },
+                  ]"
+                >
+                  {{ genre }}
+                </button>
+              </div>
+            </div>
+
+            <div class="sub-card">
+              <h3 class="section-title">喜欢的国家/地区</h3>
+              <div class="chip-selector">
+                <button
+                  v-for="country in countryOptions"
+                  :key="country"
+                  @click="
+                    togglePreferenceItem(
+                      preferenceForm.favorite_countries,
+                      country
+                    )
+                  "
+                  :class="[
+                    'selector-chip',
+                    {
+                      active:
+                        preferenceForm.favorite_countries.includes(country),
+                    },
+                  ]"
+                >
+                  {{ country }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-card">
+            <h3 class="section-title">兴趣关键词</h3>
+            <div class="chip-selector">
+              <button
+                v-for="keyword in keywordOptions"
+                :key="keyword"
+                @click="
+                  togglePreferenceItem(
+                    preferenceForm.favorite_keywords,
+                    keyword
+                  )
+                "
+                :class="[
+                  'selector-chip',
+                  {
+                    active: preferenceForm.favorite_keywords.includes(keyword),
+                  },
+                ]"
+              >
+                {{ keyword }}
+              </button>
+            </div>
+          </div>
+
+          <div class="sub-card">
+            <h3 class="section-title">偏好年份区间</h3>
+            <div class="year-range-grid">
+              <div class="form-group">
+                <label>开始年份</label>
+                <input
+                  v-model.number="preferenceForm.favorite_years.min"
+                  type="number"
+                  min="1900"
+                  max="2100"
+                  placeholder="如 2000"
+                />
+              </div>
+              <div class="form-group">
+                <label>结束年份</label>
+                <input
+                  v-model.number="preferenceForm.favorite_years.max"
+                  type="number"
+                  min="1900"
+                  max="2100"
+                  placeholder="如 2024"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              @click="loadOnboardingPreferences"
+            >
+              重载偏好
+            </button>
+            <button
+              type="button"
+              class="primary-btn"
+              @click="saveOnboardingPreferences"
+              :disabled="preferenceLoading"
+            >
+              {{ preferenceLoading ? "保存中..." : "保存兴趣偏好" }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 用户画像 -->
+        <div v-else-if="activeTab === 'profile'" class="tab-content">
+          <div class="tab-header">
+            <h2>🧠 用户画像</h2>
+            <p class="tab-description">
+              用户画像会根据你的兴趣偏好和评分行为动态更新，用于个性化推荐与推荐理由生成。
+            </p>
+          </div>
+
+          <div class="profile-overview-grid">
+            <div class="sub-card">
+              <h3 class="section-title">偏好类型</h3>
+              <div class="chip-group">
+                <span
+                  v-for="item in profileData.favorite_genres"
+                  :key="item"
+                  class="info-chip"
+                >
+                  {{ item }}
+                </span>
+                <span
+                  v-if="profileData.favorite_genres.length === 0"
+                  class="empty-chip"
+                >
+                  暂无数据
+                </span>
+              </div>
+            </div>
+
+            <div class="sub-card">
+              <h3 class="section-title">偏好国家/地区</h3>
+              <div class="chip-group">
+                <span
+                  v-for="item in profileData.favorite_countries"
+                  :key="item"
+                  class="info-chip"
+                >
+                  {{ item }}
+                </span>
+                <span
+                  v-if="profileData.favorite_countries.length === 0"
+                  class="empty-chip"
+                >
+                  暂无数据
+                </span>
+              </div>
+            </div>
+
+            <div class="sub-card">
+              <h3 class="section-title">偏好关键词</h3>
+              <div class="chip-group">
+                <span
+                  v-for="item in profileData.favorite_keywords"
+                  :key="item"
+                  class="info-chip muted"
+                >
+                  {{ item }}
+                </span>
+                <span
+                  v-if="profileData.favorite_keywords.length === 0"
+                  class="empty-chip"
+                >
+                  暂无数据
+                </span>
+              </div>
+            </div>
+
+            <div class="sub-card">
+              <h3 class="section-title">偏好年份</h3>
+              <div class="year-range-display">
+                <template
+                  v-if="
+                    profileData.favorite_years &&
+                    profileData.favorite_years.min &&
+                    profileData.favorite_years.max
+                  "
+                >
+                  {{ profileData.favorite_years.min }} -
+                  {{ profileData.favorite_years.max }}
+                </template>
+                <template v-else>暂无数据</template>
+              </div>
+            </div>
+          </div>
+
+          <div class="sub-card summary-card">
+            <h3 class="section-title">画像总结</h3>
+            <p class="profile-summary-text">
+              {{
+                profileData.profile_summary ||
+                "当前暂无画像总结，请先设置偏好或进行评分。"
+              }}
+            </p>
+            <div class="meta-row">
+              <span class="meta-badge">
+                冷启动状态：{{
+                  profileData.onboarding_completed ? "已完成" : "未完成"
+                }}
+              </span>
+              <span class="meta-badge" v-if="profileData.updated_at">
+                更新时间：{{ formatDateTime(profileData.updated_at) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="secondary-btn"
+              @click="loadUserProfile"
+            >
+              刷新画像
+            </button>
+            <button
+              type="button"
+              class="primary-btn"
+              @click="refreshUserProfile"
+              :disabled="profileRefreshLoading"
+            >
+              {{ profileRefreshLoading ? "生成中..." : "根据评分重新生成画像" }}
+            </button>
+          </div>
+        </div>
+
+        <!-- 收藏夹 -->
         <div v-else-if="activeTab === 'favorites'" class="tab-content">
           <div class="tab-header">
             <h2>❤️ 我的收藏夹</h2>
-            <p class="tab-description">您收藏的电影列表</p>
+            <p class="tab-description">你收藏的电影列表与收藏偏好分析</p>
+
             <div class="favorites-stats">
-              <span class="stat-item">
-                <span class="stat-number">{{ favorites.length }}</span>
-                <span class="stat-label">部收藏</span>
+              <span class="stat-inline">
+                <span class="stat-number small">{{ favorites.length }}</span>
+                <span class="stat-label dark">部收藏</span>
               </span>
-              <span class="stat-item">
-                <span class="stat-number">{{ favoriteGenres.length }}</span>
-                <span class="stat-label">种类型</span>
-              </span>
-              <span class="stat-item">
-                <span class="stat-number">{{
-                  averageFavoriteRating.toFixed(1)
+              <span class="stat-inline">
+                <span class="stat-number small">{{
+                  favoriteGenres.length
                 }}</span>
-                <span class="stat-label">平均评分</span>
+                <span class="stat-label dark">种类型</span>
+              </span>
+              <span class="stat-inline">
+                <span class="stat-number small">
+                  {{ averageFavoriteRating.toFixed(1) }}
+                </span>
+                <span class="stat-label dark">平均评分</span>
               </span>
             </div>
           </div>
@@ -281,7 +641,7 @@
           <div v-else-if="favorites.length === 0" class="empty-state">
             <div class="empty-icon">🎬</div>
             <h3>暂无收藏</h3>
-            <p>您还没有收藏任何电影</p>
+            <p>你还没有收藏任何电影</p>
             <router-link to="/douban" class="browse-btn">
               去浏览电影
             </router-link>
@@ -290,13 +650,13 @@
           <div v-else class="favorites-content">
             <div class="favorites-controls">
               <div class="sort-controls">
-                <label>排序方式:</label>
-                <select v-model="favoritesSortBy" @change="sortFavorites">
+                <label>排序方式</label>
+                <select v-model="favoritesSortBy">
                   <option value="rating">评分从高到低</option>
                   <option value="rating_asc">评分从低到高</option>
                   <option value="year">年份从新到旧</option>
                   <option value="year_asc">年份从旧到新</option>
-                  <option value="name">电影名称A-Z</option>
+                  <option value="name">电影名称 A-Z</option>
                 </select>
               </div>
               <button @click="clearAllFavorites" class="danger-btn">
@@ -319,22 +679,12 @@
                 </div>
 
                 <div class="movie-meta">
-                  <span class="meta-item">
-                    <span class="meta-label">年份:</span>
-                    <span class="meta-value">{{ movie["年份"] }}</span>
-                  </span>
-                  <span class="meta-item">
-                    <span class="meta-label">国家:</span>
-                    <span class="meta-value">{{ movie["国家"] }}</span>
-                  </span>
-                  <span class="meta-item">
-                    <span class="meta-label">类型:</span>
-                    <span class="meta-value">{{ movie["类型"] }}</span>
-                  </span>
+                  <span class="meta-item">{{ movie["年份"] }}</span>
+                  <span class="meta-item">{{ movie["国家"] }}</span>
+                  <span class="meta-item">{{ movie["类型"] }}</span>
                 </div>
 
                 <div class="movie-quote" v-if="movie['一句话评价']">
-                  <span class="quote-icon">💬</span>
                   <span class="quote-text">{{ movie["一句话评价"] }}</span>
                 </div>
 
@@ -342,7 +692,7 @@
                   <a
                     :href="movie['电影链接']"
                     target="_blank"
-                    class="action-btn small-btn"
+                    class="action-btn link-btn"
                   >
                     查看豆瓣
                   </a>
@@ -356,23 +706,23 @@
               </div>
             </div>
 
-            <!-- 收藏分析 -->
             <div class="favorites-analysis">
-              <h3>📊 收藏分析</h3>
+              <h3 class="section-title">📊 收藏分析</h3>
               <div class="analysis-grid">
-                <div class="analysis-card">
+                <div class="sub-card">
                   <h4>最常收藏的类型</h4>
-                  <div class="genre-tags">
+                  <div class="chip-group">
                     <span
                       v-for="genre in topFavoriteGenres"
                       :key="genre.name"
-                      class="genre-tag"
+                      class="info-chip"
                     >
-                      {{ genre.name }} ({{ genre.count }})
+                      {{ genre.name }}（{{ genre.count }}）
                     </span>
                   </div>
                 </div>
-                <div class="analysis-card">
+
+                <div class="sub-card">
                   <h4>年份分布</h4>
                   <div class="year-distribution">
                     <div
@@ -387,7 +737,7 @@
                           :style="{ width: year.percentage + '%' }"
                         ></div>
                       </div>
-                      <span class="year-count">{{ year.count }}部</span>
+                      <span class="year-count">{{ year.count }} 部</span>
                     </div>
                   </div>
                 </div>
@@ -396,11 +746,11 @@
           </div>
         </div>
 
-        <!-- 账户设置标签页 -->
+        <!-- 账户设置 -->
         <div v-else-if="activeTab === 'settings'" class="tab-content">
           <div class="tab-header">
             <h2>⚙️ 账户设置</h2>
-            <p class="tab-description">管理您的账户偏好设置</p>
+            <p class="tab-description">管理你的账户偏好与功能开关</p>
           </div>
 
           <div class="settings-list">
@@ -409,61 +759,35 @@
                 <h4>邮箱通知</h4>
                 <p>接收系统通知和推荐邮件</p>
               </div>
-              <div class="setting-control">
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    v-model="settings.emailNotifications"
-                  />
-                  <span class="slider"></span>
-                </label>
-              </div>
+              <label class="switch">
+                <input type="checkbox" v-model="settings.emailNotifications" />
+                <span class="slider"></span>
+              </label>
             </div>
 
             <div class="setting-item">
               <div class="setting-info">
                 <h4>个性化推荐</h4>
-                <p>基于您的观看历史和收藏推荐电影</p>
+                <p>基于你的观看历史和偏好提供个性化推荐</p>
               </div>
-              <div class="setting-control">
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    v-model="settings.personalizedRecommendations"
-                  />
-                  <span class="slider"></span>
-                </label>
-              </div>
+              <label class="switch">
+                <input
+                  type="checkbox"
+                  v-model="settings.personalizedRecommendations"
+                />
+                <span class="slider"></span>
+              </label>
             </div>
 
             <div class="setting-item">
               <div class="setting-info">
                 <h4>公开收藏夹</h4>
-                <p>允许其他用户查看您的收藏</p>
+                <p>允许其他用户查看你的收藏内容</p>
               </div>
-              <div class="setting-control">
-                <label class="switch">
-                  <input type="checkbox" v-model="settings.publicFavorites" />
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
-
-            <div class="setting-item">
-              <div class="setting-info">
-                <h4>深色模式</h4>
-                <p>切换到深色主题</p>
-              </div>
-              <div class="setting-control">
-                <label class="switch">
-                  <input
-                    type="checkbox"
-                    v-model="settings.darkMode"
-                    @change="toggleDarkMode"
-                  />
-                  <span class="slider"></span>
-                </label>
-              </div>
+              <label class="switch">
+                <input type="checkbox" v-model="settings.publicFavorites" />
+                <span class="slider"></span>
+              </label>
             </div>
           </div>
 
@@ -482,7 +806,7 @@
 
           <div class="danger-zone">
             <h3>⚠️ 危险区域</h3>
-            <p class="danger-warning">这些操作不可撤销，请谨慎操作</p>
+            <p class="danger-warning">以下操作不可撤销，请谨慎执行。</p>
 
             <div class="danger-actions">
               <button @click="exportData" class="secondary-btn">
@@ -494,7 +818,7 @@
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
@@ -545,7 +869,6 @@ interface Settings {
   emailNotifications: boolean;
   personalizedRecommendations: boolean;
   publicFavorites: boolean;
-  darkMode: boolean;
 }
 
 interface GenreStat {
@@ -559,6 +882,23 @@ interface YearStat {
   percentage: number;
 }
 
+interface UserProfileData {
+  favorite_genres: string[];
+  favorite_countries: string[];
+  favorite_years: { min?: number; max?: number };
+  favorite_keywords: string[];
+  onboarding_completed: boolean;
+  profile_summary: string;
+  updated_at: string;
+}
+
+interface PreferenceForm {
+  favorite_genres: string[];
+  favorite_countries: string[];
+  favorite_keywords: string[];
+  favorite_years: { min?: number; max?: number };
+}
+
 export default defineComponent({
   name: "ProfileView",
   setup() {
@@ -566,17 +906,67 @@ export default defineComponent({
     const router = useRouter();
     const allMovies = ref<DoubanMovie[]>([]);
 
-    // 标签页状态
     const tabs: Tab[] = [
       { id: "basic", name: "基本信息", icon: "📝" },
       { id: "password", name: "修改密码", icon: "🔒" },
+      { id: "preferences", name: "兴趣偏好", icon: "🎯" },
+      { id: "profile", name: "用户画像", icon: "🧠" },
       { id: "favorites", name: "收藏夹", icon: "❤️" },
       { id: "settings", name: "账户设置", icon: "⚙️" },
     ];
+
     const activeTab = ref("basic");
 
-    // 用户信息
+    const genreOptions = [
+      "剧情",
+      "喜剧",
+      "爱情",
+      "科幻",
+      "悬疑",
+      "犯罪",
+      "动作",
+      "冒险",
+      "动画",
+      "战争",
+      "家庭",
+      "奇幻",
+      "历史",
+      "音乐",
+      "传记",
+    ];
+
+    const countryOptions = [
+      "美国",
+      "英国",
+      "中国大陆",
+      "中国香港",
+      "日本",
+      "韩国",
+      "法国",
+      "德国",
+      "意大利",
+      "印度",
+    ];
+
+    const keywordOptions = [
+      "高分",
+      "烧脑",
+      "温暖",
+      "治愈",
+      "经典",
+      "悬疑",
+      "热血",
+      "家庭",
+      "成长",
+      "史诗",
+      "黑色幽默",
+      "周末",
+      "轻松",
+      "不压抑",
+    ];
+
     const currentUser = computed(() => authStore.user);
+
     const userInitials = computed(() => {
       if (!currentUser.value) return "?";
       const firstName = currentUser.value.first_name || "";
@@ -587,20 +977,18 @@ export default defineComponent({
       return currentUser.value.username.charAt(0).toUpperCase();
     });
 
-    // 头像相关状态
     const avatarPreview = ref<string | null>(null);
     const avatarFile = ref<File | null>(null);
+
     const avatarStyle = computed(() => {
       if (avatarPreview.value) {
         return { backgroundImage: `url(${avatarPreview.value})` };
       }
-      // 生成基于用户名的颜色
       const colors = [
         "#667eea",
         "#764ba2",
         "#f56565",
         "#ed8936",
-        "#ecc94b",
         "#48bb78",
         "#38b2ac",
       ];
@@ -609,7 +997,6 @@ export default defineComponent({
       return { backgroundColor: color };
     });
 
-    // 表单状态
     const profileForm = ref<ProfileForm>({
       username: "",
       email: "",
@@ -628,20 +1015,35 @@ export default defineComponent({
       emailNotifications: true,
       personalizedRecommendations: true,
       publicFavorites: false,
-      darkMode: false,
     });
 
-    // 加载状态
+    const profileData = ref<UserProfileData>({
+      favorite_genres: [],
+      favorite_countries: [],
+      favorite_years: {},
+      favorite_keywords: [],
+      onboarding_completed: false,
+      profile_summary: "",
+      updated_at: "",
+    });
+
+    const preferenceForm = ref<PreferenceForm>({
+      favorite_genres: [],
+      favorite_countries: [],
+      favorite_keywords: [],
+      favorite_years: {},
+    });
+
     const profileLoading = ref(false);
     const passwordLoading = ref(false);
     const favoritesLoading = ref(false);
     const settingsLoading = ref(false);
+    const preferenceLoading = ref(false);
+    const profileRefreshLoading = ref(false);
 
-    // 收藏夹相关状态
     const favorites = ref<DoubanMovie[]>([]);
     const favoritesSortBy = ref("rating");
 
-    // 计算属性
     const isProfileFormChanged = computed(() => {
       const original = currentUser.value;
       if (!original) return false;
@@ -649,8 +1051,8 @@ export default defineComponent({
       return (
         profileForm.value.username !== original.username ||
         profileForm.value.email !== original.email ||
-        profileForm.value.first_name !== original.first_name ||
-        profileForm.value.last_name !== original.last_name ||
+        profileForm.value.first_name !== (original.first_name || "") ||
+        profileForm.value.last_name !== (original.last_name || "") ||
         profileForm.value.bio !== (original.bio || "")
       );
     });
@@ -702,8 +1104,10 @@ export default defineComponent({
       const genreSet = new Set<string>();
       favorites.value.forEach((movie) => {
         if (movie["类型"]) {
-          const genres = movie["类型"].split(" ");
-          genres.forEach((g) => genreSet.add(g.trim()));
+          movie["类型"]
+            .split(/[ /、,，]+/)
+            .filter(Boolean)
+            .forEach((g) => genreSet.add(g.trim()));
         }
       });
       return Array.from(genreSet);
@@ -749,11 +1153,13 @@ export default defineComponent({
       const genreCounts: Record<string, number> = {};
       favorites.value.forEach((movie) => {
         if (movie["类型"]) {
-          const genres = movie["类型"].split(" ");
-          genres.forEach((g) => {
-            const genre = g.trim();
-            genreCounts[genre] = (genreCounts[genre] || 0) + 1;
-          });
+          movie["类型"]
+            .split(/[ /、,，]+/)
+            .filter(Boolean)
+            .forEach((g) => {
+              const genre = g.trim();
+              genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+            });
         }
       });
 
@@ -772,7 +1178,7 @@ export default defineComponent({
         }
       });
 
-      const total = favorites.value.length;
+      const total = favorites.value.length || 1;
       return Object.entries(yearCounts)
         .map(([year, count]) => ({
           year,
@@ -783,13 +1189,35 @@ export default defineComponent({
         .slice(0, 5);
     });
 
-    // 方法
+    const authHeaders = computed(() => ({
+      Authorization: `Token ${authStore.token}`,
+    }));
+
     const formatDate = (dateString: string) => {
       return new Date(dateString).toLocaleDateString("zh-CN", {
         year: "numeric",
         month: "long",
         day: "numeric",
       });
+    };
+
+    const formatDateTime = (dateString: string) => {
+      return new Date(dateString).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const togglePreferenceItem = (targetList: string[], value: string) => {
+      const index = targetList.indexOf(value);
+      if (index >= 0) {
+        targetList.splice(index, 1);
+      } else {
+        targetList.push(value);
+      }
     };
 
     const handleAvatarUpload = async (event: Event) => {
@@ -803,28 +1231,24 @@ export default defineComponent({
 
         avatarFile.value = file;
 
-        // 创建FormData对象
         const formData = new FormData();
         formData.append("avatar", file);
 
         try {
-          // 上传头像到后端
           const response = await axios.put(
             `${API_BASE_URL}/auth/profile/`,
             formData,
             {
               headers: {
-                Authorization: `Token ${authStore.token}`,
+                ...authHeaders.value,
                 "Content-Type": "multipart/form-data",
               },
             }
           );
 
-          // 更新用户信息
           authStore.user = response.data;
           localStorage.setItem("user", JSON.stringify(response.data));
 
-          // 更新预览
           const reader = new FileReader();
           reader.onload = (e) => {
             avatarPreview.value = e.target?.result as string;
@@ -832,7 +1256,7 @@ export default defineComponent({
           reader.readAsDataURL(file);
 
           alert("头像上传成功！");
-        } catch (error: any) {
+        } catch (error) {
           console.error("头像上传失败:", error);
           alert("头像上传失败，请重试");
         }
@@ -840,43 +1264,39 @@ export default defineComponent({
     };
 
     const removeAvatar = async () => {
-      if (confirm("确定要移除头像吗？")) {
-        try {
-          // 发送空值来移除头像
-          const response = await axios.put(
-            `${API_BASE_URL}/auth/profile/`,
-            { avatar: null },
-            {
-              headers: {
-                Authorization: `Token ${authStore.token}`,
-              },
-            }
-          );
+      if (!confirm("确定要移除头像吗？")) return;
 
-          // 更新用户信息
-          authStore.user = response.data;
-          localStorage.setItem("user", JSON.stringify(response.data));
+      try {
+        const response = await axios.put(
+          `${API_BASE_URL}/auth/profile/`,
+          { avatar: null },
+          {
+            headers: authHeaders.value,
+          }
+        );
 
-          avatarPreview.value = null;
-          avatarFile.value = null;
-          const input = document.getElementById(
-            "avatar-upload"
-          ) as HTMLInputElement;
-          if (input) input.value = "";
+        authStore.user = response.data;
+        localStorage.setItem("user", JSON.stringify(response.data));
 
-          alert("头像已移除！");
-        } catch (error: any) {
-          console.error("移除头像失败:", error);
-          alert("移除头像失败，请重试");
-        }
+        avatarPreview.value = null;
+        avatarFile.value = null;
+        const input = document.getElementById(
+          "avatar-upload"
+        ) as HTMLInputElement;
+        if (input) input.value = "";
+
+        alert("头像已移除！");
+      } catch (error) {
+        console.error("移除头像失败:", error);
+        alert("移除头像失败，请重试");
       }
     };
 
     const resetProfileForm = () => {
       if (currentUser.value) {
         profileForm.value = {
-          username: currentUser.value.username,
-          email: currentUser.value.email,
+          username: currentUser.value.username || "",
+          email: currentUser.value.email || "",
           first_name: currentUser.value.first_name || "",
           last_name: currentUser.value.last_name || "",
           bio: currentUser.value.bio || "",
@@ -936,16 +1356,15 @@ export default defineComponent({
           favorites.value = allMovies.value.filter((movie) =>
             favoriteUrls.includes(movie["电影链接"])
           );
+        } else {
+          favorites.value = [];
         }
       } catch (error) {
         console.error("加载收藏夹失败:", error);
+        favorites.value = [];
       } finally {
         favoritesLoading.value = false;
       }
-    };
-
-    const sortFavorites = () => {
-      // sortedFavorites computed property handles sorting
     };
 
     const removeFromFavorites = (movie: DoubanMovie) => {
@@ -960,18 +1379,117 @@ export default defineComponent({
     };
 
     const clearAllFavorites = () => {
-      if (confirm("确定要清空所有收藏吗？此操作不可撤销。")) {
-        localStorage.removeItem("movie_favorites");
-        favorites.value = [];
-        alert("收藏夹已清空");
+      if (!confirm("确定要清空所有收藏吗？此操作不可撤销。")) return;
+      localStorage.removeItem("movie_favorites");
+      favorites.value = [];
+      alert("收藏夹已清空");
+    };
+
+    const loadOnboardingPreferences = async () => {
+      if (!authStore.token) return;
+
+      preferenceLoading.value = true;
+      try {
+        const response = await axios.get(
+          `${API_BASE_URL}/onboarding-preferences/`,
+          {
+            headers: authHeaders.value,
+          }
+        );
+
+        const data = response.data || {};
+        preferenceForm.value = {
+          favorite_genres: data.favorite_genres || [],
+          favorite_countries: data.favorite_countries || [],
+          favorite_keywords: data.favorite_keywords || [],
+          favorite_years: data.favorite_years || {},
+        };
+      } catch (error) {
+        console.error("加载兴趣偏好失败:", error);
+      } finally {
+        preferenceLoading.value = false;
       }
     };
 
-    const toggleDarkMode = () => {
-      if (settings.value.darkMode) {
-        document.documentElement.classList.add("dark-mode");
-      } else {
-        document.documentElement.classList.remove("dark-mode");
+    const saveOnboardingPreferences = async () => {
+      if (!authStore.token) return;
+
+      preferenceLoading.value = true;
+      try {
+        await axios.post(
+          `${API_BASE_URL}/onboarding-preferences/`,
+          preferenceForm.value,
+          {
+            headers: {
+              ...authHeaders.value,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        alert("兴趣偏好保存成功！");
+        await loadOnboardingPreferences();
+        await loadUserProfile();
+      } catch (error) {
+        console.error("保存兴趣偏好失败:", error);
+        alert("保存兴趣偏好失败，请重试");
+      } finally {
+        preferenceLoading.value = false;
+      }
+    };
+
+    const loadUserProfile = async () => {
+      if (!authStore.token) return;
+
+      try {
+        const response = await axios.get(`${API_BASE_URL}/user-profile/`, {
+          headers: authHeaders.value,
+        });
+
+        profileData.value = {
+          favorite_genres: response.data.favorite_genres || [],
+          favorite_countries: response.data.favorite_countries || [],
+          favorite_years: response.data.favorite_years || {},
+          favorite_keywords: response.data.favorite_keywords || [],
+          onboarding_completed: response.data.onboarding_completed || false,
+          profile_summary: response.data.profile_summary || "",
+          updated_at: response.data.updated_at || "",
+        };
+      } catch (error) {
+        console.error("加载用户画像失败:", error);
+      }
+    };
+
+    const refreshUserProfile = async () => {
+      if (!authStore.token) return;
+
+      profileRefreshLoading.value = true;
+      try {
+        const response = await axios.post(
+          `${API_BASE_URL}/user-profile/`,
+          {},
+          {
+            headers: authHeaders.value,
+          }
+        );
+
+        const data = response.data.profile || response.data || {};
+        profileData.value = {
+          favorite_genres: data.favorite_genres || [],
+          favorite_countries: data.favorite_countries || [],
+          favorite_years: data.favorite_years || {},
+          favorite_keywords: data.favorite_keywords || [],
+          onboarding_completed: data.onboarding_completed || false,
+          profile_summary: data.profile_summary || "",
+          updated_at: data.updated_at || "",
+        };
+
+        alert("用户画像已重新生成！");
+      } catch (error) {
+        console.error("重新生成用户画像失败:", error);
+        alert("重新生成画像失败，请重试");
+      } finally {
+        profileRefreshLoading.value = false;
       }
     };
 
@@ -989,9 +1507,7 @@ export default defineComponent({
         emailNotifications: true,
         personalizedRecommendations: true,
         publicFavorites: false,
-        darkMode: false,
       };
-      document.documentElement.classList.remove("dark-mode");
     };
 
     const exportData = () => {
@@ -999,6 +1515,8 @@ export default defineComponent({
         user: currentUser.value,
         favorites: favorites.value,
         settings: settings.value,
+        profile: profileData.value,
+        preferences: preferenceForm.value,
         exportDate: new Date().toISOString(),
       };
 
@@ -1021,50 +1539,47 @@ export default defineComponent({
       if (
         confirm("确定要删除账户吗？此操作将永久删除您的所有数据，且不可恢复。")
       ) {
-        alert("账户删除功能需要后端API支持");
-        // 这里可以添加调用后端API删除账户的逻辑
+        alert("账户删除功能需要后端 API 支持");
       }
     };
 
-    // 初始化
-    const init = () => {
+    const reloadAllData = async () => {
+      await Promise.all([loadOnboardingPreferences(), loadUserProfile()]);
+      loadFavorites();
+    };
+
+    const init = async () => {
       allMovies.value = doubanData as DoubanMovie[];
 
-      // 初始化表单数据
       if (currentUser.value) {
         resetProfileForm();
-
-        // 加载头像预览
         if (currentUser.value.avatar_url) {
           avatarPreview.value = currentUser.value.avatar_url;
         }
       }
 
-      // 加载收藏夹
       loadFavorites();
 
-      // 加载设置
       const savedSettings = localStorage.getItem("user_settings");
       if (savedSettings) {
         try {
           settings.value = JSON.parse(savedSettings);
-          if (settings.value.darkMode) {
-            document.documentElement.classList.add("dark-mode");
-          }
         } catch (error) {
           console.error("加载设置失败:", error);
         }
       }
+
+      if (authStore.token) {
+        await loadOnboardingPreferences();
+        await loadUserProfile();
+      }
     };
 
-    // 生命周期钩子
     onMounted(() => {
       init();
     });
 
-    // 返回所有需要暴露给模板的属性和方法
     return {
-      // 数据
       tabs,
       activeTab,
       currentUser,
@@ -1076,8 +1591,11 @@ export default defineComponent({
       settings,
       favorites,
       favoritesSortBy,
-
-      // 计算属性
+      profileData,
+      preferenceForm,
+      genreOptions,
+      countryOptions,
+      keywordOptions,
       isProfileFormChanged,
       passwordsMatch,
       passwordStrength,
@@ -1089,29 +1607,33 @@ export default defineComponent({
       sortedFavorites,
       topFavoriteGenres,
       favoriteYears,
-
-      // 加载状态
       profileLoading,
       passwordLoading,
       favoritesLoading,
       settingsLoading,
-
-      // 方法
+      preferenceLoading,
+      profileRefreshLoading,
       formatDate,
+      formatDateTime,
       handleAvatarUpload,
       removeAvatar,
       resetProfileForm,
       updateProfile,
       resetPasswordForm,
       changePassword,
-      sortFavorites,
       removeFromFavorites,
       clearAllFavorites,
-      toggleDarkMode,
       saveSettings,
       resetSettings,
       exportData,
       deleteAccount,
+      loadOnboardingPreferences,
+      saveOnboardingPreferences,
+      loadUserProfile,
+      refreshUserProfile,
+      reloadAllData,
+      togglePreferenceItem,
+      router,
     };
   },
 });
@@ -1119,77 +1641,171 @@ export default defineComponent({
 
 <style scoped>
 .profile-view {
-  padding: 20px;
-  max-width: 1400px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.profile-header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 30px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 15px;
+.hero-section {
+  background: var(--bg-hero);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  padding: 36px;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
 }
 
-.profile-header h1 {
-  margin: 0;
-  font-size: 2.8rem;
-  font-weight: 700;
+.hero-content {
+  flex: 1;
 }
 
-.subtitle {
-  margin: 15px 0 0;
-  font-size: 1.3rem;
-  opacity: 0.9;
+.hero-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  margin: 0 0 12px;
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.hero-subtitle {
+  margin: 0 0 24px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.92);
+  max-width: 760px;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  min-width: 120px;
+  padding: 16px 18px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+}
+
+.stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.stat-number.small {
+  font-size: 1.4rem;
+  color: var(--primary);
+}
+
+.stat-label {
+  margin-top: 6px;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.stat-label.dark {
+  color: var(--text-secondary);
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.header-btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transition: all var(--transition-fast);
+}
+
+.header-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.header-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .profile-container {
-  display: flex;
-  gap: 30px;
-  min-height: 600px;
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
 }
 
-/* 侧边栏样式 */
+.panel-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  backdrop-filter: var(--panel-blur);
+  -webkit-backdrop-filter: var(--panel-blur);
+}
+
 .profile-sidebar {
-  flex: 0 0 300px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.user-card {
-  background: white;
-  border-radius: 15px;
-  padding: 25px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+.user-card,
+.profile-quick-card,
+.nav-card {
+  padding: 20px;
+}
+
+.profile-content {
+  padding: 28px;
 }
 
 .avatar-section {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 .avatar-preview {
-  width: 120px;
-  height: 120px;
+  width: 110px;
+  height: 110px;
   border-radius: 50%;
-  margin: 0 auto 15px;
+  margin: 0 auto 14px;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 4px solid white;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: var(--panel-shadow);
 }
 
 .avatar-placeholder {
-  font-size: 3rem;
-  font-weight: 700;
-  color: white;
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: #fff;
 }
 
 .avatar-image {
@@ -1205,39 +1821,30 @@ export default defineComponent({
   gap: 10px;
 }
 
-.avatar-upload-btn {
-  padding: 10px 15px;
-  background: #667eea;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.avatar-upload-btn:hover {
-  background: #5a67d8;
-}
-
 .avatar-input {
   display: none;
 }
 
-.avatar-remove-btn {
-  padding: 8px 12px;
-  background: #e53e3e;
-  color: white;
+.small-primary-btn,
+.small-danger-btn {
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: background 0.3s;
+  transition: all var(--transition-fast);
+  text-align: center;
 }
 
-.avatar-remove-btn:hover {
-  background: #c53030;
+.small-primary-btn {
+  background: var(--primary-gradient);
+  color: #fff;
+}
+
+.small-danger-btn {
+  background: #ef4444;
+  color: #fff;
 }
 
 .user-info-summary {
@@ -1245,103 +1852,133 @@ export default defineComponent({
 }
 
 .user-info-summary h3 {
-  margin: 0 0 10px;
-  color: #333;
-  font-size: 1.5rem;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 1.35rem;
 }
 
-.user-email {
-  color: #666;
-  margin: 0 0 5px;
-  font-size: 0.95rem;
+.user-email,
+.user-join-date {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
 }
 
 .user-join-date {
-  color: #888;
-  font-size: 0.85rem;
-  margin: 0;
+  margin-top: 6px;
+}
+
+.summary-tags {
+  margin-top: 18px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.summary-chip {
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
+  background: var(--nav-hover-bg);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.card-title,
+.section-title {
+  margin: 0 0 14px;
+  color: var(--text-primary);
+}
+
+.quick-block {
+  margin-bottom: 16px;
+}
+
+.quick-block:last-child {
+  margin-bottom: 0;
+}
+
+.quick-label {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
 .profile-nav {
-  background: white;
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   width: 100%;
-  padding: 15px;
+  padding: 13px 14px;
   border: none;
-  background: none;
-  border-radius: 10px;
+  background: transparent;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #4a5568;
-  transition: all 0.3s;
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
   text-align: left;
 }
 
 .nav-item:hover {
-  background: #f7fafc;
-  color: #667eea;
+  background: var(--nav-hover-bg);
+  color: var(--primary);
 }
 
 .nav-item.active {
-  background: #667eea;
-  color: white;
-}
-
-.nav-icon {
-  font-size: 1.2rem;
-}
-
-.nav-text {
-  flex: 1;
-}
-
-/* 右侧内容区域样式 */
-.profile-content {
-  flex: 1;
-  background: white;
-  border-radius: 15px;
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  background: var(--primary-gradient);
+  color: #fff;
 }
 
 .tab-header {
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--panel-border);
 }
 
 .tab-header h2 {
-  margin: 0 0 10px;
-  color: #333;
-  font-size: 1.8rem;
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 1.7rem;
 }
 
 .tab-description {
-  color: #666;
   margin: 0;
-  font-size: 1rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
 }
 
-/* 表单样式 */
 .profile-form,
 .password-form {
-  max-width: 800px;
+  max-width: 920px;
 }
 
-.form-grid {
+.form-grid,
+.year-range-grid,
+.two-column-layout,
+.analysis-grid,
+.profile-overview-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  margin-bottom: 25px;
+}
+
+.form-grid,
+.two-column-layout,
+.analysis-grid,
+.profile-overview-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.year-range-grid {
+  grid-template-columns: repeat(2, minmax(180px, 1fr));
 }
 
 .form-group {
@@ -1356,243 +1993,286 @@ export default defineComponent({
 
 .form-group label {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
-  padding: 12px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s;
+  padding: 12px 14px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  font-size: 0.98rem;
+  transition: all var(--transition-fast);
 }
 
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--input-focus-border);
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 110px;
 }
 
 .form-hint {
-  color: #718096;
-  font-size: 0.85rem;
-  margin: 5px 0 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  margin: 0;
 }
 
 .textarea-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 5px;
 }
 
 .char-count {
-  font-size: 0.85rem;
-  color: #718096;
+  font-size: 0.84rem;
+  color: var(--text-muted);
 }
 
-/* 密码匹配指示器 */
 .password-match {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 5px;
+  margin-top: 4px;
 }
 
-.match-icon {
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-.match-icon.match {
-  color: #48bb78;
-}
-
-.match-icon.mismatch {
-  color: #e53e3e;
-}
-
+.match-icon,
 .match-text {
   font-size: 0.9rem;
+  font-weight: 600;
 }
 
+.match-icon.match,
 .match-text.match {
-  color: #48bb78;
+  color: #22c55e;
 }
 
+.match-icon.mismatch,
 .match-text.mismatch {
-  color: #e53e3e;
+  color: #ef4444;
 }
 
-/* 密码强度指示器 */
-.password-strength {
-  margin: 20px 0;
-  padding: 15px;
-  background: #f7fafc;
-  border-radius: 8px;
+.password-strength,
+.sub-card,
+.favorites-analysis,
+.danger-zone {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
 }
 
 .strength-label {
-  font-weight: 600;
-  color: #4a5568;
+  font-weight: 700;
+  color: var(--text-secondary);
   margin-bottom: 10px;
 }
 
-.strength-meter {
+.strength-meter,
+.year-bar {
   height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
+  background: var(--nav-hover-bg);
+  border-radius: 999px;
   overflow: hidden;
-  margin-bottom: 8px;
 }
 
-.strength-bar {
+.strength-bar,
+.bar-fill {
   height: 100%;
   transition: width 0.3s;
 }
 
 .strength-bar.weak {
-  background: #e53e3e;
+  background: #ef4444;
 }
 
 .strength-bar.medium {
-  background: #ed8936;
+  background: #f59e0b;
 }
 
 .strength-bar.strong {
-  background: #48bb78;
+  background: #22c55e;
 }
 
 .strength-text {
+  margin-top: 8px;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
-.strength-bar.weak + .strength-text {
-  color: #e53e3e;
-}
-
-.strength-bar.medium + .strength-text {
-  color: #ed8936;
-}
-
-.strength-bar.strong + .strength-text {
-  color: #48bb78;
-}
-
-/* 表单操作按钮 */
-.form-actions {
+.form-actions,
+.settings-actions,
+.danger-actions,
+.favorite-actions,
+.favorites-controls {
   display: flex;
-  gap: 15px;
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.form-actions,
+.settings-actions {
+  margin-top: 24px;
 }
 
 .primary-btn,
 .secondary-btn,
-.danger-btn {
-  padding: 12px 25px;
+.danger-btn,
+.action-btn,
+.browse-btn {
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: var(--radius-sm);
+  padding: 11px 18px;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-.primary-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
-}
-
-.primary-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  background: var(--primary-gradient);
+  color: #fff;
 }
 
 .secondary-btn {
-  background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
-}
-
-.secondary-btn:hover:not(:disabled) {
-  background: #667eea;
-  color: white;
-}
-
-.secondary-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
 }
 
 .danger-btn {
-  background: #e53e3e;
-  color: white;
+  background: #ef4444;
+  color: #fff;
 }
 
-.danger-btn:hover:not(:disabled) {
-  background: #c53030;
+.primary-btn:hover,
+.secondary-btn:hover,
+.danger-btn:hover,
+.action-btn:hover,
+.browse-btn:hover {
+  transform: translateY(-1px);
 }
 
+.primary-btn:disabled,
+.secondary-btn:disabled,
 .danger-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
+  transform: none;
 }
 
-/* 收藏夹样式 */
+.chip-group,
+.chip-selector {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.info-chip,
+.empty-chip,
+.selector-chip,
+.meta-badge {
+  padding: 7px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+}
+
+.info-chip {
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
+}
+
+.info-chip.muted {
+  color: var(--text-secondary);
+}
+
+.empty-chip {
+  background: var(--nav-hover-bg);
+  color: var(--text-muted);
+}
+
+.selector-chip {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.selector-chip.active {
+  background: var(--primary-gradient);
+  color: #fff;
+  border-color: transparent;
+}
+
+.profile-summary-text {
+  margin: 0 0 14px;
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.meta-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.meta-badge {
+  background: var(--nav-hover-bg);
+  color: var(--text-secondary);
+}
+
+.year-range-display {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
 .favorites-stats {
   display: flex;
-  gap: 30px;
-  margin-top: 20px;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-top: 18px;
 }
 
-.favorites-stats .stat-item {
+.stat-inline {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 4px;
 }
 
-.favorites-stats .stat-number {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #667eea;
-  margin-bottom: 5px;
-}
-
-.favorites-stats .stat-label {
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.loading-state {
+.loading-state,
+.empty-state {
   text-align: center;
-  padding: 60px;
+  padding: 48px 24px;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 14px;
 }
 
 .spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
+  width: 46px;
+  height: 46px;
+  border: 4px solid rgba(102, 126, 234, 0.12);
   border-top: 4px solid #667eea;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  margin: 0 auto 18px;
 }
 
 @keyframes spin {
@@ -1604,49 +2284,10 @@ export default defineComponent({
   }
 }
 
-.empty-state {
-  text-align: center;
-  padding: 60px;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
-}
-
-.empty-state h3 {
-  margin: 0 0 10px;
-  color: #333;
-}
-
-.empty-state p {
-  color: #666;
-  margin: 0 0 20px;
-}
-
-.browse-btn {
-  display: inline-block;
-  padding: 12px 25px;
-  background: #667eea;
-  color: white;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: background 0.3s;
-}
-
-.browse-btn:hover {
-  background: #5a67d8;
-}
-
 .favorites-controls {
-  display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
-  padding: 15px;
-  background: #f7fafc;
-  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 .sort-controls {
@@ -1656,172 +2297,103 @@ export default defineComponent({
 }
 
 .sort-controls label {
-  font-weight: 600;
-  color: #4a5568;
+  font-weight: 700;
+  color: var(--text-secondary);
 }
 
 .sort-controls select {
-  padding: 8px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 0.95rem;
+  padding: 10px 12px;
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
 }
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
 }
 
 .favorite-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  padding: 20px;
-  background: white;
-  transition: transform 0.3s;
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  background: var(--panel-bg);
+  transition: all var(--transition-fast);
 }
 
 .favorite-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: var(--panel-shadow);
 }
 
 .favorite-header {
   display: flex;
   justify-content: space-between;
+  gap: 10px;
   align-items: flex-start;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .favorite-header .movie-title {
   margin: 0;
-  font-size: 1.2rem;
-  color: #333;
-  flex: 1;
-  margin-right: 15px;
+  font-size: 1.1rem;
+  color: var(--text-primary);
 }
 
 .movie-rating {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #fef3c7;
-  padding: 4px 10px;
-  border-radius: 15px;
-}
-
-.rating-star {
-  font-size: 1rem;
+  background: rgba(245, 158, 11, 0.16);
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
 }
 
 .rating-value {
-  font-weight: 600;
+  font-weight: 700;
   color: #d97706;
-  font-size: 1rem;
 }
 
 .movie-meta {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
   flex-wrap: wrap;
+  margin-bottom: 12px;
 }
 
 .meta-item {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.85rem;
-}
-
-.meta-label {
-  color: #718096;
-  font-weight: 500;
-}
-
-.meta-value {
-  color: #4a5568;
-  font-weight: 600;
+  padding: 5px 8px;
+  border-radius: var(--radius-full);
+  background: var(--nav-hover-bg);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
 }
 
 .movie-quote {
-  margin: 15px 0;
-  padding: 10px;
-  background: #f0f4ff;
-  border-radius: 6px;
+  margin: 12px 0 14px;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-bg);
   border-left: 3px solid #667eea;
 }
 
-.quote-icon {
-  margin-right: 8px;
-  font-size: 1rem;
-}
-
 .quote-text {
-  font-style: italic;
-  color: #4a5568;
-  font-size: 0.9rem;
-  line-height: 1.4;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.92rem;
 }
 
-.favorite-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 15px;
+.link-btn {
+  background: var(--nav-hover-bg);
+  color: var(--text-primary);
 }
 
 .small-btn {
-  padding: 8px 15px;
-  font-size: 0.85rem;
-}
-
-/* 收藏分析样式 */
-.favorites-analysis {
-  margin-top: 40px;
-  padding: 25px;
-  background: #f7fafc;
-  border-radius: 10px;
-}
-
-.favorites-analysis h3 {
-  margin: 0 0 20px;
-  color: #333;
-  font-size: 1.5rem;
-}
-
-.analysis-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-
-.analysis-card {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.analysis-card h4 {
-  margin: 0 0 15px;
-  color: #333;
-  font-size: 1.2rem;
-}
-
-.genre-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.genre-tag {
-  padding: 6px 12px;
-  background: #667eea;
-  color: white;
-  border-radius: 15px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  padding: 10px 14px;
+  font-size: 0.88rem;
 }
 
 .year-distribution {
@@ -1837,67 +2409,56 @@ export default defineComponent({
 }
 
 .year-label {
-  width: 50px;
+  width: 52px;
   font-size: 0.9rem;
-  color: #4a5568;
-  font-weight: 600;
-}
-
-.year-bar {
-  flex: 1;
-  height: 8px;
-  background: #e0e0e0;
-  border-radius: 4px;
-  overflow: hidden;
+  color: var(--text-secondary);
+  font-weight: 700;
 }
 
 .bar-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  transition: width 0.3s;
+  background: var(--primary-gradient);
 }
 
 .year-count {
-  width: 50px;
+  width: 52px;
   text-align: right;
-  font-size: 0.85rem;
-  color: #718096;
+  font-size: 0.84rem;
+  color: var(--text-muted);
 }
 
-/* 设置样式 */
 .settings-list {
-  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .setting-item {
+  padding: 18px;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
   display: flex;
   justify-content: space-between;
+  gap: 18px;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.setting-item:last-child {
-  border-bottom: none;
 }
 
 .setting-info h4 {
-  margin: 0 0 5px;
-  color: #333;
-  font-size: 1.1rem;
+  margin: 0 0 6px;
+  color: var(--text-primary);
 }
 
 .setting-info p {
   margin: 0;
-  color: #666;
-  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 .switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 58px;
+  height: 32px;
+  min-width: 58px;
 }
 
 .switch input {
@@ -1908,95 +2469,95 @@ export default defineComponent({
 
 .slider {
   position: absolute;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: 0.3s;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  transition: 0.4s;
-  border-radius: 34px;
 }
 
-.slider:before {
-  position: absolute;
+.slider::before {
   content: "";
-  height: 26px;
-  width: 26px;
+  position: absolute;
+  width: 24px;
+  height: 24px;
   left: 4px;
-  bottom: 4px;
-  background-color: white;
-  transition: 0.4s;
+  top: 4px;
+  background: #fff;
   border-radius: 50%;
+  transition: 0.3s;
 }
 
 input:checked + .slider {
-  background-color: #667eea;
+  background: #667eea;
 }
 
-input:checked + .slider:before {
+input:checked + .slider::before {
   transform: translateX(26px);
 }
 
-.settings-actions {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 40px;
-}
-
-/* 危险区域样式 */
 .danger-zone {
-  padding: 25px;
-  background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
-  border: 2px solid #fc8181;
-  border-radius: 10px;
+  margin-top: 30px;
+  background: linear-gradient(
+    135deg,
+    rgba(254, 226, 226, 0.75),
+    rgba(254, 202, 202, 0.9)
+  );
+  border-color: rgba(239, 68, 68, 0.28);
 }
 
 .danger-zone h3 {
   margin: 0 0 10px;
-  color: #c53030;
-  font-size: 1.5rem;
+  color: #b91c1c;
 }
 
 .danger-warning {
-  color: #e53e3e;
-  margin: 0 0 20px;
-  font-size: 0.95rem;
+  margin: 0 0 16px;
+  color: #7f1d1d;
 }
 
-.danger-actions {
-  display: flex;
-  gap: 15px;
-}
-
-/* 响应式设计 */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .profile-container {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 
   .profile-sidebar {
-    flex: none;
-    width: 100%;
+    order: 1;
   }
 
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .analysis-grid {
-    grid-template-columns: 1fr;
+  .profile-content {
+    order: 2;
   }
 }
 
 @media (max-width: 768px) {
-  .profile-header h1 {
-    font-size: 2.2rem;
+  .hero-section {
+    flex-direction: column;
+    padding: 24px;
   }
 
-  .favorites-controls {
+  .hero-title {
+    font-size: 1.9rem;
+  }
+
+  .profile-content {
+    padding: 18px;
+  }
+
+  .form-grid,
+  .two-column-layout,
+  .analysis-grid,
+  .profile-overview-grid,
+  .year-range-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .favorites-controls,
+  .form-actions,
+  .settings-actions,
+  .danger-actions,
+  .favorite-actions {
     flex-direction: column;
-    gap: 15px;
     align-items: stretch;
   }
 
@@ -2012,122 +2573,6 @@ input:checked + .slider:before {
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 15px;
   }
-
-  .danger-actions {
-    flex-direction: column;
-  }
-
-  .form-actions,
-  .settings-actions {
-    flex-direction: column;
-  }
-
-  .primary-btn,
-  .secondary-btn,
-  .danger-btn {
-    width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .profile-header {
-    padding: 20px;
-  }
-
-  .profile-header h1 {
-    font-size: 1.8rem;
-  }
-
-  .subtitle {
-    font-size: 1.1rem;
-  }
-
-  .profile-content {
-    padding: 20px;
-  }
-
-  .favorites-stats {
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .analysis-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 深色模式样式 */
-:global(.dark-mode) .profile-view {
-  background: #1a202c;
-  color: #e2e8f0;
-}
-
-:global(.dark-mode) .profile-header {
-  background: linear-gradient(135deg, #4c51bf 0%, #6b46c1 100%);
-}
-
-:global(.dark-mode) .user-card,
-:global(.dark-mode) .profile-nav,
-:global(.dark-mode) .profile-content,
-:global(.dark-mode) .favorite-card,
-:global(.dark-mode) .analysis-card {
-  background: #2d3748;
-  color: #e2e8f0;
-}
-
-:global(.dark-mode) .user-info-summary h3,
-:global(.dark-mode) .tab-header h2,
-:global(.dark-mode) .analysis-card h4,
-:global(.dark-mode) .favorite-header .movie-title {
-  color: #e2e8f0;
-}
-
-:global(.dark-mode) .user-email,
-:global(.dark-mode) .user-join-date,
-:global(.dark-mode) .tab-description,
-:global(.dark-mode) .form-hint,
-:global(.dark-mode) .meta-label,
-:global(.dark-mode) .quote-text {
-  color: #a0aec0;
-}
-
-:global(.dark-mode) .form-group input,
-:global(.dark-mode) .form-group textarea,
-:global(.dark-mode) .form-group select {
-  background: #4a5568;
-  border-color: #718096;
-  color: #e2e8f0;
-}
-
-:global(.dark-mode) .form-group input:focus,
-:global(.dark-mode) .form-group textarea:focus,
-:global(.dark-mode) .form-group select:focus {
-  border-color: #667eea;
-}
-
-:global(.dark-mode) .nav-item:hover {
-  background: #4a5568;
-}
-
-:global(.dark-mode) .favorites-controls,
-:global(.dark-mode) .password-strength,
-:global(.dark-mode) .favorites-analysis {
-  background: #4a5568;
-}
-
-:global(.dark-mode) .movie-quote {
-  background: #4a5568;
-  border-left-color: #667eea;
-}
-
-:global(.dark-mode) .year-bar {
-  background: #4a5568;
-}
-
-:global(.dark-mode) .danger-zone {
-  background: linear-gradient(135deg, #742a2a 0%, #9b2c2c 100%);
-  border-color: #c53030;
 }
 </style>

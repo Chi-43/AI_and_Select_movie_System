@@ -5,9 +5,9 @@
         <div class="nav-left">
           <router-link to="/" class="nav-logo"> 🎬 电影推荐系统 </router-link>
           <router-link to="/">首页</router-link>
-          <router-link to="/douban">豆瓣电影TOP250</router-link>
-          <router-link to="/ai-chat">🤖 AI对话</router-link>
-          <router-link to="/about">关于</router-link>
+          <router-link to="/douban">电影库</router-link>
+          <router-link to="/about">智能推荐</router-link>
+          <router-link to="/ai-chat">🤖 AI机器人对话</router-link>
         </div>
 
         <div class="nav-right">
