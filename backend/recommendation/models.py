@@ -174,6 +174,49 @@ class RecommendationLog(models.Model):
         return f"{self.user.username} <- {self.movie.title} ({self.algorithm})"
 
 
+# =========================
+# 电影点赞 / 拉踩
+# =========================
+class MovieFeedback(models.Model):
+    FEEDBACK_CHOICES = [
+        ("like", "点赞"),
+        ("dislike", "拉踩"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="movie_feedbacks")
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="feedbacks")
+    feedback_type = models.CharField(max_length=20, choices=FEEDBACK_CHOICES, verbose_name="反馈类型")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "电影反馈"
+        verbose_name_plural = "电影反馈"
+        unique_together = ["user", "movie"]
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.movie.title} ({self.feedback_type})"
+
+
+# =========================
+# 电影评论
+# =========================
+class MovieComment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="movie_comments")
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="comments")
+    content = models.TextField(verbose_name="评论内容")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "电影评论"
+        verbose_name_plural = "电影评论"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} 评论了 {self.movie.title}"
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """创建用户时自动创建画像"""

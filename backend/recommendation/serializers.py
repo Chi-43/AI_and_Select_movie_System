@@ -6,6 +6,8 @@ from .models import (
     VideoPlatform,
     UserProfile,
     RecommendationLog,
+    MovieFeedback,
+    MovieComment,
 )
 
 
@@ -171,3 +173,72 @@ class VideoPlatformSerializer(serializers.ModelSerializer):
             "last_checked",
         ]
         read_only_fields = ["last_checked"]
+
+
+class MovieFeedbackSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    movie = MovieSerializer(read_only=True)
+
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source="user",
+        write_only=True,
+        required=False,
+    )
+    movie_id = serializers.PrimaryKeyRelatedField(
+        queryset=Movie.objects.all(),
+        source="movie",
+        write_only=True,
+    )
+
+    class Meta:
+        model = MovieFeedback
+        fields = [
+            "id",
+            "user",
+            "movie",
+            "user_id",
+            "movie_id",
+            "feedback_type",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+
+
+class MovieCommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    movie = MovieSerializer(read_only=True)
+
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(),
+        source="user",
+        write_only=True,
+        required=False,
+    )
+    movie_id = serializers.PrimaryKeyRelatedField(
+        queryset=Movie.objects.all(),
+        source="movie",
+        write_only=True,
+    )
+
+    class Meta:
+        model = MovieComment
+        fields = [
+            "id",
+            "user",
+            "movie",
+            "user_id",
+            "movie_id",
+            "content",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+
+
+class MovieFeedbackSummarySerializer(serializers.Serializer):
+    movie_id = serializers.IntegerField()
+    like_count = serializers.IntegerField()
+    dislike_count = serializers.IntegerField()
+    current_user_feedback = serializers.CharField(allow_null=True)

@@ -210,14 +210,12 @@
           </div>
 
           <div class="movie-actions">
-            <a
-              v-if="movie.movie.douban_url"
-              :href="movie.movie.douban_url"
-              target="_blank"
+            <button
               class="secondary-btn link-btn"
+              @click="goToMovieDetail(movie.movie)"
             >
               查看详情
-            </a>
+            </button>
             <button
               class="primary-btn"
               @click="askAIAboutMovie(movie.movie.title)"
@@ -448,6 +446,36 @@ export default defineComponent({
         },
       });
     };
+    const goToMovieDetail = (movie: MovieInfo) => {
+      const detailMovie = {
+        id: movie.id,
+        movie_id: movie.id,
+        电影名字: movie.title,
+        电影链接: movie.douban_url || "",
+        评分: String(movie.rating || ""),
+        评分人数: "",
+        导演: "",
+        主演: "",
+        年份: String(movie.year || ""),
+        国家: movie.country || "",
+        类型: movie.genre || "",
+        一句话评价: "",
+      };
+
+      sessionStorage.setItem(
+        "current_movie_detail",
+        JSON.stringify(detailMovie)
+      );
+
+      router.push({
+        path: "/movie-detail",
+        query: {
+          movie_id: movie.id,
+          movie_title: movie.title,
+          douban_url: movie.douban_url || "",
+        },
+      });
+    };
 
     const scrollToNaturalRecommend = () => {
       naturalRecommendRef.value?.scrollIntoView({
@@ -483,6 +511,7 @@ export default defineComponent({
       runNaturalLanguageRecommend,
       setRecommendMode,
       askAIAboutMovie,
+      goToMovieDetail,
       scrollToNaturalRecommend,
     };
   },

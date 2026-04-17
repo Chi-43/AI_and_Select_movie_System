@@ -347,6 +347,8 @@ import { defineComponent, ref, computed, onMounted } from "vue";
 import doubanData from "../data/豆瓣电影TOP250.json";
 
 interface DoubanMovie {
+  id?: number;
+  movie_id?: number;
   电影名字: string;
   电影链接: string;
   评分: string;
@@ -409,8 +411,25 @@ export default defineComponent({
     });
 
     const goToMovieDetail = (movie: DoubanMovie) => {
-      sessionStorage.setItem("current_movie_detail", JSON.stringify(movie));
-      window.location.href = `/movie-detail?movie_title=${encodeURIComponent(
+      if (!movie.id) {
+        alert("当前电影还没有匹配到数据库ID，请确认后端电影数据是否已导入。");
+        return;
+      }
+
+      const movieWithId = {
+        ...movie,
+        id: movie.id,
+        movie_id: movie.id,
+      };
+
+      sessionStorage.setItem(
+        "current_movie_detail",
+        JSON.stringify(movieWithId)
+      );
+
+      window.location.href = `/movie-detail?movie_id=${
+        movie.id
+      }&movie_title=${encodeURIComponent(
         movie["电影名字"]
       )}&douban_url=${encodeURIComponent(movie["电影链接"])}`;
     };
@@ -433,13 +452,62 @@ export default defineComponent({
       const end = start + itemsPerPage;
       return filteredMovies.value.slice(start, end);
     });
+    const normalizeUrl = (url: string) => {
+      return (url || "").trim().replace(/\/+$/, "");
+    };
 
+    const mergeMovieIdsFromBackend = async (localMovies: DoubanMovie[]) => {
+      try {
+        const response = await fetch("http://localhost:8000/api/movies/");
+        if (!response.ok) {
+          throw new Error(`获取后端电影列表失败: ${response.status}`);
+        }
+
+        const backendMovies = await response.json();
+
+        const urlToIdMap = new Map<string, number>();
+        const titleYearToIdMap = new Map<string, number>();
+
+        backendMovies.forEach((item: any) => {
+          if (item.douban_url) {
+            urlToIdMap.set(normalizeUrl(item.douban_url), item.id);
+          }
+
+          const key = `${(item.title || "").trim()}__${item.year || ""}`;
+          titleYearToIdMap.set(key, item.id);
+        });
+
+        return localMovies.map((movie) => {
+          const normalizedLocalUrl = normalizeUrl(movie["电影链接"]);
+          const localKey = `${(movie["电影名字"] || "").trim()}__${
+            movie["年份"] || ""
+          }`;
+
+          const id =
+            urlToIdMap.get(normalizedLocalUrl) ||
+            titleYearToIdMap.get(localKey) ||
+            undefined;
+
+          return {
+            ...movie,
+            id,
+            movie_id: id,
+          };
+        });
+      } catch (error) {
+        console.error("合并后端电影ID失败:", error);
+        return localMovies;
+      }
+    };
     // 初始化数据
-    const loadMovies = () => {
+    const loadMovies = async () => {
       loading.value = true;
       try {
-        allMovies.value = doubanData as DoubanMovie[];
-        filteredMovies.value = [...allMovies.value];
+        const localMovies = doubanData as DoubanMovie[];
+        const mergedMovies = await mergeMovieIdsFromBackend(localMovies);
+
+        allMovies.value = mergedMovies;
+        filteredMovies.value = [...mergedMovies];
 
         // 自动设置年份范围
         const years = allMovies.value
@@ -650,8 +718,8 @@ export default defineComponent({
     };
 
     // 生命周期钩子
-    onMounted(() => {
-      loadMovies();
+    onMounted(async () => {
+      await loadMovies();
       loadFavorites();
     });
 

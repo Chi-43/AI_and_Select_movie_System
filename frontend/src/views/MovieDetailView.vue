@@ -1,6 +1,6 @@
 <template>
   <div class="movie-detail-view">
-    <div v-if="!movie" class="error-section">
+    <div v-if="!movie" class="error-section panel-card">
       <div class="error-icon">⚠️</div>
       <h2>未找到电影信息</h2>
       <p>请从首页或电影库重新进入电影详情页。</p>
@@ -8,7 +8,6 @@
     </div>
 
     <template v-else>
-      <!-- 顶部电影英雄区 -->
       <section class="hero-section">
         <div class="poster-wrap">
           <img
@@ -24,6 +23,8 @@
         </div>
 
         <div class="hero-content">
+          <div class="hero-badge">电影详情</div>
+
           <div class="title-row">
             <h1 class="movie-title">{{ movie["电影名字"] }}</h1>
             <span class="year-badge">{{ movie["年份"] || "未知年份" }}</span>
@@ -86,31 +87,57 @@
             </router-link>
 
             <button class="action-btn secondary" @click="handleFavorite">
-              ❤️ 收藏
+              {{ isFavorite ? "❤️ 已收藏" : "🤍 收藏" }}
             </button>
+          </div>
 
-            <button class="action-btn secondary" @click="handleLike">
+          <div class="feedback-bar">
+            <button
+              class="feedback-btn"
+              :class="{ active: currentFeedback === 'like' }"
+              @click="handleLike"
+              :disabled="feedbackLoading"
+            >
               👍 点赞
+              <span class="feedback-count">{{
+                feedbackSummary.like_count
+              }}</span>
             </button>
 
-            <button class="action-btn secondary" @click="handleDislike">
+            <button
+              class="feedback-btn"
+              :class="{ active: currentFeedback === 'dislike' }"
+              @click="handleDislike"
+              :disabled="feedbackLoading"
+            >
               👎 点踩
+              <span class="feedback-count">{{
+                feedbackSummary.dislike_count
+              }}</span>
+            </button>
+
+            <button
+              v-if="currentFeedback"
+              class="feedback-btn neutral"
+              @click="clearFeedback"
+              :disabled="feedbackLoading"
+            >
+              取消反馈
             </button>
           </div>
         </div>
       </section>
 
-      <!-- 主内容区 -->
       <section class="content-grid">
         <div class="main-column">
-          <div class="panel">
+          <div class="panel-card">
             <h2>一句话评价</h2>
             <p class="summary">
               {{ movie["一句话评价"] || "暂无一句话评价" }}
             </p>
           </div>
 
-          <div class="panel">
+          <div class="panel-card">
             <div class="panel-header">
               <h2>剧情简介</h2>
               <span v-if="extraLoading" class="loading-badge">加载中...</span>
@@ -127,28 +154,82 @@
             <p v-else class="summary placeholder-text">暂无剧情简介</p>
           </div>
 
-          <div class="panel">
-            <h2>用户评论（预留）</h2>
+          <div class="panel-card comment-panel">
+            <div class="panel-header">
+              <h2>用户评论</h2>
+              <span class="comment-count">共 {{ comments.length }} 条评论</span>
+            </div>
 
-            <div class="comment-box">
+            <div class="comment-box" v-if="isLoggedIn">
               <textarea
                 v-model="commentText"
                 placeholder="写下你对这部电影的看法..."
                 class="comment-input"
+                maxlength="500"
               ></textarea>
-              <button class="primary-btn" @click="submitComment">
-                发表评论
-              </button>
+
+              <div class="comment-actions">
+                <span class="comment-length">{{ commentText.length }}/500</span>
+                <button
+                  class="primary-btn"
+                  @click="submitComment"
+                  :disabled="commentLoading || !commentText.trim()"
+                >
+                  {{ commentLoading ? "发布中..." : "发表评论" }}
+                </button>
+              </div>
             </div>
 
-            <div class="comment-empty">
-              暂无评论。后续接入你自己的评论接口后，这里就可以展示真实评论。
+            <div v-else class="comment-login-tip">登录后即可发表评论。</div>
+
+            <div v-if="commentsLoading" class="comment-loading">
+              加载评论中...
+            </div>
+
+            <div v-else-if="comments.length === 0" class="comment-empty">
+              暂无评论，快来发表第一条评论吧。
+            </div>
+
+            <div v-else class="comment-list">
+              <div v-for="item in comments" :key="item.id" class="comment-item">
+                <div class="comment-user-row">
+                  <div class="comment-user">
+                    <div class="user-avatar">
+                      {{ getUserInitial(item.user?.username) }}
+                    </div>
+                    <div class="user-meta">
+                      <div class="username">
+                        {{ item.user?.username || "匿名用户" }}
+                      </div>
+                      <div class="time">
+                        {{ formatDateTime(item.created_at) }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    v-if="
+                      currentUser &&
+                      item.user &&
+                      currentUser.id === item.user.id
+                    "
+                    class="delete-comment-btn"
+                    @click="deleteComment(item.id)"
+                  >
+                    删除
+                  </button>
+                </div>
+
+                <div class="comment-content">
+                  {{ item.content }}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="side-column">
-          <div class="panel">
+          <div class="panel-card">
             <h3>基础信息</h3>
             <ul class="side-list">
               <li>
@@ -161,7 +242,7 @@
             </ul>
           </div>
 
-          <div class="panel">
+          <div class="panel-card">
             <div class="panel-header">
               <h3>扩展信息</h3>
               <span v-if="extraLoading" class="loading-badge">加载中...</span>
@@ -209,7 +290,29 @@
             <div v-else class="placeholder-text">暂无扩展信息</div>
           </div>
 
-          <div class="panel">
+          <div class="panel-card">
+            <h3>互动统计</h3>
+            <div class="stats-box">
+              <div class="mini-stat">
+                <div class="mini-stat-value">
+                  {{ feedbackSummary.like_count }}
+                </div>
+                <div class="mini-stat-label">点赞数</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-value">
+                  {{ feedbackSummary.dislike_count }}
+                </div>
+                <div class="mini-stat-label">点踩数</div>
+              </div>
+              <div class="mini-stat">
+                <div class="mini-stat-value">{{ comments.length }}</div>
+                <div class="mini-stat-label">评论数</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-card">
             <h3>外部入口</h3>
             <a
               :href="movie['电影链接']"
@@ -228,8 +331,11 @@
 
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
 
 interface DoubanMovie {
+  id?: number;
+  movie_id?: number;
   电影名字: string;
   电影链接: string;
   评分: string;
@@ -264,11 +370,26 @@ interface MovieExtraDetail {
   source?: string;
 }
 
+interface CommentUser {
+  id: number;
+  username: string;
+}
+
+interface CommentItem {
+  id: number;
+  user?: CommentUser;
+  content: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const API_BASE_URL = "http://localhost:8000";
 
 export default defineComponent({
   name: "MovieDetailView",
   setup() {
+    const authStore = useAuthStore();
+
     const movie = ref<DoubanMovie | null>(null);
     const commentText = ref("");
 
@@ -276,12 +397,38 @@ export default defineComponent({
     const extraLoading = ref(false);
     const extraError = ref("");
 
+    const feedbackLoading = ref(false);
+    const commentLoading = ref(false);
+    const commentsLoading = ref(false);
+
+    const comments = ref<CommentItem[]>([]);
+
+    const feedbackSummary = ref({
+      like_count: 0,
+      dislike_count: 0,
+      current_user_feedback: null as string | null,
+    });
+
+    const currentUser = computed(() => authStore.user);
+    const isLoggedIn = computed(() => Boolean(authStore.token));
+
     const movieTypes = computed(() => {
       if (!movie.value?.["类型"]) return [];
       return movie.value["类型"]
-        .split(" ")
+        .split(/[ /、,，]+/)
         .map((item) => item.trim())
         .filter(Boolean);
+    });
+
+    const currentFeedback = computed(
+      () => feedbackSummary.value.current_user_feedback
+    );
+
+    const isFavorite = computed(() => {
+      if (!movie.value) return false;
+      const saved = localStorage.getItem("movie_favorites");
+      const favorites: string[] = saved ? JSON.parse(saved) : [];
+      return favorites.includes(movie.value["电影链接"]);
     });
 
     const joinList = (arr?: string[]) => {
@@ -289,12 +436,61 @@ export default defineComponent({
       return arr.join(" / ");
     };
 
+    const getUserInitial = (username?: string) => {
+      if (!username) return "?";
+      return username.charAt(0).toUpperCase();
+    };
+
+    const formatDateTime = (dateString: string) => {
+      return new Date(dateString).toLocaleString("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    const getErrorMessage = (error: unknown) => {
+      if (error instanceof Error) return error.message;
+      return "请求失败";
+    };
+
+    const getMovieIdFromSession = (): number | null => {
+      const saved = sessionStorage.getItem("current_movie_detail");
+      if (!saved) return null;
+
+      try {
+        const parsed = JSON.parse(saved) as DoubanMovie;
+        return parsed.id || parsed.movie_id || null;
+      } catch {
+        return null;
+      }
+    };
+
+    const getAuthHeaders = (): Record<string, string> => {
+      const headers: Record<string, string> = {};
+      if (authStore.token) {
+        headers.Authorization = `Token ${authStore.token}`;
+      }
+      headers["Content-Type"] = "application/json";
+      return headers;
+    };
+
+    const getTokenHeaders = (): Record<string, string> => {
+      const headers: Record<string, string> = {};
+      if (authStore.token) {
+        headers.Authorization = `Token ${authStore.token}`;
+      }
+      return headers;
+    };
+
     const loadMovieFromSession = () => {
       const saved = sessionStorage.getItem("current_movie_detail");
       if (!saved) return;
 
       try {
-        movie.value = JSON.parse(saved);
+        movie.value = JSON.parse(saved) as DoubanMovie;
       } catch (error) {
         console.error("解析 sessionStorage 电影详情失败:", error);
       }
@@ -319,22 +515,216 @@ export default defineComponent({
           throw new Error(`请求失败: ${response.status}`);
         }
 
-        extraDetail.value = await response.json();
-      } catch (err: any) {
-        console.error("获取扩展详情失败:", err);
+        extraDetail.value = (await response.json()) as MovieExtraDetail;
+      } catch (error: unknown) {
+        console.error("获取扩展详情失败:", error);
         extraError.value = "扩展详情加载失败，当前已显示基础信息";
       } finally {
         extraLoading.value = false;
       }
     };
 
-    const submitComment = () => {
+    const loadFeedbackSummary = async () => {
+      const movieId = getMovieIdFromSession();
+      if (!movieId || !authStore.token) return;
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/movie-feedback/?movie_id=${movieId}`,
+          {
+            headers: getTokenHeaders(),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`获取反馈失败: ${response.status}`);
+        }
+
+        const data = (await response.json()) as {
+          like_count?: number;
+          dislike_count?: number;
+          current_user_feedback?: string | null;
+        };
+
+        feedbackSummary.value = {
+          like_count: data.like_count || 0,
+          dislike_count: data.dislike_count || 0,
+          current_user_feedback: data.current_user_feedback || null,
+        };
+      } catch (error) {
+        console.error("加载点赞/点踩统计失败:", error);
+      }
+    };
+
+    const submitFeedback = async (feedbackType: "like" | "dislike") => {
+      const movieId = getMovieIdFromSession();
+
+      if (!movieId) {
+        alert("未获取到电影ID，无法提交反馈");
+        return;
+      }
+
+      if (!authStore.token) {
+        alert("请先登录后再进行点赞或点踩");
+        return;
+      }
+
+      feedbackLoading.value = true;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/movie-feedback/`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            movie_id: movieId,
+            feedback_type: feedbackType,
+          }),
+        });
+
+        const data = (await response.json()) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || "提交反馈失败");
+        }
+
+        await loadFeedbackSummary();
+      } catch (error: unknown) {
+        console.error("提交反馈失败:", error);
+        alert(getErrorMessage(error));
+      } finally {
+        feedbackLoading.value = false;
+      }
+    };
+
+    const clearFeedback = async () => {
+      const movieId = getMovieIdFromSession();
+
+      if (!movieId || !authStore.token) return;
+
+      feedbackLoading.value = true;
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/movie-feedback/?movie_id=${movieId}`,
+          {
+            method: "DELETE",
+            headers: getTokenHeaders(),
+          }
+        );
+
+        const data = (await response.json()) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || "取消反馈失败");
+        }
+
+        await loadFeedbackSummary();
+      } catch (error: unknown) {
+        console.error("取消反馈失败:", error);
+        alert(getErrorMessage(error));
+      } finally {
+        feedbackLoading.value = false;
+      }
+    };
+
+    const loadComments = async () => {
+      const movieId = getMovieIdFromSession();
+      if (!movieId || !authStore.token) return;
+
+      commentsLoading.value = true;
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/movie-comments/?movie_id=${movieId}`,
+          {
+            headers: getTokenHeaders(),
+          }
+        );
+
+        const data = (await response.json()) as {
+          comments?: CommentItem[];
+          error?: string;
+        };
+
+        if (!response.ok) {
+          throw new Error(data.error || "获取评论失败");
+        }
+
+        comments.value = data.comments || [];
+      } catch (error) {
+        console.error("加载评论失败:", error);
+        comments.value = [];
+      } finally {
+        commentsLoading.value = false;
+      }
+    };
+
+    const submitComment = async () => {
+      const movieId = getMovieIdFromSession();
+
+      if (!movieId) {
+        alert("未获取到电影ID，无法发表评论");
+        return;
+      }
+
+      if (!authStore.token) {
+        alert("请先登录后再发表评论");
+        return;
+      }
+
       if (!commentText.value.trim()) {
         alert("请输入评论内容");
         return;
       }
-      alert("评论功能下一步接后端接口");
-      commentText.value = "";
+
+      commentLoading.value = true;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/movie-comments/`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            movie_id: movieId,
+            content: commentText.value.trim(),
+          }),
+        });
+
+        const data = (await response.json()) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || "发表评论失败");
+        }
+
+        commentText.value = "";
+        await loadComments();
+      } catch (error: unknown) {
+        console.error("发表评论失败:", error);
+        alert(getErrorMessage(error));
+      } finally {
+        commentLoading.value = false;
+      }
+    };
+
+    const deleteComment = async (commentId: number) => {
+      if (!authStore.token) return;
+      if (!confirm("确定要删除这条评论吗？")) return;
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/movie-comments/${commentId}/`,
+          {
+            method: "DELETE",
+            headers: getTokenHeaders(),
+          }
+        );
+
+        const data = (await response.json()) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || "删除评论失败");
+        }
+
+        await loadComments();
+      } catch (error: unknown) {
+        console.error("删除评论失败:", error);
+        alert(getErrorMessage(error));
+      }
     };
 
     const handleFavorite = () => {
@@ -354,17 +744,22 @@ export default defineComponent({
       alert(exists ? "已取消收藏" : "收藏成功");
     };
 
-    const handleLike = () => {
-      alert("点赞功能下一步接后端接口");
+    const handleLike = async () => {
+      await submitFeedback("like");
     };
 
-    const handleDislike = () => {
-      alert("点踩功能下一步接后端接口");
+    const handleDislike = async () => {
+      await submitFeedback("dislike");
     };
 
-    onMounted(() => {
+    onMounted(async () => {
       loadMovieFromSession();
-      fetchExtraDetail();
+      await fetchExtraDetail();
+
+      if (isLoggedIn.value) {
+        await loadFeedbackSummary();
+        await loadComments();
+      }
     });
 
     return {
@@ -375,10 +770,23 @@ export default defineComponent({
       extraError,
       movieTypes,
       joinList,
+      currentUser,
+      isLoggedIn,
+      isFavorite,
+      comments,
+      commentsLoading,
+      commentLoading,
+      feedbackLoading,
+      feedbackSummary,
+      currentFeedback,
+      formatDateTime,
+      getUserInitial,
       submitComment,
+      deleteComment,
       handleFavorite,
       handleLike,
       handleDislike,
+      clearFeedback,
     };
   },
 });
@@ -386,6 +794,9 @@ export default defineComponent({
 
 <style scoped>
 .movie-detail-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   min-height: 100vh;
   padding: 24px;
   max-width: var(--max-width);
@@ -393,32 +804,36 @@ export default defineComponent({
   color: var(--text-primary);
 }
 
-.error-section {
-  text-align: center;
-  padding: 80px 20px;
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.error-icon {
-  font-size: 40px;
-  margin-bottom: 12px;
-}
-
-.hero-section {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 28px;
-  padding: 24px;
+.panel-card {
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--panel-shadow);
   backdrop-filter: var(--panel-blur);
   -webkit-backdrop-filter: var(--panel-blur);
+  padding: 22px;
+}
+
+.error-section {
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.error-icon {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.hero-section {
+  background: var(--bg-hero);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--panel-shadow);
+  padding: 28px;
+  color: #fff;
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
 }
 
 .poster-wrap {
@@ -439,7 +854,7 @@ export default defineComponent({
   width: 280px;
   height: 400px;
   border-radius: 20px;
-  background: var(--panel-bg);
+  background: rgba(255, 255, 255, 0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -453,7 +868,16 @@ export default defineComponent({
 }
 
 .poster-text {
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.9rem;
+  margin-bottom: 14px;
 }
 
 .title-row {
@@ -465,13 +889,15 @@ export default defineComponent({
 
 .movie-title {
   margin: 0;
-  font-size: 2rem;
+  font-size: 2.2rem;
   font-weight: 900;
+  color: #fff;
 }
 
 .sub-title {
   margin: 10px 0 0;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.7;
 }
 
 .year-badge,
@@ -485,12 +911,12 @@ export default defineComponent({
 }
 
 .year-badge {
-  background: var(--rating-bg);
-  color: var(--rating-text);
+  background: rgba(245, 158, 11, 0.18);
+  color: #fff;
 }
 
 .rating-row {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .rating-card {
@@ -499,8 +925,8 @@ export default defineComponent({
   gap: 8px;
   padding: 10px 14px;
   border-radius: var(--radius-md);
-  background: var(--rating-bg);
-  color: var(--rating-text);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   font-weight: 900;
 }
 
@@ -509,7 +935,7 @@ export default defineComponent({
 }
 
 .rating-count {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.88);
   font-weight: 600;
 }
 
@@ -517,12 +943,12 @@ export default defineComponent({
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .tag {
-  background: var(--primary-bg);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
 }
 
 .meta-grid {
@@ -538,18 +964,19 @@ export default defineComponent({
   gap: 6px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  background: var(--primary-bg);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .meta-label {
-  font-size: var(--font-xs);
-  color: var(--text-muted);
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.78);
   font-weight: 700;
 }
 
 .meta-value {
   font-size: 14px;
   line-height: 1.6;
+  color: #fff;
 }
 
 .action-row {
@@ -557,6 +984,39 @@ export default defineComponent({
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 20px;
+}
+
+.feedback-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.feedback-btn {
+  border: none;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transition: all var(--transition-fast);
+}
+
+.feedback-btn.active {
+  background: #fff;
+  color: #111827;
+}
+
+.feedback-btn.neutral {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fff;
+}
+
+.feedback-count {
+  margin-left: 8px;
+  font-weight: 800;
 }
 
 .action-btn,
@@ -581,31 +1041,29 @@ export default defineComponent({
 }
 
 .action-btn.secondary {
-  background: var(--panel-bg);
-  color: var(--text-primary);
-  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.action-btn:hover,
+.primary-btn:hover,
+.external-link:hover,
+.feedback-btn:hover {
+  transform: translateY(-1px);
 }
 
 .content-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 20px;
-  margin-top: 20px;
 }
 
-.panel {
-  background: var(--panel-bg);
-  border: 1px solid var(--panel-border);
-  border-radius: var(--radius-lg);
-  padding: 20px;
-  box-shadow: var(--panel-shadow);
-  backdrop-filter: var(--panel-blur);
-  -webkit-backdrop-filter: var(--panel-blur);
-}
-
-.panel h2,
-.panel h3 {
-  margin-top: 0;
+.main-column,
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .panel-header {
@@ -613,6 +1071,13 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 12px;
+}
+
+.panel-card h2,
+.panel-card h3 {
+  margin: 0;
+  color: var(--text-primary);
 }
 
 .loading-badge {
@@ -620,19 +1085,25 @@ export default defineComponent({
   align-items: center;
   padding: 6px 10px;
   border-radius: var(--radius-full);
-  font-size: var(--font-xs);
+  font-size: 0.78rem;
   font-weight: 800;
-  background: var(--primary-bg);
+  background: var(--nav-hover-bg);
   color: var(--text-primary);
 }
 
 .summary {
   line-height: 1.9;
   color: var(--text-secondary);
+  margin: 0;
 }
 
 .placeholder-text {
   color: var(--text-muted);
+}
+
+.comment-count {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
 }
 
 .comment-box {
@@ -650,6 +1121,8 @@ export default defineComponent({
   background: var(--input-bg);
   color: var(--text-primary);
   outline: none;
+  font-size: 0.96rem;
+  line-height: 1.7;
 }
 
 .comment-input:focus {
@@ -657,23 +1130,137 @@ export default defineComponent({
   box-shadow: var(--input-focus-shadow);
 }
 
-.comment-empty {
-  margin-top: 16px;
+.comment-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.comment-length {
   color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.comment-login-tip,
+.comment-empty,
+.comment-loading {
+  margin-top: 14px;
+  color: var(--text-muted);
+}
+
+.comment-list {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.comment-item {
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  padding: 16px;
+}
+
+.comment-user-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.comment-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.username {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.time {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.comment-content {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.delete-comment-btn {
+  border: none;
+  background: #ef4444;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 .side-list {
   margin: 0;
   padding-left: 18px;
   line-height: 1.9;
+  color: var(--text-secondary);
+}
+
+.stats-box {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mini-stat {
+  padding: 14px 10px;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  text-align: center;
+}
+
+.mini-stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 4px;
+}
+
+.mini-stat-label {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
 }
 
 .external-link {
-  background: var(--panel-bg);
+  width: 100%;
+  background: var(--nav-hover-bg);
   color: var(--text-primary);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
   .hero-section {
     grid-template-columns: 1fr;
   }
@@ -683,6 +1270,32 @@ export default defineComponent({
   }
 
   .meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .movie-detail-view {
+    padding: 16px;
+  }
+
+  .hero-section,
+  .panel-card {
+    padding: 18px;
+  }
+
+  .movie-title {
+    font-size: 1.7rem;
+  }
+
+  .action-row,
+  .feedback-bar,
+  .comment-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stats-box {
     grid-template-columns: 1fr;
   }
 }

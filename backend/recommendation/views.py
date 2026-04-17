@@ -17,6 +17,8 @@ from .models import (
     VideoPlatform,
     UserProfile,
     RecommendationLog,
+    MovieFeedback,
+    MovieComment,
 )
 from .serializers import (
     MovieSerializer,
@@ -25,6 +27,8 @@ from .serializers import (
     VideoPlatformSerializer,
     UserProfileSerializer,
     OnboardingPreferenceSerializer,
+    MovieFeedbackSerializer,
+    MovieCommentSerializer,
 )
 from .collaborative_filtering import CollaborativeFiltering
 from .movie_detail_cache import get_movie_detail_from_cache
@@ -759,3 +763,224 @@ class SimilarMoviesView(APIView):
             "movie_title": movie.title,
             "similar_movies": results,
         })
+    
+
+class MovieFeedbackView(APIView):
+    """
+    电影点赞 / 拉踩接口
+    GET: 获取当前电影的点赞数、拉踩数、当前用户反馈状态
+    POST: 点赞 / 拉踩（会自动覆盖旧状态）
+    DELETE: 取消当前用户对该电影的反馈
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        movie_id = request.query_params.get("movie_id")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response(
+                {"error": "电影不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        like_count = MovieFeedback.objects.filter(movie=movie, feedback_type="like").count()
+        dislike_count = MovieFeedback.objects.filter(movie=movie, feedback_type="dislike").count()
+
+        current_feedback = MovieFeedback.objects.filter(
+            movie=movie,
+            user=request.user
+        ).first()
+
+        return Response({
+            "movie_id": movie.id,
+            "movie_title": movie.title,
+            "like_count": like_count,
+            "dislike_count": dislike_count,
+            "current_user_feedback": current_feedback.feedback_type if current_feedback else None,
+        })
+
+    def post(self, request):
+        movie_id = request.data.get("movie_id")
+        feedback_type = request.data.get("feedback_type")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if feedback_type not in ["like", "dislike"]:
+            return Response(
+                {"error": "feedback_type必须是 like 或 dislike"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response(
+                {"error": "电影不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        feedback, created = MovieFeedback.objects.update_or_create(
+            user=request.user,
+            movie=movie,
+            defaults={"feedback_type": feedback_type},
+        )
+
+        return Response({
+            "message": "反馈提交成功" if created else "反馈更新成功",
+            "feedback": MovieFeedbackSerializer(feedback, context={"request": request}).data,
+        })
+
+    def delete(self, request):
+        movie_id = request.data.get("movie_id") or request.query_params.get("movie_id")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        deleted_count, _ = MovieFeedback.objects.filter(
+            user=request.user,
+            movie_id=movie_id
+        ).delete()
+
+        if deleted_count == 0:
+            return Response(
+                {"error": "当前用户没有对这部电影做过反馈"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response({"message": "反馈已取消"})
+    
+class MovieCommentView(APIView):
+    """
+    电影评论接口
+    GET: 获取某部电影评论列表
+    POST: 发表评论
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        movie_id = request.query_params.get("movie_id")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response(
+                {"error": "电影不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        comments = MovieComment.objects.filter(movie=movie).select_related("user", "movie")
+        serializer = MovieCommentSerializer(
+            comments,
+            many=True,
+            context={"request": request}
+        )
+
+        return Response({
+            "movie_id": movie.id,
+            "movie_title": movie.title,
+            "count": comments.count(),
+            "comments": serializer.data,
+        })
+
+    def post(self, request):
+        movie_id = request.data.get("movie_id")
+        content = (request.data.get("content") or "").strip()
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not content:
+            return Response(
+                {"error": "评论内容不能为空"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response(
+                {"error": "电影不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        comment = MovieComment.objects.create(
+            user=request.user,
+            movie=movie,
+            content=content,
+        )
+
+        return Response({
+            "message": "评论发布成功",
+            "comment": MovieCommentSerializer(comment, context={"request": request}).data,
+        })
+    
+class MovieCommentDetailView(APIView):
+    """
+    单条评论接口
+    DELETE: 删除当前用户自己的评论
+    PUT: 修改当前用户自己的评论
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, comment_id):
+        try:
+            comment = MovieComment.objects.get(id=comment_id, user=request.user)
+        except MovieComment.DoesNotExist:
+            return Response(
+                {"error": "评论不存在或无权限修改"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        content = (request.data.get("content") or "").strip()
+        if not content:
+            return Response(
+                {"error": "评论内容不能为空"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        comment.content = content
+        comment.save()
+
+        return Response({
+            "message": "评论修改成功",
+            "comment": MovieCommentSerializer(comment, context={"request": request}).data,
+        })
+
+    def delete(self, request, comment_id):
+        try:
+            comment = MovieComment.objects.get(id=comment_id, user=request.user)
+        except MovieComment.DoesNotExist:
+            return Response(
+                {"error": "评论不存在或无权限删除"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        comment.delete()
+        return Response({"message": "评论删除成功"})
