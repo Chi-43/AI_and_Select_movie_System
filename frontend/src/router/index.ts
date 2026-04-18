@@ -8,6 +8,13 @@ import ProfileView from "../views/ProfileView.vue";
 import AIChatView from "../views/AIChatView.vue";
 import VideoPlatformView from "../views/VideoPlatformView.vue";
 import MovieDetailView from "../views/MovieDetailView.vue";
+import AdminLoginView from "../views/AdminLoginView.vue";
+import AdminLayoutView from "../views/AdminLayoutView.vue";
+import AdminDashboardHome from "../views/AdminDashboardHome.vue";
+import AdminUsersView from "../views/AdminUsersView.vue";
+import AdminMoviesView from "../views/AdminMoviesView.vue";
+import AdminCommentsView from "../views/AdminCommentsView.vue";
+import AdminProfileView from "../views/AdminProfileView.vue";
 
 const routes = [
   {
@@ -55,6 +62,42 @@ const routes = [
     path: "/about",
     name: "about",
     component: () => import("../views/AboutView.vue"),
+  },
+  {
+    path: "/admin/login",
+    name: "admin-login",
+    component: AdminLoginView,
+  },
+  {
+    path: "/admin",
+    component: AdminLayoutView,
+    children: [
+      {
+        path: "dashboard",
+        name: "admin-dashboard",
+        component: AdminDashboardHome,
+      },
+      {
+        path: "users",
+        name: "admin-users",
+        component: AdminUsersView,
+      },
+      {
+        path: "movies",
+        name: "admin-movies",
+        component: AdminMoviesView,
+      },
+      {
+        path: "comments",
+        name: "admin-comments",
+        component: AdminCommentsView,
+      },
+      {
+        path: "profile",
+        name: "admin-profile",
+        component: AdminProfileView,
+      },
+    ],
   },
 ];
 

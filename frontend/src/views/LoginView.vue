@@ -3,7 +3,24 @@
     <div class="login-card">
       <div class="login-header">
         <h1>🎬 电影推荐系统</h1>
-        <p>登录您的账户</p>
+        <p>{{ isAdminMode ? "管理员后台登录" : "登录您的账户" }}</p>
+      </div>
+
+      <div class="mode-switch">
+        <button
+          class="mode-btn"
+          :class="{ active: !isAdminMode }"
+          @click="switchMode(false)"
+        >
+          用户登录
+        </button>
+        <button
+          class="mode-btn"
+          :class="{ active: isAdminMode }"
+          @click="switchMode(true)"
+        >
+          管理员登录
+        </button>
       </div>
 
       <div v-if="error" class="error-message">
@@ -12,13 +29,15 @@
 
       <form @submit.prevent="handleLogin" class="login-form">
         <div class="form-group">
-          <label for="username">用户名</label>
+          <label for="username">{{
+            isAdminMode ? "管理员账号" : "用户名"
+          }}</label>
           <input
             type="text"
             id="username"
             v-model="loginData.username"
             required
-            placeholder="请输入用户名"
+            :placeholder="isAdminMode ? '请输入管理员账号' : '请输入用户名'"
           />
         </div>
 
@@ -34,13 +53,17 @@
         </div>
 
         <button type="submit" class="login-btn" :disabled="loading">
-          <span v-if="loading">登录中...</span>
-          <span v-else>登录</span>
+          <span v-if="loading">{{
+            isAdminMode ? "登录后台中..." : "登录中..."
+          }}</span>
+          <span v-else>{{ isAdminMode ? "进入管理员后台" : "登录" }}</span>
         </button>
       </form>
 
       <div class="login-footer">
-        <p>还没有账户？ <router-link to="/register">立即注册</router-link></p>
+        <template v-if="!isAdminMode">
+          <p>还没有账户？ <router-link to="/register">立即注册</router-link></p>
+        </template>
         <p><router-link to="/">返回首页</router-link></p>
       </div>
     </div>
@@ -52,6 +75,8 @@ import { defineComponent, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import type { LoginData } from "@/types/auth";
+
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 export default defineComponent({
   name: "LoginView",
@@ -66,10 +91,49 @@ export default defineComponent({
 
     const loading = ref(false);
     const error = ref("");
+    const isAdminMode = ref(false);
+
+    const switchMode = (adminMode: boolean) => {
+      isAdminMode.value = adminMode;
+      error.value = "";
+      loginData.value.username = "";
+      loginData.value.password = "";
+    };
+
+    const handleUserLogin = async () => {
+      await authStore.login(loginData.value);
+      router.push("/");
+    };
+
+    const handleAdminLogin = async () => {
+      const response = await fetch(`${API_BASE_URL}/api/admin/login/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: loginData.value.username,
+          password: loginData.value.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.detail || "管理员登录失败");
+      }
+
+      localStorage.setItem("admin_token", data.token);
+      localStorage.setItem("admin_user", JSON.stringify(data.user));
+
+      router.push("/admin/dashboard");
+    };
 
     const handleLogin = async () => {
       if (!loginData.value.username || !loginData.value.password) {
-        error.value = "请输入用户名和密码";
+        error.value = isAdminMode.value
+          ? "请输入管理员账号和密码"
+          : "请输入用户名和密码";
         return;
       }
 
@@ -77,10 +141,16 @@ export default defineComponent({
       error.value = "";
 
       try {
-        await authStore.login(loginData.value);
-        router.push("/");
+        if (isAdminMode.value) {
+          await handleAdminLogin();
+        } else {
+          await handleUserLogin();
+        }
       } catch (err: any) {
-        error.value = err.response?.data?.detail || err.message || "登录失败";
+        error.value =
+          err.response?.data?.detail ||
+          err.message ||
+          (isAdminMode.value ? "管理员登录失败" : "登录失败");
       } finally {
         loading.value = false;
       }
@@ -90,6 +160,8 @@ export default defineComponent({
       loginData,
       loading,
       error,
+      isAdminMode,
+      switchMode,
       handleLogin,
     };
   },
@@ -136,7 +208,7 @@ export default defineComponent({
 
 .login-header {
   text-align: center;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .login-header h1 {
@@ -151,6 +223,34 @@ export default defineComponent({
   margin: 10px 0 0;
   font-size: var(--font-sm);
   color: var(--text-muted);
+}
+
+.mode-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 6px;
+  border-radius: var(--radius-md);
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid var(--panel-border);
+}
+
+.mode-btn {
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-weight: 800;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mode-btn.active {
+  background: var(--primary-gradient);
+  color: #fff;
+  box-shadow: var(--primary-shadow);
 }
 
 .error-message {

@@ -36,6 +36,16 @@ from recommendation.ai_views import (
     AIConfigView,
     NaturalLanguageRecommendationView,
 )
+from recommendation.admin_views import (
+    AdminLoginView,
+    AdminProfileView,
+    AdminUserListView,
+    AdminUserDetailView,
+    AdminMovieListView,
+    AdminMovieDetailView,
+    AdminCommentListView,
+    AdminCommentDetailView,
+)
 
 # 创建路由器并注册视图集
 router = routers.DefaultRouter()
@@ -81,6 +91,19 @@ urlpatterns = [
     path("api/ai/analysis/", MovieAnalysisView.as_view(), name="ai_analysis"),
     path("api/ai/config/", AIConfigView.as_view(), name="ai_config"),
     path("api/ai/nl-recommend/", NaturalLanguageRecommendationView.as_view(), name="ai_nl_recommend"),
+
+    # 管理员相关路由
+    path("api/admin/login/", AdminLoginView.as_view(), name="admin_login"),
+    path("api/admin/profile/", AdminProfileView.as_view(), name="admin_profile"),
+
+    path("api/admin/users/", AdminUserListView.as_view(), name="admin_user_list"),
+    path("api/admin/users/<int:user_id>/", AdminUserDetailView.as_view(), name="admin_user_detail"),
+
+    path("api/admin/movies/", AdminMovieListView.as_view(), name="admin_movie_list"),
+    path("api/admin/movies/<int:movie_id>/", AdminMovieDetailView.as_view(), name="admin_movie_detail"),
+
+    path("api/admin/comments/", AdminCommentListView.as_view(), name="admin_comment_list"),
+    path("api/admin/comments/<int:comment_id>/", AdminCommentDetailView.as_view(), name="admin_comment_detail"),
 ]
 
 # 开发环境下提供媒体文件服务
