@@ -170,31 +170,26 @@ def update_user_profile_from_ratings(user: User):
     profile.save()
 
     return profile
-
-
-def generate_basic_reason(user: User, movie: Movie, algorithm: str, context=None):
     """
     规则版推荐理由生成
     后续你接 DeepSeek 时，可以直接替换这里
     """
+
+def generate_basic_reason(user: User, movie: Movie, algorithm: str, context=None):
     profile = getattr(user, "profile", None)
     reasons = []
-
     if profile:
         if profile.favorite_genres:
             matched_genres = [g for g in profile.favorite_genres if g in (movie.genre or "")]
             if matched_genres:
                 reasons.append(f"你偏好{'、'.join(matched_genres[:2])}题材")
-
         if profile.favorite_countries:
             matched_countries = [c for c in profile.favorite_countries if c in (movie.country or "")]
             if matched_countries:
                 reasons.append(f"你较关注{'、'.join(matched_countries[:2])}电影")
-
     if getattr(movie, "rating", None):
         if movie.rating and movie.rating >= 9:
             reasons.append("该片本身属于高分电影")
-
     if algorithm == "user_based":
         reasons.append("与您兴趣相似的用户也喜欢这部电影")
     elif algorithm == "item_based":
@@ -203,15 +198,12 @@ def generate_basic_reason(user: User, movie: Movie, algorithm: str, context=None
         reasons.append("这是根据您初始兴趣偏好筛选得到的结果")
     elif algorithm == "top":
         reasons.append("该片在整体用户中热度和评分都较高")
-
     if context and context.get("user_high_rating_movies"):
         high_rated_titles = [item["title"] for item in context["user_high_rating_movies"][:2]]
         if high_rated_titles:
             reasons.append(f"与你喜欢的《{'》《'.join(high_rated_titles)}》具有一定偏好关联")
-
     if not reasons:
         return "根据您的兴趣偏好，为您推荐这部电影。"
-
     return "；".join(reasons) + "。"
 
 
@@ -440,7 +432,7 @@ class VideoPlatformLinksView(APIView):
 
 
 class MovieDetailView(APIView):
-    """获取电影详情API（轻量快速版）"""
+    """获取电影详情API（返回扩展详情 + movie_id）"""
 
     def get(self, request):
         movie_title = request.query_params.get("movie_title", "").strip()
@@ -452,16 +444,33 @@ class MovieDetailView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # 1. 先去数据库里匹配 movie_id
+        movie_obj = Movie.objects.filter(douban_url=douban_url).first()
+
+        # 如果按豆瓣链接没匹配到，再尝试按标题模糊匹配
+        if not movie_obj and movie_title:
+            movie_obj = Movie.objects.filter(title__icontains=movie_title).first()
+
+        movie_id = movie_obj.id if movie_obj else None
+
+        # 2. 再查详情缓存
         cached_data = get_movie_detail_from_cache(douban_url)
 
         if cached_data:
             data = dict(cached_data)
+
             if movie_title and not data.get("movie_title"):
                 data["movie_title"] = movie_title
+
+            # 把数据库主键也返回给前端
+            data["movie_id"] = movie_id
             data["source"] = "cache"
+
             return Response(data)
 
+        # 3. 没缓存也要把 movie_id 返回出去
         return Response({
+            "movie_id": movie_id,
             "movie_title": movie_title,
             "english_title": "",
             "douban_url": douban_url,
@@ -542,19 +551,15 @@ class UserProfileView(APIView):
 
 
 class RecommendationView(APIView):
-    """推荐API（升级版：返回 score + reason）"""
-
     def get(self, request):
         user_id = request.query_params.get("user_id")
         algorithm = request.query_params.get("algorithm", "user_based")
         top_n = int(request.query_params.get("top_n", 10))
-
         if not user_id:
             return Response(
                 {"error": "user_id参数是必需的"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
@@ -562,10 +567,8 @@ class RecommendationView(APIView):
                 {"error": "用户不存在"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
         cf = CollaborativeFiltering()
         user_rating_count = Rating.objects.filter(user=user).count()
-
         if algorithm == "user_based":
             recs = cf.user_based_recommendations_with_scores(user.id, top_n)
         elif algorithm == "item_based":
@@ -573,15 +576,12 @@ class RecommendationView(APIView):
         elif algorithm == "cold_start":
             profile, _ = UserProfile.objects.get_or_create(user=user)
             queryset = Movie.objects.all()
-
             # 类型过滤：逐步缩小范围
             for genre in profile.favorite_genres[:3]:
                 queryset = queryset.filter(genre__icontains=genre)
-
             # 国家过滤
             if profile.favorite_countries:
                 queryset = queryset.filter(country__icontains=profile.favorite_countries[0])
-
             # 年份过滤
             if profile.favorite_years:
                 year_min = profile.favorite_years.get("min")
@@ -590,9 +590,7 @@ class RecommendationView(APIView):
                     queryset = queryset.filter(year__gte=year_min)
                 if year_max:
                     queryset = queryset.filter(year__lte=year_max)
-
             movies = queryset.order_by("-rating")[:top_n]
-
             recs = [
                 {
                     "movie_id": movie.id,
@@ -612,10 +610,8 @@ class RecommendationView(APIView):
             if user_rating_count == 0:
                 profile, _ = UserProfile.objects.get_or_create(user=user)
                 queryset = Movie.objects.all()
-
                 if profile.favorite_genres:
                     queryset = queryset.filter(genre__icontains=profile.favorite_genres[0])
-
                 movies = queryset.order_by("-rating")[:top_n]
                 recs = [
                     {
@@ -627,18 +623,14 @@ class RecommendationView(APIView):
                 ]
             else:
                 recs = cf.get_top_movies_with_scores(top_n)
-
         movie_ids = [item["movie_id"] for item in recs]
         movie_map = {movie.id: movie for movie in Movie.objects.filter(id__in=movie_ids)}
-
         results = []
         for item in recs:
             movie = movie_map.get(item["movie_id"])
             if not movie:
                 continue
-
             context = cf.build_reason_context(user.id, movie.id, item["algorithm"])
-
             try:
                 reason = generate_llm_recommend_reason(
                     user=user,
@@ -653,7 +645,6 @@ class RecommendationView(APIView):
                     algorithm=item["algorithm"],
                     context=context,
                 )
-
             RecommendationLog.objects.create(
                 user=user,
                 movie=movie,
@@ -661,14 +652,12 @@ class RecommendationView(APIView):
                 score=item["score"],
                 reason=reason,
             )
-
             results.append({
                 "movie": MovieSerializer(movie).data,
                 "score": round(item["score"], 4),
                 "algorithm": item["algorithm"],
                 "reason": reason,
             })
-
         return Response({
             "user_id": user.id,
             "username": user.username,

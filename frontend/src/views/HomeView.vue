@@ -27,6 +27,7 @@
       </div>
 
       <div class="hero-side">
+        <!--
         <div class="hero-stat-card">
           <div class="stat-number">6+</div>
           <div class="stat-label">核心功能模块</div>
@@ -39,13 +40,14 @@
           <div class="stat-number">CF</div>
           <div class="stat-label">协同过滤推荐引擎</div>
         </div>
+        -->
       </div>
     </section>
 
     <section class="section-card">
       <div class="section-header">
-        <h2>📌 项目简介</h2>
-        <p>这是一个面向个性化电影推荐场景的智能系统。</p>
+        <h2>📌 这是一个面向个性化电影推荐场景的智能系统</h2>
+        <!-- <p>这是一个面向个性化电影推荐场景的智能系统。</p> -->
       </div>
 
       <div class="intro-grid">
@@ -70,7 +72,7 @@
     <section class="section-card">
       <div class="section-header">
         <h2>🚀 核心功能</h2>
-        <p>系统当前已经实现的主要模块。</p>
+        <!-- <p>系统当前已经实现的主要模块。</p> -->
       </div>
 
       <div class="feature-grid">

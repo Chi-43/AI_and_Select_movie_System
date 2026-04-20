@@ -47,7 +47,13 @@ export const useAuthStore = defineStore("auth", {
         return response.data;
       } catch (error: any) {
         this.error =
-          error.response?.data?.detail || error.message || "登录失败";
+          error.response?.data?.detail ||
+          error.response?.data?.error ||
+          error.response?.data?.non_field_errors?.[0] ||
+          error.response?.data?.username?.[0] ||
+          error.response?.data?.password?.[0] ||
+          error.message ||
+          "登录失败";
         throw error;
       } finally {
         this.loading = false;

@@ -11,10 +11,12 @@
       <section class="hero-section">
         <div class="poster-wrap">
           <img
-            v-if="extraDetail?.poster"
+            v-if="extraDetail?.poster && !posterLoadFailed"
             :src="extraDetail.poster"
             :alt="movie['电影名字']"
             class="poster"
+            referrerpolicy="no-referrer"
+            @error="handlePosterError"
           />
           <div v-else class="poster-placeholder">
             <span class="poster-icon">🎬</span>
@@ -130,12 +132,12 @@
 
       <section class="content-grid">
         <div class="main-column">
-          <div class="panel-card">
+          <!-- <div class="panel-card">
             <h2>一句话评价</h2>
             <p class="summary">
               {{ movie["一句话评价"] || "暂无一句话评价" }}
             </p>
-          </div>
+          </div> -->
 
           <div class="panel-card">
             <div class="panel-header">
@@ -253,14 +255,14 @@
             </div>
 
             <ul v-else-if="extraDetail" class="side-list">
-              <li>
+              <!-- <li>
                 <strong>英文名:</strong>
                 {{ extraDetail.english_title || "暂无" }}
-              </li>
-              <li>
+              </li> -->
+              <!-- <li>
                 <strong>IMDb:</strong>
                 {{ extraDetail.imdb || "暂无" }}
-              </li>
+              </li> -->
               <li>
                 <strong>上映日期:</strong>
                 {{ joinList(extraDetail.release_dates) }}
@@ -277,10 +279,10 @@
                 <strong>又名:</strong>
                 {{ joinList(extraDetail.aka) }}
               </li>
-              <li>
+              <!-- <li>
                 <strong>编剧:</strong>
                 {{ joinList(extraDetail.writer) }}
-              </li>
+              </li> -->
               <li>
                 <strong>主演:</strong>
                 {{ joinList(extraDetail.actors) }}
@@ -349,6 +351,7 @@ interface DoubanMovie {
 }
 
 interface MovieExtraDetail {
+  movie_id?: number;
   movie_title?: string;
   english_title?: string;
   douban_url?: string;
@@ -392,10 +395,12 @@ export default defineComponent({
 
     const movie = ref<DoubanMovie | null>(null);
     const commentText = ref("");
+    const favoriteLinks = ref<Set<string>>(new Set());
 
     const extraDetail = ref<MovieExtraDetail | null>(null);
     const extraLoading = ref(false);
     const extraError = ref("");
+    const posterLoadFailed = ref(false);
 
     const feedbackLoading = ref(false);
     const commentLoading = ref(false);
@@ -420,15 +425,25 @@ export default defineComponent({
         .filter(Boolean);
     });
 
+    const loadFavorites = () => {
+      const saved = localStorage.getItem("movie_favorites");
+      const favorites: string[] = saved ? JSON.parse(saved) : [];
+      favoriteLinks.value = new Set(favorites);
+    };
+
+    const handlePosterError = () => {
+      posterLoadFailed.value = true;
+    };
     const currentFeedback = computed(
       () => feedbackSummary.value.current_user_feedback
     );
 
     const isFavorite = computed(() => {
       if (!movie.value) return false;
-      const saved = localStorage.getItem("movie_favorites");
-      const favorites: string[] = saved ? JSON.parse(saved) : [];
-      return favorites.includes(movie.value["电影链接"]);
+      // const saved = localStorage.getItem("movie_favorites");
+      // const favorites: string[] = saved ? JSON.parse(saved) : [];
+      // return favorites.includes(movie.value["电影链接"]);
+      return favoriteLinks.value.has(movie.value["电影链接"]);
     });
 
     const joinList = (arr?: string[]) => {
@@ -462,7 +477,11 @@ export default defineComponent({
 
       try {
         const parsed = JSON.parse(saved) as DoubanMovie;
-        return parsed.id || parsed.movie_id || null;
+
+        if (parsed.movie_id) return parsed.movie_id;
+        if (parsed.id) return parsed.id;
+
+        return null;
       } catch {
         return null;
       }
@@ -515,7 +534,18 @@ export default defineComponent({
           throw new Error(`请求失败: ${response.status}`);
         }
 
-        extraDetail.value = (await response.json()) as MovieExtraDetail;
+        const data = (await response.json()) as MovieExtraDetail;
+        extraDetail.value = data;
+
+        // 关键修复：把后端返回的 movie_id 写回当前电影对象
+        if (movie.value && data.movie_id) {
+          movie.value.movie_id = data.movie_id;
+          sessionStorage.setItem(
+            "current_movie_detail",
+            JSON.stringify(movie.value)
+          );
+          console.log("后端返回详情数据：", data);
+        }
       } catch (error: unknown) {
         console.error("获取扩展详情失败:", error);
         extraError.value = "扩展详情加载失败，当前已显示基础信息";
@@ -730,17 +760,20 @@ export default defineComponent({
     const handleFavorite = () => {
       if (!movie.value) return;
 
-      const saved = localStorage.getItem("movie_favorites");
-      const favorites: string[] = saved ? JSON.parse(saved) : [];
-
       const movieLink = movie.value["电影链接"];
-      const exists = favorites.includes(movieLink);
+      const exists = favoriteLinks.value.has(movieLink);
 
-      const newFavorites = exists
-        ? favorites.filter((item) => item !== movieLink)
-        : [...favorites, movieLink];
+      if (exists) {
+        favoriteLinks.value.delete(movieLink);
+      } else {
+        favoriteLinks.value.add(movieLink);
+      }
 
-      localStorage.setItem("movie_favorites", JSON.stringify(newFavorites));
+      localStorage.setItem(
+        "movie_favorites",
+        JSON.stringify(Array.from(favoriteLinks.value))
+      );
+
       alert(exists ? "已取消收藏" : "收藏成功");
     };
 
@@ -754,6 +787,7 @@ export default defineComponent({
 
     onMounted(async () => {
       loadMovieFromSession();
+      loadFavorites();
       await fetchExtraDetail();
 
       if (isLoggedIn.value) {
@@ -787,6 +821,8 @@ export default defineComponent({
       handleLike,
       handleDislike,
       clearFeedback,
+      posterLoadFailed,
+      handlePosterError,
     };
   },
 });

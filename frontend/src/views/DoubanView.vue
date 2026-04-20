@@ -3,8 +3,8 @@
     <!-- Hero -->
     <section class="hero-section">
       <div class="hero-content">
-        <div class="hero-badge">电影发现</div>
-        <h1 class="hero-title">🎬 豆瓣电影 TOP250</h1>
+        <!-- <div class="hero-badge">电影发现</div> -->
+        <h1 class="hero-title">🎬电影发现</h1>
         <p class="hero-subtitle">
           浏览高分电影、按条件筛选、查看详情、收藏影片，并基于当前电影库获取智能推荐。
         </p>
@@ -18,14 +18,14 @@
       </div>
 
       <div class="hero-stats">
-        <div class="hero-stat-card">
+        <!-- <div class="hero-stat-card">
           <div class="stat-number">{{ totalMovies }}</div>
           <div class="stat-label">总电影数</div>
-        </div>
-        <div class="hero-stat-card">
+        </div> -->
+        <!-- <div class="hero-stat-card">
           <div class="stat-number">{{ averageRating.toFixed(1) }}</div>
           <div class="stat-label">平均评分</div>
-        </div>
+        </div> -->
         <div class="hero-stat-card">
           <div class="stat-number">{{ yearRangeText }}</div>
           <div class="stat-label">年份跨度</div>
@@ -141,7 +141,7 @@
     </section>
 
     <!-- 数据统计 -->
-    <section class="stats-grid">
+    <!-- <section class="stats-grid">
       <div class="stat-card">
         <div class="stat-number">{{ totalMovies }}</div>
         <div class="stat-label dark">总电影数</div>
@@ -158,7 +158,7 @@
         <div class="stat-number">{{ favorites.size }}</div>
         <div class="stat-label dark">收藏数量</div>
       </div>
-    </section>
+    </section> -->
 
     <!-- 排序 -->
     <section class="panel-card sort-panel">
@@ -411,10 +411,10 @@ export default defineComponent({
     });
 
     const goToMovieDetail = (movie: DoubanMovie) => {
-      if (!movie.id) {
-        alert("当前电影还没有匹配到数据库ID，请确认后端电影数据是否已导入。");
-        return;
-      }
+      // if (!movie.id) {
+      //   alert("当前电影还没有匹配到数据库ID，请确认后端电影数据是否已导入。");
+      //   return;
+      // }
 
       const movieWithId = {
         ...movie,
