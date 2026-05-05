@@ -25,25 +25,22 @@ def get_deepseek_api_key():
         api_key = getattr(settings, "DEEPSEEK_API_KEY", None)
     return api_key
 
-
+"""
+    通用 DeepSeek 调用函数（非流式）
+"""
 def call_deepseek_chat(
     system_prompt: str,
     user_prompt: str,
     model: str = "deepseek-chat",
     temperature: float = 0.3,
 ):
-    """
-    通用 DeepSeek 调用函数（非流式）
-    """
     api_key = get_deepseek_api_key()
     if not api_key:
         raise ValueError("DeepSeek API密钥未配置")
-
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {api_key}", 
         "Content-Type": "application/json",
     }
-
     payload = {
         "model": model,
         "messages": [
@@ -54,21 +51,18 @@ def call_deepseek_chat(
         "max_tokens": 500,
         "stream": False,
     }
-
     response = requests.post(
         "https://api.deepseek.com/chat/completions",
         headers=headers,
         json=payload,
         timeout=30,
     )
-
     if response.status_code != 200:
         try:
             detail = response.json()
         except Exception:
             detail = response.text
         raise ValueError(f"DeepSeek 调用失败: {detail}")
-
     result = response.json()
     return result["choices"][0]["message"]["content"]
 
@@ -104,17 +98,15 @@ def extract_json_from_text(text: str):
 
     raise ValueError("无法从模型输出中解析 JSON")
 
-
-def parse_recommendation_intent(query: str):
-    """
+"""
     用 DeepSeek 把自然语言推荐需求解析为结构化条件
-    """
+"""
+def parse_recommendation_intent(query: str):
     system_prompt = """
 你是电影推荐系统中的“意图解析器”。
 你的任务是把用户的自然语言电影需求解析成 JSON。
-只能返回 JSON，不要返回解释，不要返回 Markdown。
-
-JSON字段定义：
+只能返回 JSON,不要返回解释,不要返回 Markdown。
+JSON字段定义:
 {
   "genres": ["类型1", "类型2"],
   "countries": ["国家1", "国家2"],
@@ -126,7 +118,6 @@ JSON字段定义：
   "mood": "",
   "scene": ""
 }
-
 规则：
 1. 没有的信息用空数组、空字符串或 null
 2. 不要编造电影名
@@ -134,18 +125,14 @@ JSON字段定义：
 4. scene / mood 这类场景语义可以保留，但不要乱放到 genres
 5. 只输出 JSON
 """
-
     user_prompt = f"用户输入：{query}"
-
     raw = call_deepseek_chat(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         model="deepseek-chat",
         temperature=0.1,
     )
-
     parsed = extract_json_from_text(raw)
-
     return {
         "genres": parsed.get("genres", []) or [],
         "countries": parsed.get("countries", []) or [],

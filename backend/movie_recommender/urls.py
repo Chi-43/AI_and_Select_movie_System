@@ -17,6 +17,7 @@ from recommendation.views import (
     OnboardingPreferenceView,
     UserProfileView as RecommendationUserProfileView,
     MovieFeedbackView,
+    MovieRatingView,
     MovieCommentView,
     MovieCommentDetailView,
 )
@@ -80,7 +81,8 @@ urlpatterns = [
     path("api/video-platform-links/", VideoPlatformLinksView.as_view(), name="video_platform_links"),
     path("api/movie-detail/", MovieDetailView.as_view(), name="movie_detail"),
 
-    # 电影互动：点赞/拉踩/评论
+    # 电影互动：评分/点赞/拉踩/评论
+    path("api/movie-ratings/", MovieRatingView.as_view(), name="movie_ratings"),
     path("api/movie-feedback/", MovieFeedbackView.as_view(), name="movie_feedback"),
     path("api/movie-comments/", MovieCommentView.as_view(), name="movie_comments"),
     path("api/movie-comments/<int:comment_id>/", MovieCommentDetailView.as_view(), name="movie_comment_detail"),

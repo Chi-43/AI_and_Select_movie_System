@@ -2,6 +2,7 @@ from decimal import Decimal
 import re
 from collections import Counter
 
+from django.db.models import Avg
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -87,10 +88,9 @@ def split_multi_value(text):
     if not text:
         return []
     return [item.strip() for item in re.split(r"[ /、,，]+", text) if item.strip()]
-
+"""生成用户画像总结（当前为规则版，后续可替换成 LLM 版）"""
 
 def build_profile_summary(profile: UserProfile):
-    """生成用户画像总结（当前为规则版，后续可替换成 LLM 版）"""
     genres = "、".join(profile.favorite_genres[:3]) if profile.favorite_genres else "暂无明显类型偏好"
     countries = "、".join(profile.favorite_countries[:3]) if profile.favorite_countries else "暂无明显国家偏好"
 
@@ -853,7 +853,121 @@ class MovieFeedbackView(APIView):
             )
 
         return Response({"message": "反馈已取消"})
-    
+
+class MovieRatingView(APIView):
+    """
+    电影评分接口
+    GET: 获取当前用户评分、电影平均评分、评分人数
+    POST: 提交/更新评分（1-5分）
+    DELETE: 删除当前用户评分
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        movie_id = request.query_params.get("movie_id")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response(
+                {"error": "电影不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        current_rating = Rating.objects.filter(
+            movie=movie, user=request.user
+        ).first()
+
+        ratings = Rating.objects.filter(movie=movie)
+        avg_rating = ratings.aggregate(Avg("rating"))["rating__avg"]
+        rating_count = ratings.count()
+
+        return Response({
+            "movie_id": movie.id,
+            "movie_title": movie.title,
+            "user_rating": current_rating.rating if current_rating else None,
+            "avg_rating": round(float(avg_rating), 1) if avg_rating else None,
+            "rating_count": rating_count,
+        })
+
+    def post(self, request):
+        movie_id = request.data.get("movie_id")
+        rating_value = request.data.get("rating")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if rating_value is None:
+            return Response(
+                {"error": "rating参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            rating_value = float(rating_value)
+        except (TypeError, ValueError):
+            return Response(
+                {"error": "rating必须是数字"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if rating_value < 1 or rating_value > 5:
+            return Response(
+                {"error": "评分范围必须在1-5之间"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            movie = Movie.objects.get(id=movie_id)
+        except Movie.DoesNotExist:
+            return Response(
+                {"error": "电影不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        rating_obj, created = Rating.objects.update_or_create(
+            user=request.user,
+            movie=movie,
+            defaults={"rating": rating_value},
+        )
+
+        return Response({
+            "message": "评分提交成功" if created else "评分更新成功",
+            "rating": RatingSerializer(rating_obj, context={"request": request}).data,
+        })
+
+    def delete(self, request):
+        movie_id = request.data.get("movie_id") or request.query_params.get("movie_id")
+
+        if not movie_id:
+            return Response(
+                {"error": "movie_id参数是必需的"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        deleted_count, _ = Rating.objects.filter(
+            user=request.user,
+            movie_id=movie_id
+        ).delete()
+
+        if deleted_count == 0:
+            return Response(
+                {"error": "当前用户还没有对这部电影评分"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response({"message": "评分已删除"})
+
 class MovieCommentView(APIView):
     """
     电影评论接口

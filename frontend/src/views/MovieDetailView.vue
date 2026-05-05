@@ -48,7 +48,20 @@
               </span>
             </div>
           </div>
-
+          <div v-if="isLoggedIn" class="user-rating-row">
+            <div class="user-rating-label">我的评分</div>
+            <StarRating
+              v-model="userRating"
+              :disabled="ratingLoading"
+              @update:modelValue="submitRating"
+            />
+            <span v-if="avgRating !== null" class="avg-rating-info">
+              均分 {{ avgRating }}（{{ ratingCount }}人）
+            </span>
+          </div>
+          <div v-else class="user-rating-row">
+            <span class="rating-login-tip">登录后即可评分</span>
+          </div>
           <div class="tag-row">
             <span v-for="tag in movieTypes" :key="tag" class="tag">
               {{ tag }}
@@ -334,6 +347,7 @@
 <script lang="ts">
 import { defineComponent, ref, computed, onMounted } from "vue";
 import { useAuthStore } from "@/stores/auth";
+import StarRating from "@/components/StarRating.vue";
 
 interface DoubanMovie {
   id?: number;
@@ -390,6 +404,7 @@ const API_BASE_URL = "http://localhost:8000";
 
 export default defineComponent({
   name: "MovieDetailView",
+  components: { StarRating },
   setup() {
     const authStore = useAuthStore();
 
@@ -414,6 +429,10 @@ export default defineComponent({
       current_user_feedback: null as string | null,
     });
 
+    const userRating = ref(0);
+    const ratingLoading = ref(false);
+    const avgRating = ref<number | null>(null);
+    const ratingCount = ref(0);
     const currentUser = computed(() => authStore.user);
     const isLoggedIn = computed(() => Boolean(authStore.token));
 
@@ -590,7 +609,7 @@ export default defineComponent({
       const movieId = getMovieIdFromSession();
 
       if (!movieId) {
-        alert("未获取到电影ID，无法提交反馈");
+        alert("未获取到电影ID,无法提交反馈");
         return;
       }
 
@@ -654,9 +673,97 @@ export default defineComponent({
         feedbackLoading.value = false;
       }
     };
+    const loadRating = async () => {
+      const movieId = getMovieIdFromSession();
+      if (!movieId || !authStore.token) return;
 
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/movie-ratings/?movie_id=${movieId}`,
+          { headers: getTokenHeaders() }
+        );
+
+        if (!response.ok) throw new Error("获取评分失败");
+
+        const data = (await response.json()) as {
+          user_rating?: number | null;
+          avg_rating?: number | null;
+          rating_count?: number;
+        };
+
+        userRating.value = data.user_rating || 0;
+        avgRating.value = data.avg_rating ?? null;
+        ratingCount.value = data.rating_count || 0;
+      } catch (error) {
+        console.error("加载评分失败:", error);
+      }
+    };
+
+    const submitRating = async (value: number) => {
+      const movieId = getMovieIdFromSession();
+
+      if (!movieId) {
+        alert("未获取到电影ID，无法提交评分");
+        return;
+      }
+
+      if (!authStore.token) {
+        alert("请先登录后再进行评分");
+        return;
+      }
+
+      ratingLoading.value = true;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/movie-ratings/`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ movie_id: movieId, rating: value }),
+        });
+
+        const data = (await response.json()) as { error?: string };
+
+        if (!response.ok) {
+          throw new Error(data.error || "提交评分失败");
+        }
+
+        userRating.value = value;
+        await loadRating();
+      } catch (error: unknown) {
+        console.error("提交评分失败:", error);
+        alert(getErrorMessage(error));
+      } finally {
+        ratingLoading.value = false;
+      }
+    };
+    const clearRating = async () => {
+      const movieId = getMovieIdFromSession();
+
+      if (!movieId || !authStore.token) return;
+
+      ratingLoading.value = true;
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/movie-ratings/?movie_id=${movieId}`,
+          { method: "DELETE", headers: getTokenHeaders() }
+        );
+
+        if (!response.ok) {
+          const data = (await response.json()) as { error?: string };
+          throw new Error(data.error || "删除评分失败");
+        }
+
+        userRating.value = 0;
+        await loadRating();
+      } catch (error: unknown) {
+        console.error("删除评分失败:", error);
+        alert(getErrorMessage(error));
+      } finally {
+        ratingLoading.value = false;
+      }
+    };
     const loadComments = async () => {
       const movieId = getMovieIdFromSession();
+
       if (!movieId || !authStore.token) return;
 
       commentsLoading.value = true;
@@ -690,7 +797,7 @@ export default defineComponent({
       const movieId = getMovieIdFromSession();
 
       if (!movieId) {
-        alert("未获取到电影ID，无法发表评论");
+        alert("未获取到电影ID,无法发表评论");
         return;
       }
 
@@ -791,6 +898,7 @@ export default defineComponent({
       await fetchExtraDetail();
 
       if (isLoggedIn.value) {
+        await loadRating();
         await loadFeedbackSummary();
         await loadComments();
       }
@@ -813,6 +921,12 @@ export default defineComponent({
       feedbackLoading,
       feedbackSummary,
       currentFeedback,
+      userRating,
+      ratingLoading,
+      avgRating,
+      ratingCount,
+      submitRating,
+      clearRating,
       formatDateTime,
       getUserInitial,
       submitComment,
@@ -1333,6 +1447,29 @@ export default defineComponent({
 
   .stats-box {
     grid-template-columns: 1fr;
+  }
+  .user-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .user-rating-label {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  .avg-rating-info {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .rating-login-tip {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.55);
   }
 }
 </style>

@@ -143,9 +143,8 @@ class Rating(models.Model):
     def __str__(self):
         return f"{self.user.username} -> {self.movie.title}: {self.rating}"
 
-
+"""推荐日志模型"""
 class RecommendationLog(models.Model):
-    """推荐日志模型"""
     ALGORITHM_CHOICES = [
         ("user_based", "基于用户协同过滤"),
         ("item_based", "基于物品协同过滤"),
@@ -154,7 +153,6 @@ class RecommendationLog(models.Model):
         ("hybrid", "混合推荐"),
         ("nl_query", "自然语言推荐"),
     ]
-
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="recommendation_logs")
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="recommendation_logs")
     algorithm = models.CharField(max_length=50, choices=ALGORITHM_CHOICES, verbose_name="推荐算法")
@@ -164,12 +162,10 @@ class RecommendationLog(models.Model):
     clicked = models.BooleanField(default=False, verbose_name="是否点击")
     liked = models.BooleanField(default=False, verbose_name="是否喜欢")
     created_at = models.DateTimeField(auto_now_add=True)
-
     class Meta:
         verbose_name = "推荐日志"
         verbose_name_plural = "推荐日志"
         ordering = ["-created_at"]
-
     def __str__(self):
         return f"{self.user.username} <- {self.movie.title} ({self.algorithm})"
 

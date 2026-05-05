@@ -18,27 +18,20 @@ class CollaborativeFiltering:
         ratings = Rating.objects.all().select_related("user", "movie")
         if not ratings.exists():
             return False
-
         users = User.objects.all()
         movies = Movie.objects.all()
-
         if not users.exists() or not movies.exists():
             return False
-
         self.user_ids = [user.id for user in users]
         self.movie_ids = [movie.id for movie in movies]
-
         self.user_movie_matrix = np.zeros((len(self.user_ids), len(self.movie_ids)))
-
         user_index = {user_id: idx for idx, user_id in enumerate(self.user_ids)}
         movie_index = {movie_id: idx for idx, movie_id in enumerate(self.movie_ids)}
-
         for rating in ratings:
             user_idx = user_index.get(rating.user.id)
             movie_idx = movie_index.get(rating.movie.id)
             if user_idx is not None and movie_idx is not None:
                 self.user_movie_matrix[user_idx, movie_idx] = rating.rating
-
         return True
 
     def calculate_user_similarity(self):
