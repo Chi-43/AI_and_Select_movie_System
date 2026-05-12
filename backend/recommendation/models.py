@@ -200,6 +200,14 @@ class MovieFeedback(models.Model):
 class MovieComment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="movie_comments")
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="comments")
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="replies",
+        verbose_name="父评论",
+    )
     content = models.TextField(verbose_name="评论内容")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -207,10 +215,11 @@ class MovieComment(models.Model):
     class Meta:
         verbose_name = "电影评论"
         verbose_name_plural = "电影评论"
-        ordering = ["-created_at"]
+        ordering = ["created_at"]
 
     def __str__(self):
-        return f"{self.user.username} 评论了 {self.movie.title}"
+        prefix = "回复" if self.parent_id else "评论"
+        return f"{self.user.username} {prefix}了 {self.movie.title}"
 
 
 @receiver(post_save, sender=User)

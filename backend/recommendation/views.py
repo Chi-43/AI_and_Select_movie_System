@@ -979,8 +979,8 @@ class CommentPagination(PageNumberPagination):
 class MovieCommentView(APIView):
     """
     电影评论接口
-    GET: 获取某部电影评论列表（支持分页）
-    POST: 发表评论
+    GET: 获取某部电影一级评论列表（支持分页，含嵌套回复）
+    POST: 发表评论或回复
     """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -1002,7 +1002,13 @@ class MovieCommentView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        comments = MovieComment.objects.filter(movie=movie).select_related("user", "movie").order_by("-created_at")
+        comments = (
+            MovieComment.objects
+            .filter(movie=movie, parent__isnull=True)
+            .select_related("user")
+            .prefetch_related("replies__user")
+            .order_by("-created_at")
+        )
         paginator = CommentPagination()
         page = paginator.paginate_queryset(comments, request)
         if page is not None:
@@ -1020,6 +1026,7 @@ class MovieCommentView(APIView):
     def post(self, request):
         movie_id = request.data.get("movie_id")
         content = (request.data.get("content") or "").strip()
+        parent_id = request.data.get("parent_id")
 
         if not movie_id:
             return Response(
@@ -1041,14 +1048,25 @@ class MovieCommentView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        parent = None
+        if parent_id:
+            try:
+                parent = MovieComment.objects.get(id=parent_id, movie=movie)
+            except MovieComment.DoesNotExist:
+                return Response(
+                    {"error": "父评论不存在"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
         comment = MovieComment.objects.create(
             user=request.user,
             movie=movie,
+            parent=parent,
             content=content,
         )
 
         return Response({
-            "message": "评论发布成功",
+            "message": "回复发布成功" if parent else "评论发布成功",
             "comment": MovieCommentSerializer(comment, context={"request": request}).data,
         })
     

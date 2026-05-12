@@ -207,9 +207,19 @@ class MovieFeedbackSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
 
 
+class ReplySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = MovieComment
+        fields = ["id", "user", "content", "created_at"]
+
+
 class MovieCommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     movie = MovieSerializer(read_only=True)
+    replies = ReplySerializer(many=True, read_only=True)
+    reply_count = serializers.SerializerMethodField()
 
     user_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
@@ -222,6 +232,13 @@ class MovieCommentSerializer(serializers.ModelSerializer):
         source="movie",
         write_only=True,
     )
+    parent_id = serializers.PrimaryKeyRelatedField(
+        queryset=MovieComment.objects.all(),
+        source="parent",
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = MovieComment
@@ -231,11 +248,17 @@ class MovieCommentSerializer(serializers.ModelSerializer):
             "movie",
             "user_id",
             "movie_id",
+            "parent_id",
             "content",
+            "replies",
+            "reply_count",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["created_at", "updated_at"]
+        read_only_fields = ["created_at", "updated_at", "replies", "reply_count"]
+
+    def get_reply_count(self, obj):
+        return obj.replies.count()
 
 
 class MovieFeedbackSummarySerializer(serializers.Serializer):

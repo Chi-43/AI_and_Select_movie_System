@@ -235,8 +235,60 @@
                   </button>
                 </div>
 
-                <div class="comment-content">
-                  {{ item.content }}
+                <div class="comment-content">{{ item.content }}</div>
+
+                <div class="comment-footer">
+                  <button
+                    v-if="isLoggedIn"
+                    class="reply-toggle-btn"
+                    @click="toggleReplyInput(item.id)"
+                  >
+                    💬 回复
+                  </button>
+                </div>
+
+                <!-- 回复列表 -->
+                <div
+                  v-if="item.replies && item.replies.length > 0"
+                  class="replies-section"
+                >
+                  <div
+                    v-for="reply in item.replies"
+                    :key="reply.id"
+                    class="reply-item"
+                  >
+                    <div class="reply-user">
+                      <span class="reply-username">{{
+                        reply.user?.username || "匿名"
+                      }}</span>
+                      <span class="reply-time">{{
+                        formatDateTime(reply.created_at)
+                      }}</span>
+                    </div>
+                    <div class="reply-content">{{ reply.content }}</div>
+                  </div>
+                </div>
+
+                <!-- 回复输入框 -->
+                <div v-if="replyingTo === item.id" class="reply-input-row">
+                  <input
+                    v-model="replyText"
+                    type="text"
+                    placeholder="写下你的回复..."
+                    class="reply-input"
+                    maxlength="200"
+                    @keyup.enter="submitReply(item.id)"
+                  />
+                  <button
+                    class="reply-submit-btn"
+                    @click="submitReply(item.id)"
+                    :disabled="replyLoading || !replyText.trim()"
+                  >
+                    {{ replyLoading ? "..." : "发送" }}
+                  </button>
+                  <button class="reply-cancel-btn" @click="cancelReply">
+                    取消
+                  </button>
                 </div>
               </div>
             </div>
@@ -414,12 +466,21 @@ interface CommentUser {
   username: string;
 }
 
+interface ReplyItem {
+  id: number;
+  user?: CommentUser;
+  content: string;
+  created_at: string;
+}
+
 interface CommentItem {
   id: number;
   user?: CommentUser;
   content: string;
   created_at: string;
   updated_at: string;
+  replies?: ReplyItem[];
+  reply_count?: number;
 }
 
 const API_BASE_URL = "http://localhost:8000";
@@ -446,6 +507,9 @@ export default defineComponent({
     const comments = ref<CommentItem[]>([]);
     const similarMovies = ref<any[]>([]);
     const similarLoading = ref(false);
+    const replyingTo = ref<number | null>(null);
+    const replyText = ref("");
+    const replyLoading = ref(false);
 
     const feedbackSummary = ref({
       like_count: 0,
@@ -926,6 +990,51 @@ export default defineComponent({
       }
     };
 
+    const toggleReplyInput = (commentId: number) => {
+      if (replyingTo.value === commentId) {
+        replyingTo.value = null;
+        replyText.value = "";
+      } else {
+        replyingTo.value = commentId;
+        replyText.value = "";
+      }
+    };
+
+    const cancelReply = () => {
+      replyingTo.value = null;
+      replyText.value = "";
+    };
+
+    const submitReply = async (commentId: number) => {
+      const movieId = getMovieIdFromSession();
+      if (!movieId || !authStore.token || !replyText.value.trim()) return;
+
+      replyLoading.value = true;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/movie-comments/`, {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({
+            movie_id: movieId,
+            parent_id: commentId,
+            content: replyText.value.trim(),
+          }),
+        });
+
+        const data = (await response.json()) as { error?: string };
+        if (!response.ok) throw new Error(data.error || "回复失败");
+
+        replyText.value = "";
+        replyingTo.value = null;
+        await loadComments();
+      } catch (error: unknown) {
+        console.error("回复失败:", error);
+        alert(getErrorMessage(error));
+      } finally {
+        replyLoading.value = false;
+      }
+    };
+
     const deleteComment = async (commentId: number) => {
       if (!authStore.token) return;
       if (!confirm("确定要删除这条评论吗？")) return;
@@ -1020,6 +1129,12 @@ export default defineComponent({
       clearRating,
       formatDateTime,
       getUserInitial,
+      replyingTo,
+      replyText,
+      replyLoading,
+      toggleReplyInput,
+      cancelReply,
+      submitReply,
       submitComment,
       deleteComment,
       handleFavorite,
@@ -1450,6 +1565,114 @@ export default defineComponent({
   color: var(--text-secondary);
   line-height: 1.8;
   white-space: pre-wrap;
+}
+
+.comment-footer {
+  margin-top: 10px;
+}
+
+.reply-toggle-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 0;
+  transition: color var(--transition-fast);
+}
+
+.reply-toggle-btn:hover {
+  color: var(--primary);
+}
+
+.replies-section {
+  margin-top: 12px;
+  padding-left: 12px;
+  border-left: 2px solid var(--panel-border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reply-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--panel-bg);
+}
+
+.reply-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.reply-username {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.reply-time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.reply-content {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.reply-input-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.reply-input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.reply-input:focus {
+  border-color: var(--input-focus-border);
+}
+
+.reply-submit-btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  background: var(--primary-gradient);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.reply-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.reply-cancel-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 8px 4px;
+}
+
+.reply-cancel-btn:hover {
+  color: var(--text-secondary);
 }
 
 .delete-comment-btn {
