@@ -776,7 +776,9 @@ export default defineComponent({
         );
 
         const data = (await response.json()) as {
+          results?: CommentItem[];
           comments?: CommentItem[];
+          count?: number;
           error?: string;
         };
 
@@ -784,7 +786,7 @@ export default defineComponent({
           throw new Error(data.error || "获取评论失败");
         }
 
-        comments.value = data.comments || [];
+        comments.value = data.results || data.comments || [];
       } catch (error) {
         console.error("加载评论失败:", error);
         comments.value = [];

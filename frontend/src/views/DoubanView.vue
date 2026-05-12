@@ -458,12 +458,17 @@ export default defineComponent({
 
     const mergeMovieIdsFromBackend = async (localMovies: DoubanMovie[]) => {
       try {
-        const response = await fetch("http://localhost:8000/api/movies/");
+        const response = await fetch(
+          "http://localhost:8000/api/movies/?page_size=500"
+        );
         if (!response.ok) {
           throw new Error(`获取后端电影列表失败: ${response.status}`);
         }
 
-        const backendMovies = await response.json();
+        const backendData = await response.json();
+        const backendMovies = Array.isArray(backendData)
+          ? backendData
+          : backendData.results || [];
 
         const urlToIdMap = new Map<string, number>();
         const titleYearToIdMap = new Map<string, number>();

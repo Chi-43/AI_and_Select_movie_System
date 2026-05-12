@@ -22,10 +22,10 @@
     <section class="stats-row">
       <div class="stat-card">
         <div class="stat-value">{{ filteredComments.length }}</div>
-        <div class="stat-label">当前显示评论</div>
+        <div class="stat-label">本页评论</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ comments.length }}</div>
+        <div class="stat-value">{{ totalCount }}</div>
         <div class="stat-label">评论总数</div>
       </div>
     </section>
@@ -86,6 +86,29 @@
           </tbody>
         </table>
       </div>
+
+      <div class="pagination-bar" v-if="totalCount > 0">
+        <button
+          class="page-btn"
+          :disabled="!prevPageUrl"
+          @click="goToPage(prevPageUrl)"
+        >
+          上一页
+        </button>
+        <span class="page-info"
+          >第 {{ currentPage }} 页 / 共 {{ totalPages }} 页（{{
+            totalCount
+          }}
+          条）</span
+        >
+        <button
+          class="page-btn"
+          :disabled="!nextPageUrl"
+          @click="goToPage(nextPageUrl)"
+        >
+          下一页
+        </button>
+      </div>
     </section>
   </div>
 </template>
@@ -121,6 +144,11 @@ export default defineComponent({
     const keyword = ref("");
     const loading = ref(false);
     const errorMessage = ref("");
+    const totalCount = ref(0);
+    const nextPageUrl = ref<string | null>(null);
+    const prevPageUrl = ref<string | null>(null);
+    const currentPage = ref(1);
+    const totalPages = ref(1);
 
     const getTokenHeaders = (): Record<string, string> => {
       const token = localStorage.getItem("admin_token");
@@ -131,12 +159,13 @@ export default defineComponent({
       return headers;
     };
 
-    const fetchComments = async () => {
+    const fetchComments = async (url?: string) => {
       loading.value = true;
       errorMessage.value = "";
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/comments/`, {
+        const apiUrl = url || `${API_BASE_URL}/api/admin/comments/`;
+        const response = await fetch(apiUrl, {
           method: "GET",
           headers: getTokenHeaders(),
         });
@@ -147,12 +176,25 @@ export default defineComponent({
           throw new Error(data.error || data.detail || "获取评论列表失败");
         }
 
-        comments.value = data.comments || [];
+        comments.value = data.results || [];
+        totalCount.value = data.count || 0;
+        nextPageUrl.value = data.next || null;
+        prevPageUrl.value = data.previous || null;
+        currentPage.value = data.next
+          ? Number(new URL(data.next).searchParams.get("page")) - 1
+          : data.previous
+          ? Number(new URL(data.previous).searchParams.get("page")) + 1
+          : 1;
+        totalPages.value = Math.ceil((data.count || 0) / 20);
       } catch (error: any) {
         errorMessage.value = error.message || "加载评论列表失败";
       } finally {
         loading.value = false;
       }
+    };
+
+    const goToPage = (url: string | null) => {
+      if (url) fetchComments(url);
     };
 
     const filteredComments = computed(() => {
@@ -221,8 +263,14 @@ export default defineComponent({
       keyword,
       loading,
       errorMessage,
+      totalCount,
+      nextPageUrl,
+      prevPageUrl,
+      currentPage,
+      totalPages,
       filteredComments,
       fetchComments,
+      goToPage,
       deleteComment,
       getUserInitial,
       formatDate,
@@ -412,6 +460,41 @@ export default defineComponent({
 .action-btn.danger {
   background: rgba(239, 68, 68, 0.14);
   color: #ef4444;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.page-btn {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--nav-hover-bg);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 980px) {

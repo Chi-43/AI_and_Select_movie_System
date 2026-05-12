@@ -22,10 +22,10 @@
     <section class="stats-row">
       <div class="stat-card">
         <div class="stat-value">{{ filteredUsers.length }}</div>
-        <div class="stat-label">当前显示用户</div>
+        <div class="stat-label">本页用户</div>
       </div>
       <div class="stat-card">
-        <div class="stat-value">{{ users.length }}</div>
+        <div class="stat-value">{{ totalCount }}</div>
         <div class="stat-label">系统用户总数</div>
       </div>
     </section>
@@ -81,6 +81,29 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="pagination-bar" v-if="totalCount > 0">
+        <button
+          class="page-btn"
+          :disabled="!prevPageUrl"
+          @click="goToPage(prevPageUrl)"
+        >
+          上一页
+        </button>
+        <span class="page-info"
+          >第 {{ currentPage }} 页 / 共 {{ totalPages }} 页（{{
+            totalCount
+          }}
+          条）</span
+        >
+        <button
+          class="page-btn"
+          :disabled="!nextPageUrl"
+          @click="goToPage(nextPageUrl)"
+        >
+          下一页
+        </button>
       </div>
     </section>
 
@@ -156,6 +179,11 @@ export default defineComponent({
     const loading = ref(false);
     const submitting = ref(false);
     const errorMessage = ref("");
+    const totalCount = ref(0);
+    const nextPageUrl = ref<string | null>(null);
+    const prevPageUrl = ref<string | null>(null);
+    const currentPage = ref(1);
+    const totalPages = ref(1);
 
     const showEditModal = ref(false);
     const currentEditUserId = ref<number | null>(null);
@@ -188,12 +216,13 @@ export default defineComponent({
       return headers;
     };
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (url?: string) => {
       loading.value = true;
       errorMessage.value = "";
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/users/`, {
+        const apiUrl = url || `${API_BASE_URL}/api/admin/users/`;
+        const response = await fetch(apiUrl, {
           method: "GET",
           headers: getTokenHeaders(),
         });
@@ -204,12 +233,25 @@ export default defineComponent({
           throw new Error(data.error || data.detail || "获取用户列表失败");
         }
 
-        users.value = data.users || [];
+        users.value = data.results || [];
+        totalCount.value = data.count || 0;
+        nextPageUrl.value = data.next || null;
+        prevPageUrl.value = data.previous || null;
+        currentPage.value = data.next
+          ? Number(new URL(data.next).searchParams.get("page")) - 1
+          : data.previous
+          ? Number(new URL(data.previous).searchParams.get("page")) + 1
+          : 1;
+        totalPages.value = Math.ceil((data.count || 0) / 20);
       } catch (error: any) {
         errorMessage.value = error.message || "加载用户列表失败";
       } finally {
         loading.value = false;
       }
+    };
+
+    const goToPage = (url: string | null) => {
+      if (url) fetchUsers(url);
     };
 
     const filteredUsers = computed(() => {
@@ -344,10 +386,16 @@ export default defineComponent({
       loading,
       submitting,
       errorMessage,
+      totalCount,
+      nextPageUrl,
+      prevPageUrl,
+      currentPage,
+      totalPages,
       filteredUsers,
       showEditModal,
       editForm,
       fetchUsers,
+      goToPage,
       openEditModal,
       closeEditModal,
       submitEdit,
@@ -636,6 +684,41 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.page-btn {
+  border: 1px solid var(--panel-border);
+  background: var(--panel-bg);
+  color: var(--text-primary);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.page-btn:hover:not(:disabled) {
+  background: var(--nav-hover-bg);
+}
+
+.page-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.page-info {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
 }
 
 @media (max-width: 900px) {

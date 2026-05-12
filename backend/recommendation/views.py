@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.pagination import PageNumberPagination
 from .ai_views import generate_llm_recommend_reason
 
 from .models import (
@@ -968,10 +969,16 @@ class MovieRatingView(APIView):
 
         return Response({"message": "评分已删除"})
 
+class CommentPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = "page_size"
+    max_page_size = 50
+
+
 class MovieCommentView(APIView):
     """
     电影评论接口
-    GET: 获取某部电影评论列表
+    GET: 获取某部电影评论列表（支持分页）
     POST: 发表评论
     """
     authentication_classes = [TokenAuthentication]
@@ -994,13 +1001,14 @@ class MovieCommentView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        comments = MovieComment.objects.filter(movie=movie).select_related("user", "movie")
-        serializer = MovieCommentSerializer(
-            comments,
-            many=True,
-            context={"request": request}
-        )
+        comments = MovieComment.objects.filter(movie=movie).select_related("user", "movie").order_by("-created_at")
+        paginator = CommentPagination()
+        page = paginator.paginate_queryset(comments, request)
+        if page is not None:
+            serializer = MovieCommentSerializer(page, many=True, context={"request": request})
+            return paginator.get_paginated_response(serializer.data)
 
+        serializer = MovieCommentSerializer(comments, many=True, context={"request": request})
         return Response({
             "movie_id": movie.id,
             "movie_title": movie.title,

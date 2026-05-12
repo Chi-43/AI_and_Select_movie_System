@@ -4,12 +4,19 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.pagination import PageNumberPagination
 from django.contrib.auth import login
 from django.middleware.csrf import get_token
 
 from .auth_serializers import UserLoginSerializer
 from .serializers import UserSerializer, MovieSerializer, MovieCommentSerializer
 from .models import User, Movie, MovieComment
+
+
+class AdminPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class AdminLoginView(APIView):
@@ -89,13 +96,13 @@ class AdminUserListView(APIView):
 
     def get(self, request):
         users = User.objects.filter(is_staff=False).order_by("-date_joined")
+        paginator = AdminPagination()
+        page = paginator.paginate_queryset(users, request)
+        if page is not None:
+            serializer = UserSerializer(page, many=True, context={"request": request})
+            return paginator.get_paginated_response(serializer.data)
         serializer = UserSerializer(users, many=True, context={"request": request})
-        return Response(
-            {
-                "count": users.count(),
-                "users": serializer.data,
-            }
-        )
+        return Response({"count": users.count(), "users": serializer.data})
 
 
 class AdminUserDetailView(APIView):
@@ -163,13 +170,13 @@ class AdminMovieListView(APIView):
 
     def get(self, request):
         movies = Movie.objects.all().order_by("-created_at")
+        paginator = AdminPagination()
+        page = paginator.paginate_queryset(movies, request)
+        if page is not None:
+            serializer = MovieSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = MovieSerializer(movies, many=True)
-        return Response(
-            {
-                "count": movies.count(),
-                "movies": serializer.data,
-            }
-        )
+        return Response({"count": movies.count(), "movies": serializer.data})
 
     def post(self, request):
         serializer = MovieSerializer(data=request.data)
@@ -243,17 +250,13 @@ class AdminCommentListView(APIView):
 
     def get(self, request):
         comments = MovieComment.objects.select_related("user", "movie").order_by("-created_at")
-        serializer = MovieCommentSerializer(
-            comments,
-            many=True,
-            context={"request": request},
-        )
-        return Response(
-            {
-                "count": comments.count(),
-                "comments": serializer.data,
-            }
-        )
+        paginator = AdminPagination()
+        page = paginator.paginate_queryset(comments, request)
+        if page is not None:
+            serializer = MovieCommentSerializer(page, many=True, context={"request": request})
+            return paginator.get_paginated_response(serializer.data)
+        serializer = MovieCommentSerializer(comments, many=True, context={"request": request})
+        return Response({"count": comments.count(), "comments": serializer.data})
 
 
 class AdminCommentDetailView(APIView):
