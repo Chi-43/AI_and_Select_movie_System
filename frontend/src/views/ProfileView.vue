@@ -888,6 +888,7 @@ interface UserProfileData {
   favorite_years: { min?: number; max?: number };
   favorite_keywords: string[];
   onboarding_completed: boolean;
+  public_favorites: boolean;
   profile_summary: string;
   updated_at: string;
 }
@@ -1023,6 +1024,7 @@ export default defineComponent({
       favorite_years: {},
       favorite_keywords: [],
       onboarding_completed: false,
+      public_favorites: false,
       profile_summary: "",
       updated_at: "",
     });
@@ -1464,9 +1466,13 @@ export default defineComponent({
           favorite_years: response.data.favorite_years || {},
           favorite_keywords: response.data.favorite_keywords || [],
           onboarding_completed: response.data.onboarding_completed || false,
+          public_favorites: response.data.public_favorites || false,
           profile_summary: response.data.profile_summary || "",
           updated_at: response.data.updated_at || "",
         };
+
+        settings.value.publicFavorites =
+          response.data.public_favorites || false;
       } catch (error) {
         console.error("加载用户画像失败:", error);
       }
@@ -1492,6 +1498,7 @@ export default defineComponent({
           favorite_years: data.favorite_years || {},
           favorite_keywords: data.favorite_keywords || [],
           onboarding_completed: data.onboarding_completed || false,
+          public_favorites: data.public_favorites || false,
           profile_summary: data.profile_summary || "",
           updated_at: data.updated_at || "",
         };
@@ -1505,13 +1512,22 @@ export default defineComponent({
       }
     };
 
-    const saveSettings = () => {
+    const saveSettings = async () => {
       settingsLoading.value = true;
-      setTimeout(() => {
+      try {
+        await axios.put(
+          `${API_BASE_URL}/user-profile/`,
+          { public_favorites: settings.value.publicFavorites },
+          { headers: authHeaders.value }
+        );
         localStorage.setItem("user_settings", JSON.stringify(settings.value));
-        settingsLoading.value = false;
         alert("设置已保存");
-      }, 500);
+      } catch (error) {
+        console.error("保存设置失败:", error);
+        alert("保存设置失败");
+      } finally {
+        settingsLoading.value = false;
+      }
     };
 
     const resetSettings = () => {

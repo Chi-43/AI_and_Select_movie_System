@@ -65,6 +65,11 @@ const routes = [
     component: AIChatView,
   },
   {
+    path: "/user/:user_id",
+    name: "public-user",
+    component: () => import("../views/PublicUserView.vue"),
+  },
+  {
     path: "/about",
     name: "about",
     component: () => import("../views/AboutView.vue"),

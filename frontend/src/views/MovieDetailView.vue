@@ -213,9 +213,12 @@
                       {{ getUserInitial(item.user?.username) }}
                     </div>
                     <div class="user-meta">
-                      <div class="username">
+                      <router-link
+                        :to="'/user/' + item.user?.id"
+                        class="username-link"
+                      >
                         {{ item.user?.username || "匿名用户" }}
-                      </div>
+                      </router-link>
                       <div class="time">
                         {{ formatDateTime(item.created_at) }}
                       </div>
@@ -258,9 +261,12 @@
                     class="reply-item"
                   >
                     <div class="reply-user">
-                      <span class="reply-username">{{
-                        reply.user?.username || "匿名"
-                      }}</span>
+                      <router-link
+                        :to="'/user/' + reply.user?.id"
+                        class="reply-username-link"
+                      >
+                        {{ reply.user?.username || "匿名" }}
+                      </router-link>
                       <span class="reply-time">{{
                         formatDateTime(reply.created_at)
                       }}</span>
@@ -1549,6 +1555,19 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.username-link,
+.reply-username-link {
+  font-weight: 700;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.username-link:hover,
+.reply-username-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .username {
