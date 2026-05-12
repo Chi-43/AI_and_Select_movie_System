@@ -116,6 +116,7 @@ class UserProfile(models.Model):
     favorite_keywords = models.JSONField(default=list, blank=True, verbose_name="偏好关键词")
 
     onboarding_completed = models.BooleanField(default=False, verbose_name="是否完成冷启动选择")
+    public_favorites = models.BooleanField(default=False, verbose_name="是否公开收藏夹")
     profile_summary = models.TextField(blank=True, null=True, verbose_name="画像总结")
 
     updated_at = models.DateTimeField(auto_now=True)

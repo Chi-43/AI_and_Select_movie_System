@@ -21,6 +21,7 @@ from recommendation.views import (
     MovieCommentView,
     MovieCommentDetailView,
     MyRecommendationsView,
+    PublicUserView,
 )
 from recommendation.auth_views import (
     UserRegistrationView,
@@ -82,6 +83,9 @@ urlpatterns = [
     # 视频平台 / 电影详情
     path("api/video-platform-links/", VideoPlatformLinksView.as_view(), name="video_platform_links"),
     path("api/movie-detail/", MovieDetailView.as_view(), name="movie_detail"),
+
+    # 公开用户主页
+    path("api/users/<int:user_id>/profile/", PublicUserView.as_view(), name="public_user_profile"),
 
     # 电影互动：评分/点赞/拉踩/评论
     path("api/movie-ratings/", MovieRatingView.as_view(), name="movie_ratings"),

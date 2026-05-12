@@ -40,6 +40,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "favorite_years",
             "favorite_keywords",
             "onboarding_completed",
+            "public_favorites",
             "profile_summary",
             "updated_at",
         ]

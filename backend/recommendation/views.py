@@ -550,6 +550,19 @@ class UserProfileView(APIView):
             "profile": UserProfileSerializer(profile).data,
         })
 
+    def put(self, request):
+        profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if "public_favorites" in request.data:
+            profile.public_favorites = request.data["public_favorites"]
+            profile.save()
+        if "profile_summary" in request.data:
+            profile.profile_summary = request.data["profile_summary"]
+            profile.save()
+        return Response({
+            "message": "设置已更新",
+            "profile": UserProfileSerializer(profile).data,
+        })
+
 
 class RecommendationView(APIView):
     def get(self, request):
@@ -1146,4 +1159,70 @@ class MyRecommendationsView(APIView):
         return Response({
             "count": len(results),
             "recommendations": results,
+        })
+
+
+class PublicUserView(APIView):
+    """查看其他用户公开主页"""
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "用户不存在"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        ratings = (
+            Rating.objects
+            .filter(user=user)
+            .select_related("movie")
+            .order_by("-timestamp")[:12]
+        )
+        rating_list = [
+            {
+                "movie": MovieSerializer(r.movie).data,
+                "rating": r.rating,
+                "timestamp": r.timestamp,
+            }
+            for r in ratings
+        ]
+
+        recent_comments = (
+            MovieComment.objects
+            .filter(user=user, parent__isnull=True)
+            .select_related("movie")
+            .order_by("-created_at")[:5]
+        )
+        comment_list = [
+            {
+                "id": c.id,
+                "movie": MovieSerializer(c.movie).data,
+                "content": c.content,
+                "created_at": c.created_at,
+            }
+            for c in recent_comments
+        ]
+
+        profile = getattr(user, "profile", None)
+
+        favorites = None
+        if profile and profile.public_favorites:
+            liked = (
+                MovieFeedback.objects
+                .filter(user=user, feedback_type="like")
+                .select_related("movie")
+                .order_by("-created_at")
+            )
+            favorites = [MovieSerializer(f.movie).data for f in liked]
+
+        return Response({
+            "user": UserSerializer(user, context={"request": request}).data,
+            "profile": UserProfileSerializer(profile).data if profile else None,
+            "ratings": rating_list,
+            "comments": comment_list,
+            "favorites": favorites,
         })
