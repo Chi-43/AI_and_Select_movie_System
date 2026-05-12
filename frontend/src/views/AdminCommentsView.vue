@@ -13,7 +13,11 @@
           class="search-input"
           placeholder="搜索用户名 / 电影名 / 评论内容"
         />
-        <button class="refresh-btn" @click="fetchComments" :disabled="loading">
+        <button
+          class="refresh-btn"
+          @click="() => fetchComments()"
+          :disabled="loading"
+        >
           {{ loading ? "刷新中..." : "刷新列表" }}
         </button>
       </div>

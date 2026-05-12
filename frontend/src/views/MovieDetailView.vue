@@ -327,6 +327,28 @@
             </div>
           </div>
 
+          <div
+            class="panel-card"
+            v-if="similarMovies.length > 0 || similarLoading"
+          >
+            <h3>看了又看</h3>
+            <div v-if="similarLoading" class="placeholder-text">加载中...</div>
+            <ul v-else class="similar-list">
+              <li
+                v-for="item in similarMovies"
+                :key="item.movie.id"
+                class="similar-item"
+                @click="goToSimilarMovie(item.movie)"
+              >
+                <div class="similar-title">{{ item.movie.title }}</div>
+                <div class="similar-meta">
+                  <span>⭐ {{ item.movie.rating }}</span>
+                  <span>{{ item.movie.year }}</span>
+                </div>
+              </li>
+            </ul>
+          </div>
+
           <div class="panel-card">
             <h3>外部入口</h3>
             <a
@@ -422,6 +444,8 @@ export default defineComponent({
     const commentsLoading = ref(false);
 
     const comments = ref<CommentItem[]>([]);
+    const similarMovies = ref<any[]>([]);
+    const similarLoading = ref(false);
 
     const feedbackSummary = ref({
       like_count: 0,
@@ -699,6 +723,68 @@ export default defineComponent({
       }
     };
 
+    const loadSimilarMovies = async () => {
+      const movieId = getMovieIdFromSession();
+      if (!movieId) return;
+
+      similarLoading.value = true;
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/api/similar-movies/${movieId}/`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          similarMovies.value = data.similar_movies || [];
+        }
+      } catch (error) {
+        console.error("加载相似电影失败:", error);
+      } finally {
+        similarLoading.value = false;
+      }
+    };
+
+    const goToSimilarMovie = (item: any) => {
+      const detailMovie = {
+        id: item.id,
+        movie_id: item.id,
+        电影名字: item.title,
+        电影链接: item.douban_url || "",
+        评分: String(item.rating || ""),
+        评分人数: "",
+        导演: item.director || "",
+        主演: item.actors || "",
+        年份: String(item.year || ""),
+        国家: item.country || "",
+        类型: item.genre || "",
+        一句话评价: item.quote || "",
+      };
+      sessionStorage.setItem(
+        "current_movie_detail",
+        JSON.stringify(detailMovie)
+      );
+      window.scrollTo(0, 0);
+      movie.value = detailMovie;
+      extraDetail.value = null;
+      extraError.value = "";
+      comments.value = [];
+      similarMovies.value = [];
+      feedbackSummary.value = {
+        like_count: 0,
+        dislike_count: 0,
+        current_user_feedback: null,
+      };
+      userRating.value = 0;
+      avgRating.value = null;
+      ratingCount.value = 0;
+      fetchExtraDetail();
+      if (isLoggedIn.value) {
+        loadRating();
+        loadFeedbackSummary();
+        loadComments();
+        loadSimilarMovies();
+      }
+    };
+
     const submitRating = async (value: number) => {
       const movieId = getMovieIdFromSession();
 
@@ -898,6 +984,7 @@ export default defineComponent({
       loadMovieFromSession();
       loadFavorites();
       await fetchExtraDetail();
+      loadSimilarMovies();
 
       if (isLoggedIn.value) {
         await loadRating();
@@ -918,6 +1005,8 @@ export default defineComponent({
       isLoggedIn,
       isFavorite,
       comments,
+      similarMovies,
+      similarLoading,
       commentsLoading,
       commentLoading,
       feedbackLoading,
@@ -1402,6 +1491,42 @@ export default defineComponent({
 }
 
 .mini-stat-label {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+.similar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.similar-item {
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.similar-item:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--panel-shadow);
+}
+
+.similar-title {
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.similar-meta {
+  display: flex;
+  gap: 10px;
   font-size: 0.84rem;
   color: var(--text-secondary);
 }

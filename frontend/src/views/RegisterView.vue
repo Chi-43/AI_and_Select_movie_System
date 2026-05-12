@@ -151,7 +151,7 @@ export default defineComponent({
 
       try {
         await authStore.register(registerData.value);
-        router.push("/");
+        router.push("/onboarding");
       } catch (err: any) {
         // 处理后端返回的错误
         if (err.response?.data) {

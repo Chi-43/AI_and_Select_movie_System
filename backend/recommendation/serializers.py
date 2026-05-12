@@ -62,8 +62,9 @@ class OnboardingPreferenceSerializer(serializers.Serializer):
         default=list
     )
     favorite_years = serializers.DictField(
-        child=serializers.IntegerField(),
+        child=serializers.IntegerField(allow_null=True),
         required=False,
+        allow_null=True,
         default=dict
     )
 

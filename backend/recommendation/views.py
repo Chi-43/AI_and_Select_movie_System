@@ -608,11 +608,14 @@ class RecommendationView(APIView):
 
         # 如果没推荐出来，自动降级
         if not recs:
-            if user_rating_count == 0:
+            if algorithm == "user_based":
+                recs = cf.get_top_movies_with_scores(top_n)
+            else:
                 profile, _ = UserProfile.objects.get_or_create(user=user)
                 queryset = Movie.objects.all()
                 if profile.favorite_genres:
-                    queryset = queryset.filter(genre__icontains=profile.favorite_genres[0])
+                    for genre in profile.favorite_genres[:3]:
+                        queryset = queryset.filter(genre__icontains=genre)
                 movies = queryset.order_by("-rating")[:top_n]
                 recs = [
                     {
@@ -622,8 +625,6 @@ class RecommendationView(APIView):
                     }
                     for movie in movies
                 ]
-            else:
-                recs = cf.get_top_movies_with_scores(top_n)
         movie_ids = [item["movie_id"] for item in recs]
         movie_map = {movie.id: movie for movie in Movie.objects.filter(id__in=movie_ids)}
         results = []
@@ -1095,3 +1096,36 @@ class MovieCommentDetailView(APIView):
 
         comment.delete()
         return Response({"message": "评论删除成功"})
+
+
+class MyRecommendationsView(APIView):
+    """获取用户已保存的推荐结果"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        logs = (
+            RecommendationLog.objects
+            .filter(user=request.user)
+            .select_related("movie")
+            .order_by("-created_at")
+        )
+
+        seen = set()
+        results = []
+        for log in logs:
+            if log.movie_id in seen:
+                continue
+            seen.add(log.movie_id)
+            results.append({
+                "movie": MovieSerializer(log.movie).data,
+                "score": round(log.score, 4),
+                "algorithm": log.algorithm,
+                "reason": log.reason,
+                "created_at": log.created_at,
+            })
+
+        return Response({
+            "count": len(results),
+            "recommendations": results,
+        })

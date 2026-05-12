@@ -48,6 +48,12 @@ const routes = [
     component: RegisterView,
   },
   {
+    path: "/onboarding",
+    name: "onboarding",
+    component: () => import("../views/OnboardingView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
     path: "/profile",
     name: "profile",
     component: ProfileView,

@@ -173,25 +173,26 @@ class CollaborativeFiltering:
         return predicted_ratings[:top_n]
 
     def get_top_movies_with_scores(self, top_n=10):
-        """热门电影推荐，返回平均分和评分人数"""
+        """热门电影推荐，返回平均分和评分人数。评分数据不足时用豆瓣评分兜底"""
         ratings = Rating.objects.all().select_related("movie")
-        if not ratings.exists():
-            return []
 
         movie_ratings = {}
-        for rating in ratings:
-            movie_id = rating.movie.id
-            if movie_id not in movie_ratings:
-                movie_ratings[movie_id] = {
-                    "scores": [],
-                    "title": rating.movie.title,
-                }
-            movie_ratings[movie_id]["scores"].append(rating.rating)
+        if ratings.exists():
+            for rating in ratings:
+                movie_id = rating.movie.id
+                if movie_id not in movie_ratings:
+                    movie_ratings[movie_id] = {
+                        "scores": [],
+                        "title": rating.movie.title,
+                    }
+                movie_ratings[movie_id]["scores"].append(rating.rating)
 
         results = []
+        seen_ids = set()
         for movie_id, data in movie_ratings.items():
             avg_rating = np.mean(data["scores"])
             rating_count = len(data["scores"])
+            seen_ids.add(movie_id)
             results.append(
                 {
                     "movie_id": movie_id,
@@ -200,6 +201,23 @@ class CollaborativeFiltering:
                     "algorithm": "top",
                 }
             )
+
+        # 评分数据不足时，用豆瓣评分高的电影补齐
+        if len(results) < top_n:
+            fallback_movies = Movie.objects.exclude(
+                id__in=seen_ids
+            ).filter(
+                rating__isnull=False
+            ).order_by("-rating")[: top_n - len(results)]
+            for movie in fallback_movies:
+                results.append(
+                    {
+                        "movie_id": movie.id,
+                        "score": float(movie.rating or 0),
+                        "rating_count": movie.rating_count or 0,
+                        "algorithm": "top",
+                    }
+                )
 
         results.sort(key=lambda x: (x["score"], x["rating_count"]), reverse=True)
         return results[:top_n]

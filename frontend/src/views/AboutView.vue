@@ -15,7 +15,7 @@
         </div>
 
         <div class="hero-actions">
-          <button class="primary-btn" @click="loadPersonalizedRecommendations">
+          <button class="primary-btn" @click="refreshRecommendations">
             获取个性化推荐
           </button>
           <button class="secondary-btn" @click="scrollToNaturalRecommend">
@@ -162,8 +162,8 @@
             {{ item.label }}
           </button>
         </div>
-        <button class="secondary-btn" @click="loadPersonalizedRecommendations">
-          刷新推荐
+        <button class="secondary-btn" @click="refreshRecommendations">
+          换一批
         </button>
       </div>
 
@@ -370,24 +370,55 @@ export default defineComponent({
     };
 
     const loadPersonalizedRecommendations = async () => {
+      // 首次加载：读取已保存的推荐（不消耗 token）
+      recommendLoading.value = true;
+      naturalRecommendations.value = [];
+      naturalReply.value = "";
+
+      try {
+        if (authStore.token) {
+          const response = await axios.get(
+            `${API_BASE_URL}/my-recommendations/`,
+            {
+              headers: authHeaders.value,
+            }
+          );
+          personalizedRecommendations.value =
+            response.data.recommendations || [];
+        }
+      } catch (error) {
+        console.error("加载已保存推荐失败:", error);
+        personalizedRecommendations.value = [];
+      } finally {
+        recommendLoading.value = false;
+      }
+    };
+
+    const refreshRecommendations = async () => {
+      // 点击"换一批"：实时生成新推荐
       recommendLoading.value = true;
       naturalRecommendations.value = [];
       naturalReply.value = "";
 
       try {
         const userId = currentUser.value?.id || 1;
-        const response = await axios.get(`${API_BASE_URL}/recommendations/`, {
+        await axios.get(`${API_BASE_URL}/recommendations/`, {
           params: {
             user_id: userId,
             algorithm: recommendMode.value,
             top_n: 8,
           },
         });
-
+        // 生成完成后重新读取已保存的推荐
+        const response = await axios.get(
+          `${API_BASE_URL}/my-recommendations/`,
+          {
+            headers: authHeaders.value,
+          }
+        );
         personalizedRecommendations.value = response.data.recommendations || [];
       } catch (error) {
-        console.error("加载个性化推荐失败:", error);
-        personalizedRecommendations.value = [];
+        console.error("刷新推荐失败:", error);
       } finally {
         recommendLoading.value = false;
       }
@@ -508,6 +539,7 @@ export default defineComponent({
       displayTags,
       naturalRecommendRef,
       loadPersonalizedRecommendations,
+      refreshRecommendations,
       runNaturalLanguageRecommend,
       setRecommendMode,
       askAIAboutMovie,

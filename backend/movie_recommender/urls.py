@@ -20,6 +20,7 @@ from recommendation.views import (
     MovieRatingView,
     MovieCommentView,
     MovieCommentDetailView,
+    MyRecommendationsView,
 )
 from recommendation.auth_views import (
     UserRegistrationView,
@@ -70,6 +71,7 @@ urlpatterns = [
 
     # 推荐相关路由
     path("api/recommendations/", RecommendationView.as_view(), name="recommendations"),
+    path("api/my-recommendations/", MyRecommendationsView.as_view(), name="my_recommendations"),
     path("api/top-movies/", TopMoviesView.as_view(), name="top_movies"),
     path("api/similar-movies/<int:movie_id>/", SimilarMoviesView.as_view(), name="similar_movies"),
 

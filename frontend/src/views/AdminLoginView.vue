@@ -92,6 +92,8 @@ export default defineComponent({
 
         localStorage.setItem("admin_token", data.token);
         localStorage.setItem("admin_user", JSON.stringify(data.user));
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
 
         window.location.href = "/admin/dashboard";
       } catch (error: any) {

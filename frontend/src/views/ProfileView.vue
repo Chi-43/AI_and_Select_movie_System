@@ -1416,9 +1416,21 @@ export default defineComponent({
 
       preferenceLoading.value = true;
       try {
+        const cleanYears: Record<string, number | null> = {};
+        if (preferenceForm.value.favorite_years.min != null) {
+          cleanYears.min = preferenceForm.value.favorite_years.min;
+        }
+        if (preferenceForm.value.favorite_years.max != null) {
+          cleanYears.max = preferenceForm.value.favorite_years.max;
+        }
+
         await axios.post(
           `${API_BASE_URL}/onboarding-preferences/`,
-          preferenceForm.value,
+          {
+            ...preferenceForm.value,
+            favorite_years:
+              Object.keys(cleanYears).length > 0 ? cleanYears : {},
+          },
           {
             headers: {
               ...authHeaders.value,
