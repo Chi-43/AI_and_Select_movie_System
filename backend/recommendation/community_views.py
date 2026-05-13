@@ -73,6 +73,7 @@ class PostListView(APIView):
             data = [
                 {
                     "id": p.id, "title": p.title, "content": p.content[:200],
+                    "image": request.build_absolute_uri(p.image.url) if p.image else None,
                     "created_by": UserSerializer(p.created_by).data,
                     "view_count": p.view_count, "reply_count": p.reply_count,
                     "like_count": p.like_count, "created_at": p.created_at,
@@ -85,6 +86,7 @@ class PostListView(APIView):
         data = [
             {
                 "id": p.id, "title": p.title, "content": p.content[:200],
+                "image": request.build_absolute_uri(p.image.url) if p.image else None,
                 "created_by": UserSerializer(p.created_by).data,
                 "view_count": p.view_count, "reply_count": p.reply_count,
                 "like_count": p.like_count, "created_at": p.created_at,
@@ -106,13 +108,15 @@ class PostListView(APIView):
             topic = DiscussionTopic.objects.get(id=topic_id)
         except DiscussionTopic.DoesNotExist:
             return Response({"error": "话题不存在"}, status=status.HTTP_404_NOT_FOUND)
+        image = request.FILES.get("image") if hasattr(request, "FILES") else None
         post = DiscussionPost.objects.create(
-            title=title, content=content, topic=topic, created_by=request.user,
+            title=title, content=content, topic=topic, created_by=request.user, image=image,
         )
         topic.post_count = topic.posts.count()
         topic.save()
         return Response({
             "id": post.id, "title": post.title, "content": post.content,
+            "image": request.build_absolute_uri(post.image.url) if post.image else None,
             "created_by": UserSerializer(post.created_by).data,
             "view_count": 0, "reply_count": 0, "like_count": 0,
             "created_at": post.created_at, "topic_id": post.topic_id,
@@ -147,6 +151,7 @@ class PostDetailView(APIView):
 
         return Response({
             "id": post.id, "title": post.title, "content": post.content,
+            "image": request.build_absolute_uri(post.image.url) if post.image else None,
             "created_by": UserSerializer(post.created_by).data,
             "topic": {"id": post.topic.id, "name": post.topic.name, "icon": post.topic.icon},
             "view_count": post.view_count, "reply_count": post.reply_count,

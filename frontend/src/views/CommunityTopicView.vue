@@ -18,10 +18,17 @@
       <input v-model="form.title" placeholder="帖子标题" class="form-input" />
       <textarea
         v-model="form.content"
-        placeholder="写下你的想法..."
+        placeholder="支持 Markdown 语法：**加粗**、`代码`、# 标题..."
         class="form-textarea"
         rows="5"
       ></textarea>
+      <input
+        type="file"
+        accept="image/*"
+        @change="onFileChange"
+        class="file-input"
+      />
+      <img v-if="previewUrl" :src="previewUrl" class="preview-img" />
       <div class="form-actions">
         <button class="cancel-btn" @click="showForm = false">取消</button>
         <button
@@ -88,6 +95,16 @@ export default defineComponent({
     const nextUrl = ref<string | null>(null);
     const prevUrl = ref<string | null>(null);
     const form = ref({ title: "", content: "" });
+    const selectedFile = ref<File | null>(null);
+    const previewUrl = ref<string | null>(null);
+
+    const onFileChange = (e: Event) => {
+      const input = e.target as HTMLInputElement;
+      if (input.files?.[0]) {
+        selectedFile.value = input.files[0];
+        previewUrl.value = URL.createObjectURL(input.files[0]);
+      }
+    };
 
     const fetchPosts = async (url?: string) => {
       loading.value = true;
@@ -112,21 +129,22 @@ export default defineComponent({
     const createPost = async () => {
       submitting.value = true;
       try {
+        const fd = new FormData();
+        fd.append("title", form.value.title);
+        fd.append("content", form.value.content);
+        fd.append("topic_id", String(route.params.topic_id));
+        if (selectedFile.value) fd.append("image", selectedFile.value);
+
         const r = await fetch(`${API}/community/posts/`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Token ${authStore.token}`,
-          },
-          body: JSON.stringify({
-            title: form.value.title,
-            content: form.value.content,
-            topic_id: route.params.topic_id,
-          }),
+          headers: { Authorization: `Token ${authStore.token}` },
+          body: fd,
         });
         if (r.ok) {
           showForm.value = false;
           form.value = { title: "", content: "" };
+          selectedFile.value = null;
+          previewUrl.value = null;
           await fetchPosts();
         } else alert("发帖失败");
       } catch {
@@ -161,6 +179,9 @@ export default defineComponent({
       form,
       fetchPosts,
       createPost,
+      onFileChange,
+      previewUrl,
+      selectedFile,
       getUserInitial,
       formatDate,
       totalCount,
@@ -234,6 +255,16 @@ export default defineComponent({
 .form-textarea {
   resize: vertical;
   min-height: 100px;
+}
+.file-input {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+.preview-img {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
 }
 .form-actions {
   display: flex;

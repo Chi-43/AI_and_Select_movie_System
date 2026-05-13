@@ -19,7 +19,8 @@
             <span>👁 {{ post.view_count }}</span>
             <span>💬 {{ post.reply_count }}</span>
           </div>
-          <p class="post-content">{{ post.content }}</p>
+          <img v-if="post.image" :src="post.image" class="post-image" />
+          <div class="post-content" v-html="renderMarkdown(post.content)"></div>
           <div class="post-actions">
             <button
               class="like-btn"
@@ -92,6 +93,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { marked } from "marked";
 const API = "http://localhost:8000/api";
 export default defineComponent({
   name: "CommunityPostView",
@@ -171,6 +173,8 @@ export default defineComponent({
       }
     };
 
+    const renderMarkdown = (text: string) => marked(text || "");
+
     const getUserInitial = (u?: string) => u?.charAt(0)?.toUpperCase() || "?";
     const formatDate = (d: string) => new Date(d).toLocaleDateString("zh-CN");
 
@@ -186,6 +190,7 @@ export default defineComponent({
       submitReply,
       getUserInitial,
       formatDate,
+      renderMarkdown,
       authStore,
     };
   },
@@ -243,11 +248,63 @@ export default defineComponent({
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
+.post-image {
+  max-width: 100%;
+  max-height: 400px;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  object-fit: contain;
+}
 .post-content {
   color: var(--text-primary);
   line-height: 1.9;
-  white-space: pre-wrap;
   margin: 0 0 16px;
+}
+.post-content :deep(h1),
+.post-content :deep(h2),
+.post-content :deep(h3) {
+  margin: 14px 0 8px;
+}
+.post-content :deep(h2) {
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 6px;
+}
+.post-content :deep(p) {
+  margin: 8px 0;
+}
+.post-content :deep(code) {
+  background: var(--nav-hover-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+.post-content :deep(pre) {
+  background: var(--nav-hover-bg);
+  padding: 14px;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+.post-content :deep(pre code) {
+  background: none;
+  padding: 0;
+}
+.post-content :deep(blockquote) {
+  border-left: 3px solid var(--primary);
+  padding-left: 12px;
+  color: var(--text-secondary);
+  margin: 10px 0;
+}
+.post-content :deep(ul),
+.post-content :deep(ol) {
+  padding-left: 20px;
+}
+.post-content :deep(a) {
+  color: var(--primary);
+}
+.post-content :deep(img) {
+  max-width: 100%;
+  border-radius: var(--radius-md);
 }
 .post-actions {
   display: flex;

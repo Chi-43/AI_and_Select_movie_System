@@ -248,6 +248,7 @@ class DiscussionPost(models.Model):
     """讨论帖子"""
     title = models.CharField(max_length=200, verbose_name="标题")
     content = models.TextField(verbose_name="内容")
+    image = models.ImageField(upload_to="community/", blank=True, null=True, verbose_name="配图")
     topic = models.ForeignKey(DiscussionTopic, on_delete=models.CASCADE, related_name="posts")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
     view_count = models.IntegerField(default=0, verbose_name="浏览数")

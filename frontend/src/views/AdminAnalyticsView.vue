@@ -1,5 +1,7 @@
 <template>
   <div class="analytics-page">
+    <div v-if="err" class="error-card">⚠️ {{ err }}</div>
+
     <div class="stats-top">
       <div class="stat-card">
         <div class="n">{{ data.total_users }}</div>
@@ -42,7 +44,7 @@
             fill="#667eea"
           />
         </svg>
-        <div v-else class="no-data">暂无数据</div>
+        <div v-else class="no-data">近30天暂无新用户注册</div>
       </div>
 
       <div class="chart-card wide">
@@ -67,7 +69,7 @@
             fill="#f59e0b"
           />
         </svg>
-        <div v-else class="no-data">暂无数据</div>
+        <div v-else class="no-data">近30天暂无评分和评论活动</div>
       </div>
     </div>
 
@@ -142,6 +144,7 @@ export default defineComponent({
     const data = ref<any>({});
     const maxGenre = ref(1);
     const maxRating = ref(1);
+    const err = ref("");
 
     const barPct = (v: number, max: number) => Math.round((v / max) * 100);
 
@@ -198,14 +201,17 @@ export default defineComponent({
           );
           const dist = data.value.rating_distribution || {};
           maxRating.value = Math.max(1, ...(Object.values(dist) as number[]));
+        } else {
+          err.value = `请求失败 (${r.status})`;
         }
-      } catch {
-        /* 加载失败 */
+      } catch (e: any) {
+        err.value = e.message || "加载失败";
       }
     });
 
     return {
       data,
+      err,
       maxGenre,
       maxRating,
       barPct,
@@ -223,6 +229,13 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+.error-card {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  font-weight: 600;
 }
 .stats-top {
   display: grid;

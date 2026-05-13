@@ -1321,12 +1321,12 @@ class AdminAnalyticsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get(self, request):
-        thirty_days = date.today() - timedelta(days=30)
+        thirty_days_ago = datetime.now() - timedelta(days=30)
 
         # 用户增长（近30天每日注册数）
         user_growth = (
             User.objects
-            .filter(is_staff=False, date_joined__gte=thirty_days)
+            .filter(is_staff=False, date_joined__gte=thirty_days_ago)
             .annotate(day=TruncDate("date_joined"))
             .values("day")
             .annotate(count=Count("id"))
@@ -1336,7 +1336,7 @@ class AdminAnalyticsView(APIView):
         # 评分趋势（近30天每日评分数）
         rating_trend = (
             Rating.objects
-            .filter(timestamp__date__gte=thirty_days)
+            .filter(timestamp__gte=thirty_days_ago)
             .annotate(day=TruncDate("timestamp"))
             .values("day")
             .annotate(count=Count("id"))
@@ -1346,7 +1346,7 @@ class AdminAnalyticsView(APIView):
         # 评论趋势（近30天每日评论数）
         comment_trend = (
             MovieComment.objects
-            .filter(created_at__date__gte=thirty_days)
+            .filter(created_at__gte=thirty_days_ago)
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(count=Count("id"))

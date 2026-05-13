@@ -78,6 +78,7 @@ const routes = [
     path: "/ai-chat",
     name: "ai-chat",
     component: AIChatView,
+    meta: { requiresAuth: true },
   },
   {
     path: "/user/:user_id",
