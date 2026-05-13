@@ -23,6 +23,7 @@ from recommendation.views import (
     MyRecommendationsView,
     PublicUserView,
     AdminDashboardView,
+    AdminAnalyticsView,
     SearchView,
 )
 from recommendation.auth_views import (
@@ -101,6 +102,7 @@ urlpatterns = [
 
     # 管理后台
     path("api/admin/dashboard/", AdminDashboardView.as_view(), name="admin_dashboard"),
+    path("api/admin/analytics/", AdminAnalyticsView.as_view(), name="admin_analytics"),
 
     # 社区讨论区
     path("api/community/topics/", TopicListView.as_view(), name="community_topics"),

@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <nav>
+    <nav v-if="!isAdminRoute">
       <div class="nav-container">
         <div class="nav-left">
           <router-link to="/" class="nav-logo"> 🎬 电影推荐系统 </router-link>
@@ -70,7 +70,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, watch } from "vue";
+import { defineComponent, ref, computed, onMounted, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import { useRouter } from "vue-router";
@@ -92,6 +92,10 @@ export default defineComponent({
     const authStore = useAuthStore();
     const themeStore = useThemeStore();
     const router = useRouter();
+
+    const isAdminRoute = computed(() =>
+      router.currentRoute.value.path.startsWith("/admin")
+    );
 
     const searchQuery = ref("");
     const searchResults = ref<SearchMovie[]>([]);
@@ -181,6 +185,7 @@ export default defineComponent({
       authStore,
       themeStore,
       handleLogout,
+      isAdminRoute,
       searchQuery,
       searchResults,
       showResults,

@@ -104,6 +104,11 @@ const routes = [
         component: AdminDashboardHome,
       },
       {
+        path: "analytics",
+        name: "admin-analytics",
+        component: () => import("../views/AdminAnalyticsView.vue"),
+      },
+      {
         path: "users",
         name: "admin-users",
         component: AdminUsersView,

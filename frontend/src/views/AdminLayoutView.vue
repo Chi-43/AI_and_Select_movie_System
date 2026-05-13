@@ -18,6 +18,14 @@
           <span>📊</span>
           <span>控制台</span>
         </router-link>
+        <router-link
+          to="/admin/analytics"
+          class="nav-item"
+          active-class="active"
+        >
+          <span>📈</span>
+          <span>数据分析</span>
+        </router-link>
         <router-link to="/admin/users" class="nav-item" active-class="active">
           <span>👤</span>
           <span>用户管理</span>
@@ -90,6 +98,7 @@ export default defineComponent({
 
     const titleMap: Record<string, string> = {
       "/admin/dashboard": "后台控制台",
+      "/admin/analytics": "数据分析",
       "/admin/users": "用户管理",
       "/admin/movies": "电影管理",
       "/admin/comments": "评论管理",

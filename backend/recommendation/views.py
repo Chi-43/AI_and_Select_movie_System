@@ -3,7 +3,8 @@ import re
 from collections import Counter
 
 from django.db.models import Avg, Count, Q
-from datetime import datetime, timedelta
+from django.db.models.functions import TruncDate
+from datetime import datetime, timedelta, date
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -22,6 +23,8 @@ from .models import (
     RecommendationLog,
     MovieFeedback,
     MovieComment,
+    DiscussionPost,
+    DiscussionReply,
 )
 from .serializers import (
     MovieSerializer,
@@ -1309,4 +1312,77 @@ class SearchView(APIView):
                 }
                 for m in results
             ]
+        })
+
+
+class AdminAnalyticsView(APIView):
+    """管理员数据可视化分析"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        thirty_days = date.today() - timedelta(days=30)
+
+        # 用户增长（近30天每日注册数）
+        user_growth = (
+            User.objects
+            .filter(is_staff=False, date_joined__gte=thirty_days)
+            .annotate(day=TruncDate("date_joined"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by("day")
+        )
+
+        # 评分趋势（近30天每日评分数）
+        rating_trend = (
+            Rating.objects
+            .filter(timestamp__date__gte=thirty_days)
+            .annotate(day=TruncDate("timestamp"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by("day")
+        )
+
+        # 评论趋势（近30天每日评论数）
+        comment_trend = (
+            MovieComment.objects
+            .filter(created_at__date__gte=thirty_days)
+            .annotate(day=TruncDate("created_at"))
+            .values("day")
+            .annotate(count=Count("id"))
+            .order_by("day")
+        )
+
+        # 类型分布
+        genre_map = {}
+        for m in Movie.objects.exclude(genre=""):
+            for g in re.split(r"[ /、,，]+", m.genre):
+                g = g.strip()
+                if g:
+                    genre_map[g] = genre_map.get(g, 0) + 1
+        genre_dist = sorted(genre_map.items(), key=lambda x: x[1], reverse=True)[:12]
+
+        # 评分分布（1-5星）
+        rating_dist = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
+        for r in Rating.objects.all():
+            b = str(min(int(r.rating), 5))
+            if b in rating_dist:
+                rating_dist[b] += 1
+
+        # 社区活跃
+        community_posts = DiscussionPost.objects.count()
+        community_replies = DiscussionReply.objects.count() if "DiscussionReply" in dir() else 0
+
+        return Response({
+            "user_growth": [{"day": str(u["day"]), "count": u["count"]} for u in user_growth],
+            "rating_trend": [{"day": str(r["day"]), "count": r["count"]} for r in rating_trend],
+            "comment_trend": [{"day": str(c["day"]), "count": c["count"]} for c in comment_trend],
+            "genre_distribution": [{"name": name, "count": count} for name, count in genre_dist],
+            "rating_distribution": rating_dist,
+            "community_posts": community_posts,
+            "community_replies": DiscussionReply.objects.count(),
+            "total_users": User.objects.filter(is_staff=False).count(),
+            "total_movies": Movie.objects.count(),
+            "total_ratings": Rating.objects.count(),
+            "total_comments": MovieComment.objects.count(),
         })
