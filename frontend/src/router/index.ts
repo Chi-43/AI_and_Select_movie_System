@@ -60,6 +60,21 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/community",
+    name: "community",
+    component: () => import("../views/CommunityView.vue"),
+  },
+  {
+    path: "/community/topic/:topic_id",
+    name: "community-topic",
+    component: () => import("../views/CommunityTopicView.vue"),
+  },
+  {
+    path: "/community/post/:post_id",
+    name: "community-post",
+    component: () => import("../views/CommunityPostView.vue"),
+  },
+  {
     path: "/ai-chat",
     name: "ai-chat",
     component: AIChatView,
@@ -102,6 +117,11 @@ const routes = [
         path: "comments",
         name: "admin-comments",
         component: AdminCommentsView,
+      },
+      {
+        path: "community",
+        name: "admin-community",
+        component: () => import("../views/AdminCommunityView.vue"),
       },
       {
         path: "profile",

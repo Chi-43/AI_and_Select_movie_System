@@ -149,9 +149,8 @@ export const useAuthStore = defineStore("auth", {
           return false;
         }
       } catch (error) {
+        // 网络错误不登出，保留本地 token 和登录状态
         console.error("检查认证状态时出错:", error);
-        this.logout();
-        return false;
       } finally {
         this.loading = false;
       }

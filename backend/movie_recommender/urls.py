@@ -22,6 +22,8 @@ from recommendation.views import (
     MovieCommentDetailView,
     MyRecommendationsView,
     PublicUserView,
+    AdminDashboardView,
+    SearchView,
 )
 from recommendation.auth_views import (
     UserRegistrationView,
@@ -39,6 +41,13 @@ from recommendation.ai_views import (
     AIConfigView,
     NaturalLanguageRecommendationView,
 )
+from recommendation.community_views import (
+    TopicListView,
+    PostListView,
+    PostDetailView,
+    ReplyView,
+    PostLikeView,
+)
 from recommendation.admin_views import (
     AdminLoginView,
     AdminProfileView,
@@ -48,6 +57,9 @@ from recommendation.admin_views import (
     AdminMovieDetailView,
     AdminCommentListView,
     AdminCommentDetailView,
+    AdminTopicView,
+    AdminPostManageView,
+    AdminReplyManageView,
 )
 
 # 创建路由器并注册视图集
@@ -87,6 +99,19 @@ urlpatterns = [
     # 公开用户主页
     path("api/users/<int:user_id>/profile/", PublicUserView.as_view(), name="public_user_profile"),
 
+    # 管理后台
+    path("api/admin/dashboard/", AdminDashboardView.as_view(), name="admin_dashboard"),
+
+    # 社区讨论区
+    path("api/community/topics/", TopicListView.as_view(), name="community_topics"),
+    path("api/community/posts/", PostListView.as_view(), name="community_posts"),
+    path("api/community/posts/<int:post_id>/", PostDetailView.as_view(), name="community_post_detail"),
+    path("api/community/replies/", ReplyView.as_view(), name="community_replies"),
+    path("api/community/likes/", PostLikeView.as_view(), name="community_likes"),
+
+    # 全局搜索
+    path("api/search/", SearchView.as_view(), name="search"),
+
     # 电影互动：评分/点赞/拉踩/评论
     path("api/movie-ratings/", MovieRatingView.as_view(), name="movie_ratings"),
     path("api/movie-feedback/", MovieFeedbackView.as_view(), name="movie_feedback"),
@@ -112,6 +137,11 @@ urlpatterns = [
 
     path("api/admin/comments/", AdminCommentListView.as_view(), name="admin_comment_list"),
     path("api/admin/comments/<int:comment_id>/", AdminCommentDetailView.as_view(), name="admin_comment_detail"),
+
+    # 社区管理
+    path("api/admin/topics/", AdminTopicView.as_view(), name="admin_topics"),
+    path("api/admin/posts/", AdminPostManageView.as_view(), name="admin_posts"),
+    path("api/admin/replies/", AdminReplyManageView.as_view(), name="admin_replies"),
 ]
 
 # 开发环境下提供媒体文件服务

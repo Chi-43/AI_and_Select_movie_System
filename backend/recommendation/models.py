@@ -223,6 +223,80 @@ class MovieComment(models.Model):
         return f"{self.user.username} {prefix}了 {self.movie.title}"
 
 
+# =========================
+# 社区讨论区
+# =========================
+class DiscussionTopic(models.Model):
+    """讨论话题/小组"""
+    name = models.CharField(max_length=100, verbose_name="话题名称")
+    description = models.TextField(blank=True, default="", verbose_name="话题描述")
+    icon = models.CharField(max_length=10, blank=True, default="💬", verbose_name="图标")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_topics")
+    created_at = models.DateTimeField(auto_now_add=True)
+    post_count = models.IntegerField(default=0, verbose_name="帖子数")
+
+    class Meta:
+        verbose_name = "讨论话题"
+        verbose_name_plural = "讨论话题"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.name
+
+
+class DiscussionPost(models.Model):
+    """讨论帖子"""
+    title = models.CharField(max_length=200, verbose_name="标题")
+    content = models.TextField(verbose_name="内容")
+    topic = models.ForeignKey(DiscussionTopic, on_delete=models.CASCADE, related_name="posts")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="posts")
+    view_count = models.IntegerField(default=0, verbose_name="浏览数")
+    reply_count = models.IntegerField(default=0, verbose_name="回复数")
+    like_count = models.IntegerField(default=0, verbose_name="点赞数")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "讨论帖子"
+        verbose_name_plural = "讨论帖子"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
+class DiscussionReply(models.Model):
+    """帖子回复（支持嵌套）"""
+    post = models.ForeignKey(DiscussionPost, on_delete=models.CASCADE, related_name="replies")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="discussion_replies")
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
+    content = models.TextField(verbose_name="内容")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "帖子回复"
+        verbose_name_plural = "帖子回复"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.created_by.username} 回复了 {self.post.title}"
+
+
+class PostLike(models.Model):
+    """帖子点赞"""
+    post = models.ForeignKey(DiscussionPost, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_likes")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "帖子点赞"
+        verbose_name_plural = "帖子点赞"
+        unique_together = ["post", "user"]
+
+    def __str__(self):
+        return f"{self.user.username} 赞了 {self.post.title}"
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """创建用户时自动创建画像"""

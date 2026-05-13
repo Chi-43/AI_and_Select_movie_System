@@ -2,12 +2,13 @@ from decimal import Decimal
 import re
 from collections import Counter
 
-from django.db.models import Avg
+from django.db.models import Avg, Count, Q
+from datetime import datetime, timedelta
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.pagination import PageNumberPagination
 from .ai_views import generate_llm_recommend_reason
@@ -1225,4 +1226,87 @@ class PublicUserView(APIView):
             "ratings": rating_list,
             "comments": comment_list,
             "favorites": favorites,
+        })
+
+
+class AdminDashboardView(APIView):
+    """管理员仪表盘统计数据"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        total_users = User.objects.filter(is_staff=False).count()
+        total_movies = Movie.objects.count()
+        total_comments = MovieComment.objects.count()
+        total_ratings = Rating.objects.count()
+
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        new_users_7d = User.objects.filter(
+            is_staff=False, date_joined__gte=seven_days_ago
+        ).count()
+        new_comments_7d = MovieComment.objects.filter(
+            created_at__gte=seven_days_ago
+        ).count()
+        new_ratings_7d = Rating.objects.filter(
+            timestamp__gte=seven_days_ago
+        ).count()
+
+        genre_data = {}
+        for movie in Movie.objects.exclude(genre=""):
+            for g in re.split(r"[ /、,，]+", movie.genre):
+                g = g.strip()
+                if g:
+                    genre_data[g] = genre_data.get(g, 0) + 1
+        top_genres = sorted(genre_data.items(), key=lambda x: x[1], reverse=True)[:8]
+
+        rating_buckets = {"1": 0, "2": 0, "3": 0, "4": 0, "5": 0}
+        for r in Rating.objects.all():
+            bucket = str(min(int(r.rating), 5))
+            if bucket in rating_buckets:
+                rating_buckets[bucket] += 1
+
+        return Response({
+            "total_users": total_users,
+            "total_movies": total_movies,
+            "total_comments": total_comments,
+            "total_ratings": total_ratings,
+            "recent": {
+                "new_users_7d": new_users_7d,
+                "new_comments_7d": new_comments_7d,
+                "new_ratings_7d": new_ratings_7d,
+            },
+            "top_genres": [{"name": name, "count": count} for name, count in top_genres],
+            "rating_distribution": rating_buckets,
+        })
+
+
+class SearchView(APIView):
+    """全局搜索：搜索电影名、导演、演员"""
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        keyword = (request.query_params.get("q") or "").strip()
+        if not keyword:
+            return Response({"results": []})
+
+        results = Movie.objects.filter(
+            Q(title__icontains=keyword)
+            | Q(director__icontains=keyword)
+            | Q(actors__icontains=keyword)
+            | Q(genre__icontains=keyword)
+        ).order_by("-rating")[:8]
+
+        return Response({
+            "results": [
+                {
+                    "id": m.id,
+                    "title": m.title,
+                    "year": m.year,
+                    "rating": m.rating,
+                    "director": m.director,
+                    "genre": m.genre,
+                }
+                for m in results
+            ]
         })

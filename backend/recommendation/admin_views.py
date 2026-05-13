@@ -10,7 +10,7 @@ from django.middleware.csrf import get_token
 
 from .auth_serializers import UserLoginSerializer
 from .serializers import UserSerializer, MovieSerializer, MovieCommentSerializer
-from .models import User, Movie, MovieComment
+from .models import User, Movie, MovieComment, DiscussionTopic, DiscussionPost, DiscussionReply
 
 
 class AdminPagination(PageNumberPagination):
@@ -289,3 +289,94 @@ class AdminCommentDetailView(APIView):
 
         comment.delete()
         return Response({"message": "评论删除成功"}, status=status.HTTP_200_OK)
+
+
+# ==================== 社区管理 ====================
+
+class AdminTopicView(APIView):
+    """管理员管理话题：增删改查"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        topics = DiscussionTopic.objects.all().order_by("-created_at")
+        data = [
+            {"id": t.id, "name": t.name, "description": t.description,
+             "icon": t.icon, "post_count": t.post_count, "created_at": t.created_at}
+            for t in topics
+        ]
+        return Response({"topics": data})
+
+    def post(self, request):
+        name = (request.data.get("name") or "").strip()
+        if not name:
+            return Response({"error": "话题名称不能为空"}, status=status.HTTP_400_BAD_REQUEST)
+        topic = DiscussionTopic.objects.create(
+            name=name,
+            description=(request.data.get("description") or "").strip(),
+            icon=request.data.get("icon", "💬"),
+            created_by=request.user,
+        )
+        return Response({"message": "话题创建成功", "id": topic.id}, status=status.HTTP_201_CREATED)
+
+    def put(self, request):
+        topic_id = request.data.get("topic_id")
+        try:
+            topic = DiscussionTopic.objects.get(id=topic_id)
+        except DiscussionTopic.DoesNotExist:
+            return Response({"error": "话题不存在"}, status=status.HTTP_404_NOT_FOUND)
+        if request.data.get("name"):
+            topic.name = request.data["name"].strip()
+        if "description" in request.data:
+            topic.description = request.data["description"].strip()
+        if request.data.get("icon"):
+            topic.icon = request.data["icon"]
+        topic.save()
+        return Response({"message": "话题更新成功"})
+
+    def delete(self, request):
+        topic_id = request.data.get("topic_id") or request.query_params.get("topic_id")
+        DiscussionTopic.objects.filter(id=topic_id).delete()
+        return Response({"message": "话题删除成功"})
+
+
+class AdminPostManageView(APIView):
+    """管理员管理帖子：列表和删除"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        posts = DiscussionPost.objects.select_related("created_by", "topic").order_by("-created_at")
+        data = [
+            {"id": p.id, "title": p.title, "content": p.content[:150],
+             "created_by": p.created_by.username, "topic": p.topic.name,
+             "view_count": p.view_count, "reply_count": p.reply_count,
+             "like_count": p.like_count, "created_at": p.created_at}
+            for p in posts
+        ]
+        return Response({"posts": data})
+
+    def delete(self, request):
+        post_id = request.data.get("post_id") or request.query_params.get("post_id")
+        DiscussionPost.objects.filter(id=post_id).delete()
+        return Response({"message": "帖子删除成功"})
+
+
+class AdminReplyManageView(APIView):
+    """管理员管理回复：列表和删除"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        replies = DiscussionReply.objects.select_related("created_by", "post").order_by("-created_at")
+        data = [
+            {"id": r.id, "content": r.content, "created_by": r.created_by.username,
+             "post_title": r.post.title, "created_at": r.created_at}
+            for r in replies
+        ]
+        return Response({"replies": data})
+
+    def delete(self, request):
+        reply_id = request.data.get("reply_id") or request.query_params.get("reply_id")
+        DiscussionReply.objects.filter(id=reply_id).delete()
+        return Response({"message": "回复删除成功"})

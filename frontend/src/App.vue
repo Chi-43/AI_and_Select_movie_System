@@ -7,7 +7,41 @@
           <router-link to="/">首页</router-link>
           <router-link to="/douban">电影库</router-link>
           <router-link to="/about">智能推荐</router-link>
+          <router-link to="/community">💬 社区</router-link>
           <router-link to="/ai-chat">🤖 AI机器人对话</router-link>
+        </div>
+
+        <div class="nav-search">
+          <div class="search-wrap" ref="searchWrap">
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="search-input"
+              placeholder="搜索电影、导演、演员..."
+              @input="onSearchInput"
+              @focus="showResults = searchResults.length > 0"
+              @keydown.enter="onSearchEnter"
+              @blur="onSearchBlur"
+            />
+            <div
+              class="search-dropdown"
+              v-if="showResults && searchResults.length > 0"
+            >
+              <div
+                v-for="movie in searchResults"
+                :key="movie.id"
+                class="search-item"
+                @mousedown.prevent="goToMovie(movie)"
+              >
+                <div class="sr-title">{{ movie.title }}</div>
+                <div class="sr-meta">
+                  <span v-if="movie.year">{{ movie.year }}</span>
+                  <span v-if="movie.rating">⭐ {{ movie.rating }}</span>
+                  <span v-if="movie.genre">{{ movie.genre }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="nav-right">
@@ -36,10 +70,21 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from "vue";
+import { defineComponent, ref, onMounted, watch } from "vue";
 import { useAuthStore } from "@/stores/auth";
 import { useThemeStore } from "@/stores/theme";
 import { useRouter } from "vue-router";
+
+const API_BASE_URL = "http://localhost:8000/api";
+
+interface SearchMovie {
+  id: number;
+  title: string;
+  year: number | null;
+  rating: number | null;
+  director: string;
+  genre: string;
+}
 
 export default defineComponent({
   name: "App",
@@ -47,6 +92,80 @@ export default defineComponent({
     const authStore = useAuthStore();
     const themeStore = useThemeStore();
     const router = useRouter();
+
+    const searchQuery = ref("");
+    const searchResults = ref<SearchMovie[]>([]);
+    const showResults = ref(false);
+    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const onSearchInput = () => {
+      if (searchTimer) clearTimeout(searchTimer);
+      const q = searchQuery.value.trim();
+      if (!q) {
+        searchResults.value = [];
+        showResults.value = false;
+        return;
+      }
+      searchTimer = setTimeout(async () => {
+        try {
+          const res = await fetch(
+            `${API_BASE_URL}/search/?q=${encodeURIComponent(q)}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            searchResults.value = data.results || [];
+            showResults.value = searchResults.value.length > 0;
+          }
+        } catch {
+          // 搜索失败静默忽略
+        }
+      }, 200);
+    };
+
+    const onSearchEnter = () => {
+      const q = searchQuery.value.trim();
+      if (!q) return;
+      showResults.value = false;
+      router.push({ path: "/douban", query: { search: q } });
+    };
+
+    const onSearchBlur = () => {
+      setTimeout(() => {
+        showResults.value = false;
+      }, 200);
+    };
+
+    const goToMovie = (movie: SearchMovie) => {
+      showResults.value = false;
+      searchQuery.value = "";
+      const detail = {
+        id: movie.id,
+        movie_id: movie.id,
+        电影名字: movie.title,
+        电影链接: "",
+        评分: String(movie.rating || ""),
+        评分人数: "",
+        导演: movie.director || "",
+        主演: "",
+        年份: String(movie.year || ""),
+        国家: "",
+        类型: movie.genre || "",
+        一句话评价: "",
+      };
+      sessionStorage.setItem("current_movie_detail", JSON.stringify(detail));
+      router.push({
+        path: "/movie-detail",
+        query: { movie_id: movie.id, movie_title: movie.title },
+      });
+    };
+
+    // 从电影库页搜索参数跳转时同步
+    watch(
+      () => router.currentRoute.value.query.search,
+      (val) => {
+        if (val) searchQuery.value = val as string;
+      }
+    );
 
     onMounted(() => {
       authStore.initialize();
@@ -62,6 +181,13 @@ export default defineComponent({
       authStore,
       themeStore,
       handleLogout,
+      searchQuery,
+      searchResults,
+      showResults,
+      onSearchInput,
+      onSearchEnter,
+      onSearchBlur,
+      goToMovie,
     };
   },
 });
@@ -113,6 +239,75 @@ nav {
   color: var(--primary) !important;
   text-decoration: none;
   margin-right: 10px;
+}
+
+.nav-search {
+  flex: 1;
+  max-width: 360px;
+  margin: 0 16px;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.search-input:focus {
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  right: 0;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  z-index: 200;
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.search-item {
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--panel-border);
+  transition: background var(--transition-fast);
+}
+
+.search-item:last-child {
+  border-bottom: none;
+}
+
+.search-item:hover {
+  background: var(--nav-hover-bg);
+}
+
+.sr-title {
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.sr-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
 }
 
 .nav-right {
