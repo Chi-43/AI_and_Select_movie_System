@@ -25,6 +25,8 @@ from .models import (
     MovieComment,
     DiscussionPost,
     DiscussionReply,
+    MovieCollection,
+    CollectionComment,
 )
 from .serializers import (
     MovieSerializer,
@@ -1242,6 +1244,8 @@ class AdminDashboardView(APIView):
         total_movies = Movie.objects.count()
         total_comments = MovieComment.objects.count()
         total_ratings = Rating.objects.count()
+        total_collections = MovieCollection.objects.count()
+        total_posts = DiscussionPost.objects.count()
 
         seven_days_ago = datetime.now() - timedelta(days=7)
         new_users_7d = User.objects.filter(
@@ -1273,6 +1277,8 @@ class AdminDashboardView(APIView):
             "total_movies": total_movies,
             "total_comments": total_comments,
             "total_ratings": total_ratings,
+            "total_collections": total_collections,
+            "total_posts": total_posts,
             "recent": {
                 "new_users_7d": new_users_7d,
                 "new_comments_7d": new_comments_7d,
@@ -1381,6 +1387,8 @@ class AdminAnalyticsView(APIView):
             "rating_distribution": rating_dist,
             "community_posts": community_posts,
             "community_replies": DiscussionReply.objects.count(),
+            "collection_count": MovieCollection.objects.count(),
+            "collection_comment_count": CollectionComment.objects.count(),
             "total_users": User.objects.filter(is_staff=False).count(),
             "total_movies": Movie.objects.count(),
             "total_ratings": Rating.objects.count(),

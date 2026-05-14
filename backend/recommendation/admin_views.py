@@ -10,7 +10,7 @@ from django.middleware.csrf import get_token
 
 from .auth_serializers import UserLoginSerializer
 from .serializers import UserSerializer, MovieSerializer, MovieCommentSerializer
-from .models import User, Movie, MovieComment, DiscussionTopic, DiscussionPost, DiscussionReply
+from .models import User, Movie, MovieComment, DiscussionTopic, DiscussionPost, DiscussionReply, MovieCollection
 
 
 class AdminPagination(PageNumberPagination):
@@ -380,3 +380,28 @@ class AdminReplyManageView(APIView):
         reply_id = request.data.get("reply_id") or request.query_params.get("reply_id")
         DiscussionReply.objects.filter(id=reply_id).delete()
         return Response({"message": "回复删除成功"})
+
+
+class AdminCollectionView(APIView):
+    """管理员管理片单：列表和删除"""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get(self, request):
+        collections = MovieCollection.objects.select_related("created_by").order_by("-created_at")
+        data = [
+            {
+                "id": c.id, "title": c.title, "description": c.description[:80],
+                "created_by": c.created_by.username,
+                "is_public": c.is_public,
+                "movie_count": c.movie_count, "like_count": c.like_count,
+                "created_at": c.created_at,
+            }
+            for c in collections
+        ]
+        return Response({"collections": data})
+
+    def delete(self, request):
+        coll_id = request.data.get("collection_id") or request.query_params.get("collection_id")
+        MovieCollection.objects.filter(id=coll_id).delete()
+        return Response({"message": "片单删除成功"})

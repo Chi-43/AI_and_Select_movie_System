@@ -50,6 +50,14 @@
           <span>🏘️</span>
           <span>社区管理</span>
         </router-link>
+        <router-link
+          to="/admin/collections"
+          class="nav-item"
+          active-class="active"
+        >
+          <span>📚</span>
+          <span>片单管理</span>
+        </router-link>
         <router-link to="/admin/profile" class="nav-item" active-class="active">
           <span>⚙️</span>
           <span>个人信息</span>
@@ -103,6 +111,7 @@ export default defineComponent({
       "/admin/movies": "电影管理",
       "/admin/comments": "评论管理",
       "/admin/community": "社区管理",
+      "/admin/collections": "片单管理",
       "/admin/profile": "个人信息",
     };
 

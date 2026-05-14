@@ -29,6 +29,20 @@
           <div class="stat-label">评论总数</div>
         </div>
       </div>
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stats.total_collections || 0 }}</div>
+          <div class="stat-label">片单总数</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stats.total_posts || 0 }}</div>
+          <div class="stat-label">社区帖子</div>
+        </div>
+      </div>
     </section>
 
     <section class="recent-row">
@@ -128,6 +142,8 @@ import { defineComponent, ref, onMounted } from "vue";
 const API_BASE_URL = "http://127.0.0.1:8000";
 
 interface DashboardStats {
+  total_collections?: number;
+  total_posts?: number;
   total_users: number;
   total_movies: number;
   total_comments: number;
@@ -149,6 +165,8 @@ export default defineComponent({
       total_movies: 0,
       total_comments: 0,
       total_ratings: 0,
+      total_collections: 0,
+      total_posts: 0,
       recent: { new_users_7d: 0, new_comments_7d: 0, new_ratings_7d: 0 },
       top_genres: [],
       rating_distribution: {},
@@ -201,7 +219,7 @@ export default defineComponent({
 
 .stats-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
 

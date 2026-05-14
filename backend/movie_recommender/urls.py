@@ -69,6 +69,7 @@ from recommendation.admin_views import (
     AdminTopicView,
     AdminPostManageView,
     AdminReplyManageView,
+    AdminCollectionView,
 )
 
 # 创建路由器并注册视图集
@@ -160,6 +161,7 @@ urlpatterns = [
     path("api/admin/topics/", AdminTopicView.as_view(), name="admin_topics"),
     path("api/admin/posts/", AdminPostManageView.as_view(), name="admin_posts"),
     path("api/admin/replies/", AdminReplyManageView.as_view(), name="admin_replies"),
+    path("api/admin/collections/", AdminCollectionView.as_view(), name="admin_collections"),
 ]
 
 # 开发环境下提供媒体文件服务

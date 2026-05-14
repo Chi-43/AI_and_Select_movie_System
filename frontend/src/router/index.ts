@@ -140,6 +140,11 @@ const routes = [
         component: () => import("../views/AdminCommunityView.vue"),
       },
       {
+        path: "collections",
+        name: "admin-collections",
+        component: () => import("../views/AdminCollectionsView.vue"),
+      },
+      {
         path: "profile",
         name: "admin-profile",
         component: AdminProfileView,

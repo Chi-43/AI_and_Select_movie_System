@@ -130,6 +130,14 @@
           <span class="cs-num">{{ data.community_replies || 0 }}</span
           ><span>回复</span>
         </div>
+        <div class="cs-item">
+          <span class="cs-num">{{ data.collection_count || 0 }}</span
+          ><span>片单</span>
+        </div>
+        <div class="cs-item">
+          <span class="cs-num">{{ data.collection_comment_count || 0 }}</span
+          ><span>片单评论</span>
+        </div>
       </div>
     </div>
   </div>
