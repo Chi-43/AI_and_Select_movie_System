@@ -42,6 +42,14 @@ from recommendation.ai_views import (
     AIConfigView,
     NaturalLanguageRecommendationView,
 )
+from recommendation.collection_views import (
+    CollectionListView,
+    CollectionDetailView,
+    CollectionMovieView,
+    CollectionCommentView,
+    CollectionCommentLikeView,
+    CollectionLikeView,
+)
 from recommendation.community_views import (
     TopicListView,
     PostListView,
@@ -103,6 +111,14 @@ urlpatterns = [
     # 管理后台
     path("api/admin/dashboard/", AdminDashboardView.as_view(), name="admin_dashboard"),
     path("api/admin/analytics/", AdminAnalyticsView.as_view(), name="admin_analytics"),
+
+    # 电影片单
+    path("api/collections/", CollectionListView.as_view(), name="collections"),
+    path("api/collections/<int:collection_id>/", CollectionDetailView.as_view(), name="collection_detail"),
+    path("api/collections/movies/", CollectionMovieView.as_view(), name="collection_movies"),
+    path("api/collections/comments/", CollectionCommentView.as_view(), name="collection_comments"),
+    path("api/collections/comments/likes/", CollectionCommentLikeView.as_view(), name="collection_comment_likes"),
+    path("api/collections/likes/", CollectionLikeView.as_view(), name="collection_likes"),
 
     # 社区讨论区
     path("api/community/topics/", TopicListView.as_view(), name="community_topics"),

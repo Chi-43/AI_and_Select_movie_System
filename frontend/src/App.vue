@@ -7,6 +7,7 @@
           <router-link to="/">首页</router-link>
           <router-link to="/douban">电影库</router-link>
           <router-link to="/about">智能推荐</router-link>
+          <router-link to="/collections">📚 片单</router-link>
           <router-link to="/community">💬 社区</router-link>
           <router-link to="/ai-chat">🤖 AI机器人对话</router-link>
         </div>

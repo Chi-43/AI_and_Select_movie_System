@@ -298,6 +298,100 @@ class PostLike(models.Model):
         return f"{self.user.username} 赞了 {self.post.title}"
 
 
+# =========================
+# 电影片单/合集
+# =========================
+class MovieCollection(models.Model):
+    """电影片单"""
+    title = models.CharField(max_length=200, verbose_name="片单标题")
+    description = models.TextField(blank=True, default="", verbose_name="片单描述")
+    cover = models.ImageField(upload_to="collections/", blank=True, null=True, verbose_name="封面图")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collections")
+    is_public = models.BooleanField(default=True, verbose_name="是否公开")
+    like_count = models.IntegerField(default=0, verbose_name="点赞数")
+    movie_count = models.IntegerField(default=0, verbose_name="电影数")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "电影片单"
+        verbose_name_plural = "电影片单"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
+class CollectionComment(models.Model):
+    """片单评论（支持二级回复）"""
+    collection = models.ForeignKey("MovieCollection", on_delete=models.CASCADE, related_name="comments")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collection_comments")
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="replies")
+    content = models.TextField(verbose_name="评论内容")
+    like_count = models.IntegerField(default=0, verbose_name="点赞数")
+    dislike_count = models.IntegerField(default=0, verbose_name="拉踩数")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "片单评论"
+        verbose_name_plural = "片单评论"
+        ordering = ["-like_count", "-created_at"]
+
+    def __str__(self):
+        prefix = "回复" if self.parent_id else "评论"
+        return f"{self.user.username} {prefix}了片单 {self.collection.title}"
+
+
+class CollectionCommentLike(models.Model):
+    """片单评论点赞/拉踩"""
+    comment = models.ForeignKey(CollectionComment, on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cc_likes")
+    feedback_type = models.CharField(max_length=10, choices=[("like", "点赞"), ("dislike", "拉踩")])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "评论反馈"
+        verbose_name_plural = "评论反馈"
+        unique_together = ["comment", "user"]
+
+    def __str__(self):
+        return f"{self.user.username} {self.feedback_type}了评论"
+
+
+class CollectionLike(models.Model):
+    """片单点赞/拉踩"""
+    collection = models.ForeignKey("MovieCollection", on_delete=models.CASCADE, related_name="feedback")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="collection_likes")
+    feedback_type = models.CharField(max_length=10, choices=[("like", "点赞"), ("dislike", "拉踩")])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "片单反馈"
+        verbose_name_plural = "片单反馈"
+        unique_together = ["collection", "user"]
+
+    def __str__(self):
+        return f"{self.user.username} {self.feedback_type} {self.collection.title}"
+
+
+class CollectionMovie(models.Model):
+    """片单中的电影"""
+    collection = models.ForeignKey(MovieCollection, on_delete=models.CASCADE, related_name="movies")
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name="collections")
+    note = models.TextField(blank=True, default="", verbose_name="推荐语")
+    order = models.IntegerField(default=0, verbose_name="排序")
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "片单电影"
+        verbose_name_plural = "片单电影"
+        ordering = ["order", "-added_at"]
+        unique_together = ["collection", "movie"]
+
+    def __str__(self):
+        return f"{self.collection.title} - {self.movie.title}"
+
+
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     """创建用户时自动创建画像"""

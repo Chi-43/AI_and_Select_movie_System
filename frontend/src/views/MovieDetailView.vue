@@ -104,6 +104,42 @@
             <button class="action-btn secondary" @click="handleFavorite">
               {{ isFavorite ? "❤️ 已收藏" : "🤍 收藏" }}
             </button>
+            <button
+              class="action-btn secondary"
+              @click="
+                fetchMyCollections();
+                showCollectionModal = true;
+              "
+            >
+              📚 加入片单
+            </button>
+          </div>
+
+          <!-- 加入片单弹窗 -->
+          <div
+            v-if="showCollectionModal"
+            class="modal-mask"
+            @click.self="showCollectionModal = false"
+          >
+            <div class="modal-card collection-modal">
+              <h3>选择片单</h3>
+              <div v-if="myCollections.length === 0" class="no-coll">
+                你还没有片单，先去创建一个吧
+              </div>
+              <div v-else class="coll-list">
+                <div
+                  v-for="c in myCollections"
+                  :key="c.id"
+                  class="coll-opt"
+                  @click="addToCollection(c.id)"
+                >
+                  {{ c.title }}（{{ c.movie_count }}部）
+                </div>
+              </div>
+              <button class="cancel-btn" @click="showCollectionModal = false">
+                关闭
+              </button>
+            </div>
           </div>
 
           <div class="feedback-bar">
@@ -516,6 +552,8 @@ export default defineComponent({
     const replyingTo = ref<number | null>(null);
     const replyText = ref("");
     const replyLoading = ref(false);
+    const showCollectionModal = ref(false);
+    const myCollections = ref<any[]>([]);
 
     const feedbackSummary = ref({
       like_count: 0,
@@ -1067,6 +1105,55 @@ export default defineComponent({
       }
     };
 
+    const fetchMyCollections = async () => {
+      if (!authStore.token || !authStore.user) return;
+      try {
+        const r = await fetch(
+          `${API_BASE_URL}/collections/?user_id=${authStore.user.id}`
+        );
+        if (r.ok) {
+          const d = await r.json();
+          myCollections.value = d.results || [];
+        }
+      } catch {
+        /* 加载失败 */
+      }
+    };
+
+    const addToCollection = async (collectionId: number) => {
+      const movieId = getMovieIdFromSession();
+      if (!movieId) {
+        alert("未获取到电影ID，请先从电影库进入详情页");
+        return;
+      }
+      if (!authStore.token) {
+        alert("请先登录");
+        return;
+      }
+      try {
+        const r = await fetch(`${API_BASE_URL}/collections/movies/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${authStore.token}`,
+          },
+          body: JSON.stringify({
+            collection_id: collectionId,
+            movie_id: movieId,
+          }),
+        });
+        if (r.ok) {
+          alert("已加入片单");
+          showCollectionModal.value = false;
+        } else {
+          const d = await r.json().catch(() => ({}));
+          alert((d as any).error || "加入失败");
+        }
+      } catch {
+        alert("操作失败");
+      }
+    };
+
     const handleFavorite = () => {
       if (!movie.value) return;
 
@@ -1105,6 +1192,7 @@ export default defineComponent({
         await loadRating();
         await loadFeedbackSummary();
         await loadComments();
+        fetchMyCollections();
       }
     });
 
@@ -1143,6 +1231,9 @@ export default defineComponent({
       submitReply,
       submitComment,
       deleteComment,
+      showCollectionModal,
+      myCollections,
+      addToCollection,
       handleFavorite,
       handleLike,
       handleDislike,
@@ -1771,6 +1862,40 @@ export default defineComponent({
   gap: 10px;
   font-size: 0.84rem;
   color: var(--text-secondary);
+}
+
+.collection-modal {
+  max-width: 400px;
+}
+.collection-modal h3 {
+  margin: 0 0 14px;
+  color: var(--text-primary);
+}
+.no-coll {
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.coll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.coll-opt {
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--primary-bg);
+  border: 1px solid var(--panel-border);
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+.coll-opt:hover {
+  border-color: var(--primary);
+  background: var(--nav-hover-bg);
 }
 
 .external-link {

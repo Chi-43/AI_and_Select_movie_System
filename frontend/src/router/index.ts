@@ -60,6 +60,16 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: "/collections",
+    name: "collections",
+    component: () => import("../views/CollectionsView.vue"),
+  },
+  {
+    path: "/collections/:id",
+    name: "collection-detail",
+    component: () => import("../views/CollectionDetailView.vue"),
+  },
+  {
     path: "/community",
     name: "community",
     component: () => import("../views/CommunityView.vue"),
