@@ -78,7 +78,14 @@
           class="movie-row"
           @click="goToMovie(item.movie)"
         >
-          <span class="mr-index">{{ item.order || "·" }}</span>
+          <img
+            v-if="item.poster"
+            :src="`http://localhost:8000/api/image-proxy/?url=${encodeURIComponent(
+              item.poster
+            )}`"
+            class="mr-poster"
+          />
+          <span v-else class="mr-index">{{ item.order || "·" }}</span>
           <div class="mr-info">
             <div class="mr-title">{{ item.movie.title }}</div>
             <div class="mr-meta">
@@ -556,6 +563,13 @@ export default defineComponent({
 }
 .movie-row:hover {
   transform: translateY(-1px);
+}
+.mr-poster {
+  width: 44px;
+  height: 62px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 .mr-index {
   width: 28px;

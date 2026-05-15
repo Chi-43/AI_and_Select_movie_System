@@ -1,7 +1,9 @@
 from decimal import Decimal
 import re
+import requests as req
 from collections import Counter
 
+from django.http import HttpResponse
 from django.db.models import Avg, Count, Q
 from django.db.models.functions import TruncDate
 from datetime import datetime, timedelta, date
@@ -468,6 +470,11 @@ class MovieDetailView(APIView):
 
             if movie_title and not data.get("movie_title"):
                 data["movie_title"] = movie_title
+
+            # 规范化海报URL（相对路径补全）
+            poster = data.get("poster", "")
+            if poster and poster.startswith("/"):
+                data["poster"] = "https:" + poster
 
             # 把数据库主键也返回给前端
             data["movie_id"] = movie_id
@@ -1394,3 +1401,26 @@ class AdminAnalyticsView(APIView):
             "total_ratings": Rating.objects.count(),
             "total_comments": MovieComment.objects.count(),
         })
+
+
+class ImageProxyView(APIView):
+    """图片代理：绕过豆瓣防盗链"""
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request):
+        url = request.query_params.get("url", "")
+        if not url:
+            return HttpResponse("", status=400)
+        try:
+            resp = req.get(
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "Referer": "https://movie.douban.com/",
+                },
+                timeout=10,
+            )
+            return HttpResponse(resp.content, content_type=resp.headers.get("Content-Type", "image/jpeg"))
+        except Exception:
+            return HttpResponse("", status=500)

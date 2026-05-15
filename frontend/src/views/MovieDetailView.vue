@@ -12,10 +12,11 @@
         <div class="poster-wrap">
           <img
             v-if="extraDetail?.poster && !posterLoadFailed"
-            :src="extraDetail.poster"
+            :src="`http://localhost:8000/api/image-proxy/?url=${encodeURIComponent(
+              extraDetail.poster
+            )}`"
             :alt="movie['电影名字']"
             class="poster"
-            referrerpolicy="no-referrer"
             @error="handlePosterError"
           />
           <div v-else class="poster-placeholder">

@@ -25,6 +25,7 @@ from recommendation.views import (
     AdminDashboardView,
     AdminAnalyticsView,
     SearchView,
+    ImageProxyView,
 )
 from recommendation.auth_views import (
     UserRegistrationView,
@@ -127,6 +128,9 @@ urlpatterns = [
     path("api/community/posts/<int:post_id>/", PostDetailView.as_view(), name="community_post_detail"),
     path("api/community/replies/", ReplyView.as_view(), name="community_replies"),
     path("api/community/likes/", PostLikeView.as_view(), name="community_likes"),
+
+    # 图片代理
+    path("api/image-proxy/", ImageProxyView.as_view(), name="image_proxy"),
 
     # 全局搜索
     path("api/search/", SearchView.as_view(), name="search"),

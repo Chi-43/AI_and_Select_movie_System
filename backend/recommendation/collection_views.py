@@ -9,6 +9,7 @@ from .models import (
     MovieCollection, CollectionMovie, CollectionComment, CollectionCommentLike,
     CollectionLike, Movie, User,
 )
+from .movie_detail_cache import get_movie_detail_from_cache
 from .serializers import MovieSerializer, UserSerializer
 
 
@@ -156,9 +157,17 @@ class CollectionDetailView(APIView):
         items = CollectionMovie.objects.filter(collection=coll).select_related("movie").order_by("order", "-added_at")
         movies_data = []
         for item in items:
+            poster = ""
+            if item.movie.douban_url:
+                detail = get_movie_detail_from_cache(item.movie.douban_url)
+                if detail:
+                    poster = detail.get("poster", "")
+                    if poster and poster.startswith("/"):
+                        poster = "https:" + poster
             movies_data.append({
                 "id": item.id,
                 "movie": MovieSerializer(item.movie).data,
+                "poster": poster,
                 "note": item.note,
                 "order": item.order,
                 "added_at": item.added_at,

@@ -62,6 +62,9 @@ def fetch_douban_movie_detail(douban_url: str):
 
         poster_tag = soup.select_one("#mainpic img")
         poster = poster_tag.get("src", "").strip() if poster_tag else ""
+        # 相对路径拼接完整URL
+        if poster and poster.startswith("/"):
+            poster = "https:" + poster
 
         summary_tag = soup.select_one('span[property="v:summary"]')
         summary = summary_tag.get_text("\n", strip=True) if summary_tag else ""
