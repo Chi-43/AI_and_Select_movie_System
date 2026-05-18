@@ -1211,6 +1211,7 @@ export default defineComponent({
       comments,
       similarMovies,
       similarLoading,
+      goToSimilarMovie,
       commentsLoading,
       commentLoading,
       feedbackLoading,
@@ -1235,6 +1236,7 @@ export default defineComponent({
       showCollectionModal,
       myCollections,
       addToCollection,
+
       handleFavorite,
       handleLike,
       handleDislike,

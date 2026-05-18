@@ -1,7 +1,7 @@
 <template>
   <div class="profile-view">
-    <section class="hero-section">
-      <div class="hero-content">
+    <!-- <section class="hero-section"> -->
+    <!-- <div class="hero-content">
         <div class="hero-badge">个人中心</div>
         <h1 class="hero-title">👤 用户管理与画像中心</h1>
         <p class="hero-subtitle">
@@ -26,9 +26,9 @@
             <div class="stat-label">冷启动偏好</div>
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <div class="hero-actions">
+    <!-- <div class="hero-actions">
         <button
           class="header-btn"
           @click="reloadAllData"
@@ -38,8 +38,8 @@
             profileLoading || preferenceLoading ? "刷新中..." : "🔄 刷新数据"
           }}
         </button>
-      </div>
-    </section>
+      </div> -->
+    <!-- </section> -->
 
     <div class="profile-container">
       <!-- 左侧 -->

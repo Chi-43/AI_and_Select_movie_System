@@ -741,28 +741,36 @@ class SimilarMoviesView(APIView):
         cf = CollaborativeFiltering()
         cf.calculate_movie_similarity()
 
-        if cf.movie_similarity is None:
-            return Response(
-                {"error": "无法计算电影相似度"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        # 尝试协同过滤
+        cf_ids = []
+        can_cf = cf.movie_similarity is not None and movie.id in cf.movie_ids
+        if can_cf:
+            movie_idx = cf.movie_ids.index(movie.id)
+            similarities = cf.movie_similarity[movie_idx]
+            similar_pairs = []
+            for idx, similarity in enumerate(similarities):
+                if idx != movie_idx and similarity > 0:
+                    similar_pairs.append((cf.movie_ids[idx], float(similarity)))
+            similar_pairs.sort(key=lambda x: x[1], reverse=True)
+            cf_ids = [mid for mid, _ in similar_pairs[:top_n]]
 
-        if movie.id not in cf.movie_ids:
-            return Response(
-                {"error": "电影不在矩阵中"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        # CF 不足时用类型+评分兜底
+        fallback_movies = []
+        if len(cf_ids) < top_n:
+            movie_genres = [g.strip() for g in re.split(r"[ /、,，]+", movie.genre) if g.strip()]
+            fallback_qs = Movie.objects.exclude(id=movie.id).exclude(id__in=cf_ids)
+            if movie_genres:
+                from django.db.models import Q
+                genre_filter = Q()
+                for g in movie_genres[:3]:
+                    genre_filter |= Q(genre__icontains=g)
+                fallback_qs = fallback_qs.filter(genre_filter)
+            fallback_movies = list(fallback_qs.order_by("-rating")[:top_n - len(cf_ids)])
 
-        movie_idx = cf.movie_ids.index(movie.id)
-        similarities = cf.movie_similarity[movie_idx]
+        top_movie_ids = cf_ids + [m.id for m in fallback_movies]
 
-        similar_movies = []
-        for idx, similarity in enumerate(similarities):
-            if idx != movie_idx and similarity > 0:
-                similar_movies.append((cf.movie_ids[idx], float(similarity)))
-
-        similar_movies.sort(key=lambda x: x[1], reverse=True)
-        top_movie_ids = [mid for mid, _ in similar_movies[:top_n]]
+        if not top_movie_ids:
+            return Response({"movie_id": movie.id, "movie_title": movie.title, "similar_movies": []})
 
         movie_map = {m.id: m for m in Movie.objects.filter(id__in=top_movie_ids)}
 

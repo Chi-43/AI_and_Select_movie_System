@@ -70,6 +70,12 @@
               </td>
               <td>
                 <div class="action-group">
+                  <button
+                    class="action-btn profile"
+                    @click="openProfileModal(user)"
+                  >
+                    画像
+                  </button>
                   <button class="action-btn edit" @click="openEditModal(user)">
                     编辑
                   </button>
@@ -150,6 +156,111 @@
         </div>
       </div>
     </div>
+
+    <!-- 用户画像弹窗 -->
+    <div
+      v-if="showProfileModal"
+      class="modal-mask"
+      @click.self="showProfileModal = false"
+    >
+      <div class="modal-card profile-modal" v-if="profileUser">
+        <div class="modal-header">
+          <h3>👤 {{ profileUser.username }} 的用户画像</h3>
+          <button class="close-btn" @click="showProfileModal = false">×</button>
+        </div>
+        <div class="profile-content">
+          <div class="pf-section">
+            <h4>基本信息</h4>
+            <p>用户名：{{ profileUser.username }}</p>
+            <p>邮箱：{{ profileUser.email || "未填写" }}</p>
+            <p>注册时间：{{ formatDate(profileUser.date_joined) }}</p>
+            <p>简介：{{ profileUser.bio || "暂无" }}</p>
+          </div>
+          <div class="pf-section" v-if="profileData">
+            <h4>偏好画像</h4>
+            <p v-if="!profileData.onboarding_completed" class="muted">
+              该用户尚未完成兴趣偏好设置
+            </p>
+            <template v-else>
+              <div class="chip-row">
+                <span class="pf-label">偏好类型：</span>
+                <span
+                  v-for="g in profileData.favorite_genres"
+                  :key="g"
+                  class="info-chip"
+                  >{{ g }}</span
+                >
+                <span v-if="!profileData.favorite_genres?.length" class="muted"
+                  >暂无</span
+                >
+              </div>
+              <div class="chip-row">
+                <span class="pf-label">偏好国家：</span>
+                <span
+                  v-for="c in profileData.favorite_countries"
+                  :key="c"
+                  class="info-chip"
+                  >{{ c }}</span
+                >
+                <span
+                  v-if="!profileData.favorite_countries?.length"
+                  class="muted"
+                  >暂无</span
+                >
+              </div>
+              <div class="chip-row">
+                <span class="pf-label">关键词：</span>
+                <span
+                  v-for="kw in profileData.favorite_keywords"
+                  :key="kw"
+                  class="info-chip muted-tag"
+                  >{{ kw }}</span
+                >
+                <span
+                  v-if="!profileData.favorite_keywords?.length"
+                  class="muted"
+                  >暂无</span
+                >
+              </div>
+              <p class="pf-summary" v-if="profileData.profile_summary">
+                📝 {{ profileData.profile_summary }}
+              </p>
+            </template>
+          </div>
+          <div class="pf-section">
+            <h4>评分统计</h4>
+            <p v-if="profileRatings.length === 0" class="muted">暂无评分记录</p>
+            <template v-else>
+              <p>共 {{ profileRatings.length }} 条评分（最近12条）</p>
+              <div
+                v-for="r in profileRatings"
+                :key="r.movie?.id"
+                class="rating-row-sm"
+              >
+                <span class="r-title">{{ r.movie?.title }}</span>
+                <span class="r-star">⭐ {{ r.rating }}</span>
+              </div>
+            </template>
+          </div>
+          <div class="pf-section">
+            <h4>最近评论</h4>
+            <p v-if="profileComments.length === 0" class="muted">暂无评论</p>
+            <div
+              v-for="c in profileComments"
+              :key="c.id"
+              class="comment-row-sm"
+            >
+              <span class="r-title">评《{{ c.movie?.title }}》：</span>
+              <span>{{
+                c.content.length > 50
+                  ? c.content.slice(0, 50) + "..."
+                  : c.content
+              }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -186,6 +297,11 @@ export default defineComponent({
     const totalPages = ref(1);
 
     const showEditModal = ref(false);
+    const showProfileModal = ref(false);
+    const profileUser = ref<any>(null);
+    const profileData = ref<any>(null);
+    const profileRatings = ref<any[]>([]);
+    const profileComments = ref<any[]>([]);
     const currentEditUserId = ref<number | null>(null);
 
     const editForm = reactive({
@@ -290,6 +406,25 @@ export default defineComponent({
       editForm.bio = "";
     };
 
+    const openProfileModal = async (user: any) => {
+      profileUser.value = user;
+      profileData.value = null;
+      profileRatings.value = [];
+      profileComments.value = [];
+      showProfileModal.value = true;
+      try {
+        const r = await fetch(`${API_BASE_URL}/api/users/${user.id}/profile/`);
+        if (r.ok) {
+          const d = await r.json();
+          profileData.value = d.profile;
+          profileRatings.value = d.ratings || [];
+          profileComments.value = d.comments || [];
+        }
+      } catch {
+        /* 加载失败 */
+      }
+    };
+
     const submitEdit = async () => {
       if (!currentEditUserId.value) return;
 
@@ -392,6 +527,12 @@ export default defineComponent({
       currentPage,
       totalPages,
       filteredUsers,
+      showProfileModal,
+      profileUser,
+      profileData,
+      profileRatings,
+      profileComments,
+      openProfileModal,
       showEditModal,
       editForm,
       fetchUsers,
@@ -589,6 +730,11 @@ export default defineComponent({
   gap: 8px;
 }
 
+.action-btn.profile {
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
 .action-btn.edit {
   background: rgba(99, 102, 241, 0.14);
   color: var(--primary);
@@ -677,6 +823,72 @@ export default defineComponent({
 .form-textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+.profile-modal {
+  max-width: 600px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pf-section h4 {
+  margin: 0 0 8px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+}
+.pf-section p {
+  margin: 4px 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+.chip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.pf-label {
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.muted {
+  color: var(--text-muted) !important;
+}
+.pf-summary {
+  margin-top: 8px;
+  line-height: 1.7;
+}
+.rating-row-sm {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 0.86rem;
+}
+.rating-row-sm .r-title {
+  color: var(--text-primary);
+}
+.rating-row-sm .r-star {
+  color: #d97706;
+  font-weight: 700;
+}
+.comment-row-sm {
+  padding: 4px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+.comment-row-sm .r-title {
+  color: var(--primary);
+  font-weight: 600;
+}
+.info-chip.muted-tag {
+  background: var(--nav-hover-bg);
+  color: var(--text-muted);
 }
 
 .modal-actions {
