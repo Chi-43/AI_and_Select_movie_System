@@ -1110,7 +1110,7 @@ export default defineComponent({
       if (!authStore.token || !authStore.user) return;
       try {
         const r = await fetch(
-          `${API_BASE_URL}/collections/?user_id=${authStore.user.id}`
+          `${API_BASE_URL}/api/collections/?user_id=${authStore.user.id}`
         );
         if (r.ok) {
           const d = await r.json();
@@ -1132,7 +1132,7 @@ export default defineComponent({
         return;
       }
       try {
-        const r = await fetch(`${API_BASE_URL}/collections/movies/`, {
+        const r = await fetch(`${API_BASE_URL}/api/collections/movies/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

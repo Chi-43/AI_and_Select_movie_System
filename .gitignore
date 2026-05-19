@@ -173,3 +173,7 @@ cython_debug/
 # Database files
 *.db
 *.sqlite3
+
+# 海报缓存
+backend/media/posters/
+backend/recommendation/media/posters/

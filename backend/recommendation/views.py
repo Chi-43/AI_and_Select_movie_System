@@ -471,10 +471,13 @@ class MovieDetailView(APIView):
             if movie_title and not data.get("movie_title"):
                 data["movie_title"] = movie_title
 
-            # 规范化海报URL（相对路径补全）
+            # 规范化海报URL（相对路径补全 + 过滤相册链接）
             poster = data.get("poster", "")
+            if poster and ("photos?type=" in poster or "/subject/" in poster):
+                poster = ""  # 这是相册页面链接，不是图片
             if poster and poster.startswith("/"):
-                data["poster"] = "https:" + poster
+                poster = "https:" + poster
+            data["poster"] = poster
 
             # 把数据库主键也返回给前端
             data["movie_id"] = movie_id
@@ -743,11 +746,11 @@ class SimilarMoviesView(APIView):
 
         # 尝试协同过滤
         cf_ids = []
+        similar_pairs = []
         can_cf = cf.movie_similarity is not None and movie.id in cf.movie_ids
         if can_cf:
             movie_idx = cf.movie_ids.index(movie.id)
             similarities = cf.movie_similarity[movie_idx]
-            similar_pairs = []
             for idx, similarity in enumerate(similarities):
                 if idx != movie_idx and similarity > 0:
                     similar_pairs.append((cf.movie_ids[idx], float(similarity)))
@@ -775,9 +778,10 @@ class SimilarMoviesView(APIView):
         movie_map = {m.id: m for m in Movie.objects.filter(id__in=top_movie_ids)}
 
         results = []
-        for mid, sim in similar_movies[:top_n]:
+        for i, mid in enumerate(top_movie_ids[:top_n]):
             movie_obj = movie_map.get(mid)
             if movie_obj:
+                sim = similar_pairs[i][1] if can_cf and i < len(similar_pairs) else 0.5
                 results.append({
                     "movie": MovieSerializer(movie_obj).data,
                     "similarity": round(sim, 4),
@@ -1412,7 +1416,7 @@ class AdminAnalyticsView(APIView):
 
 
 class ImageProxyView(APIView):
-    """图片代理：绕过豆瓣防盗链"""
+    """图片代理：绕过豆瓣防盗链 + 本地缓存加速"""
     authentication_classes = []
     permission_classes = []
 
@@ -1420,6 +1424,20 @@ class ImageProxyView(APIView):
         url = request.query_params.get("url", "")
         if not url:
             return HttpResponse("", status=400)
+
+        # 用 URL 的 MD5 做缓存文件名
+        import hashlib, os
+        cache_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "media", "posters")
+        os.makedirs(cache_dir, exist_ok=True)
+        cache_name = hashlib.md5(url.encode()).hexdigest() + ".jpg"
+        cache_path = os.path.join(cache_dir, cache_name)
+
+        # 命中缓存 → 直接返回
+        if os.path.exists(cache_path):
+            with open(cache_path, "rb") as f:
+                return HttpResponse(f.read(), content_type="image/jpeg")
+
+        # 未命中 → 抓取 + 写缓存 + 返回
         try:
             resp = req.get(
                 url,
@@ -1427,8 +1445,10 @@ class ImageProxyView(APIView):
                     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
                     "Referer": "https://movie.douban.com/",
                 },
-                timeout=10,
+                timeout=15,
             )
+            with open(cache_path, "wb") as f:
+                f.write(resp.content)
             return HttpResponse(resp.content, content_type=resp.headers.get("Content-Type", "image/jpeg"))
         except Exception:
             return HttpResponse("", status=500)

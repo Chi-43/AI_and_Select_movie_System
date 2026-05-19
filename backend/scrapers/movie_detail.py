@@ -61,7 +61,18 @@ def fetch_douban_movie_detail(douban_url: str):
         rating_count = rating_count_tag.get_text(strip=True) if rating_count_tag else ""
 
         poster_tag = soup.select_one("#mainpic img")
-        poster = poster_tag.get("src", "").strip() if poster_tag else ""
+        poster = ""
+        if poster_tag:
+            # 优先取 data-src / data-original（懒加载），其次 src
+            poster = (
+                poster_tag.get("data-src") or
+                poster_tag.get("data-original") or
+                poster_tag.get("src") or
+                ""
+            ).strip()
+        # 过滤掉相册链接（/subject/xxx/photos?type=R）
+        if poster and ("photos?type=" in poster or not re.search(r"\.(jpg|jpeg|png|webp|gif)", poster, re.I)):
+            poster = ""
         # 相对路径拼接完整URL
         if poster and poster.startswith("/"):
             poster = "https:" + poster
